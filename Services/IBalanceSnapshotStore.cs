@@ -1,0 +1,17 @@
+using ApiBalanceMonitor.Models;
+
+namespace ApiBalanceMonitor.Services;
+
+public interface IBalanceSnapshotStore
+{
+    Task<BalanceRecordsLoadResult> LoadAsync(CancellationToken cancellationToken);
+
+    Task SaveAsync(IReadOnlyList<AccountBalanceRecord> records, CancellationToken cancellationToken);
+}
+
+public sealed class BalanceRecordsLoadResult
+{
+    public required IReadOnlyList<AccountBalanceRecord> Records { get; init; }
+
+    public string? RecoveryMessage { get; init; }
+}

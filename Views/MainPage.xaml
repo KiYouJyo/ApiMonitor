@@ -1,0 +1,129 @@
+<UserControl
+    x:Class="ApiBalanceMonitor.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:ApiBalanceMonitor.ViewModels"
+    xmlns:converters="using:ApiBalanceMonitor.Views.Converters">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+        <converters:StatusSeverityConverter x:Key="StatusSeverityConverter" />
+    </UserControl.Resources>
+
+    <Grid Padding="32,24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Text="API 余额监控" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock
+                Text="查询并记录你自己的 API 账户余额（v0.1.0，支持 DeepSeek）。"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <InfoBar
+            Grid.Row="1"
+            IsClosable="True"
+            IsOpen="{Binding IsStatusVisible}"
+            Severity="{Binding StatusSeverity, Converter={StaticResource StatusSeverityConverter}}"
+            Title="{Binding StatusTitle}"
+            Message="{Binding StatusMessage}" />
+
+        <Grid Grid.Row="2">
+            <StackPanel
+                MaxWidth="520"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="14"
+                Visibility="{Binding HasAccounts, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                <TextBlock
+                    Text="还没有账户"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    HorizontalAlignment="Center" />
+                <TextBlock
+                    Text="添加一个 DeepSeek 账户，查看各币种余额。"
+                    TextAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Button
+                    Content="添加 DeepSeek 账户"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Center"
+                    Command="{Binding AddAccountCommand}" />
+                <InfoBar
+                    IsOpen="True"
+                    Severity="Informational"
+                    Title="隐私说明"
+                    Message="API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求 DeepSeek 官方接口；普通配置和余额快照仅保存在本机应用数据目录。" />
+            </StackPanel>
+
+            <ListView
+                ItemsSource="{Binding Accounts}"
+                SelectionMode="None"
+                IsItemClickEnabled="False"
+                Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:AccountListItemViewModel">
+                        <Border
+                            Margin="0,0,0,12"
+                            Padding="16,12"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{x:Bind DisplayName}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind ProviderDisplayName}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <ProgressRing
+                                            Width="20"
+                                            Height="20"
+                                            IsActive="{x:Bind IsRefreshing, Mode=OneWay}" />
+                                        <Button Content="刷新" Command="{x:Bind RefreshCommand}" />
+                                        <Button Content="编辑" Command="{x:Bind EditCommand}" />
+                                        <Button Content="删除" Command="{x:Bind DeleteCommand}" />
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind AvailabilityText}" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <ItemsControl ItemsSource="{x:Bind BalanceLines, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:BalanceLine">
+                                                <TextBlock Text="{x:Bind LineText}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock
+                                        Text="最近成功更新：{x:Bind LastSuccessText}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock
+                                        Text="{x:Bind LastErrorText}"
+                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                        Visibility="{x:Bind HasLastError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="12"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ProgressRing IsActive="True" Width="48" Height="48" />
+                <TextBlock Text="正在加载本地数据…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
