@@ -16,6 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -43,7 +44,7 @@
             Title="{Binding StatusTitle}"
             Message="{Binding StatusMessage}" />
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <StackPanel
                 MaxWidth="520"
                 HorizontalAlignment="Center"
@@ -55,11 +56,11 @@
                     Style="{StaticResource SubtitleTextBlockStyle}"
                     HorizontalAlignment="Center" />
                 <TextBlock
-                    Text="添加一个 DeepSeek 账户，查看各币种余额。"
+                    Text="添加 DeepSeek 或 OpenRouter 账户，查看各指标余额。"
                     TextAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <Button
-                    Content="添加 DeepSeek 账户"
+                    Content="添加账户"
                     Style="{StaticResource AccentButtonStyle}"
                     HorizontalAlignment="Center"
                     Command="{Binding AddAccountCommand}" />
@@ -67,11 +68,12 @@
                     IsOpen="True"
                     Severity="Informational"
                     Title="隐私说明"
-                    Message="API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求 DeepSeek 官方接口；普通配置和余额快照仅保存在本机应用数据目录。" />
+                    Message="API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。" />
             </StackPanel>
 
             <ListView
-                ItemsSource="{Binding Accounts}"
+                x:Name="AccountsList"
+                ItemsSource="{Binding FilteredAccounts}"
                 SelectionMode="None"
                 IsItemClickEnabled="False"
                 Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -84,6 +86,7 @@
                             BorderThickness="1"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                            <Grid>
                             <StackPanel Spacing="10">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <StackPanel Spacing="2">
@@ -101,6 +104,15 @@
                                         <Button Content="删除" Command="{x:Bind DeleteCommand}" />
                                     </StackPanel>
                                 </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock
+                                        Text="{x:Bind StatusKindText, Mode=OneWay}"
+                                        FontWeight="SemiBold"
+                                        Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                    <TextBlock
+                                        Text="{x:Bind ProviderDisplayName, Mode=OneWay}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
                                 <StackPanel Spacing="6">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -141,6 +153,12 @@
                                         Visibility="{x:Bind HasLastError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
                             </StackPanel>
+                            <Border
+                                CornerRadius="8"
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                Opacity="0.18"
+                                Visibility="{x:Bind IsHighlighted, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
                         </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -157,8 +175,51 @@
         </Grid>
 
         <!-- 通知区域与启动设置（v0.4.0） -->
+        <!-- 多账户汇总与筛选（v0.5.0） -->
         <Border
-            Grid.Row="3"
+            Grid.Row="2"
+            Padding="14,10"
+            CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                <TextBlock
+                    Text="{Binding AccountSummaryText, Mode=OneWay}"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button
+                        Content="刷新全部账户"
+                        Command="{Binding RefreshAllCommand}" />
+                    <ProgressRing
+                        Width="20"
+                        Height="20"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        IsActive="{Binding IsRefreshingAll}" />
+                </StackPanel>
+                <ComboBox
+                    Grid.Column="2"
+                    MinWidth="150"
+                    ItemsSource="{Binding ProviderFilterOptions}"
+                    DisplayMemberPath="DisplayName"
+                    SelectedValuePath="ProviderId"
+                    SelectedValue="{Binding SelectedProviderFilter, Mode=TwoWay}" />
+                <ComboBox
+                    Grid.Column="3"
+                    MinWidth="120"
+                    ItemsSource="{Binding StatusFilterOptions}"
+                    DisplayMemberPath="DisplayName"
+                    SelectedValuePath="Filter"
+                    SelectedValue="{Binding SelectedStatusFilter, Mode=TwoWay}" />
+            </Grid>
+        </Border>
+
+        <!-- 通知区域与启动设置（v0.4.0） -->
+        <Border
+            Grid.Row="4"
             Padding="16,14"
             CornerRadius="8"
             BorderThickness="1"

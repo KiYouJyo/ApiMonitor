@@ -50,13 +50,37 @@ public static class BalanceMetricText
         switch (metric.Kind)
         {
             case BalanceMetricKind.MonetaryBalance:
-                return $"{metric.Unit} · 总额 {FormatAmount(metric.TotalAmount ?? metric.AvailableAmount)}"
-                    + $" · 赠送 {FormatAmount(metric.GrantedAmount)}"
-                    + $" · 充值 {FormatAmount(metric.ToppedUpAmount)}";
+                var monetaryParts = new List<string>
+                {
+                    $"总额 {FormatAmount(metric.TotalAmount ?? metric.AvailableAmount)}",
+                };
+                if (metric.GrantedAmount is not null)
+                {
+                    monetaryParts.Add($"赠送 {FormatAmount(metric.GrantedAmount)}");
+                }
+
+                if (metric.ToppedUpAmount is not null)
+                {
+                    monetaryParts.Add($"充值 {FormatAmount(metric.ToppedUpAmount)}");
+                }
+
+                return $"{metric.Unit} · {string.Join(" · ", monetaryParts)}";
             case BalanceMetricKind.PlatformCredits:
-                return $"{metric.DisplayName} {FormatAmount(metric.AvailableAmount ?? metric.TotalAmount)}"
-                    + $" · 累计充值 {FormatAmount(metric.TotalAmount)}"
-                    + $" · 累计使用 {FormatAmount(metric.UsedAmount)}";
+                var creditParts = new List<string>
+                {
+                    $"{metric.DisplayName} {FormatAmount(metric.AvailableAmount ?? metric.TotalAmount ?? metric.UsedAmount)}",
+                };
+                if (metric.TotalAmount is not null && metric.AvailableAmount is null)
+                {
+                    creditParts.Add($"累计充值 {FormatAmount(metric.TotalAmount)}");
+                }
+
+                if (metric.UsedAmount is not null && metric.AvailableAmount is null)
+                {
+                    creditParts.Add($"累计使用 {FormatAmount(metric.UsedAmount)}");
+                }
+
+                return string.Join(" · ", creditParts);
             case BalanceMetricKind.KeyQuota:
                 return $"{metric.DisplayName} {FormatAmount(metric.AvailableAmount)}"
                     + (metric.TotalAmount is null

@@ -24,6 +24,25 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
     private readonly IHttpRequestService _http;
     private readonly AppLog? _log;
 
+    public ProviderInfo Info { get; } = new(
+        ProviderId,
+        DisplayName,
+        "查询 DeepSeek 账户各币种总余额（CNY/USD 等）。",
+        SupportsAccountBalance: true,
+        SupportsKeyQuota: false,
+        SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
+        CredentialOptions: new[]
+        {
+            new ProviderCredentialOption(
+                "api-key",
+                "API Key",
+                "DeepSeek 平台 API Key，形如 sk-…，仅用于请求官方余额接口。",
+                IsDefault: true),
+        },
+        ApiKeyInputHint: "sk-…",
+        HelpUrl: "https://platform.deepseek.com/",
+        SupportsTestConnection: true);
+
     string IApiBalanceProvider.ProviderId => ProviderId;
 
     string IApiBalanceProvider.DisplayName => DisplayName;

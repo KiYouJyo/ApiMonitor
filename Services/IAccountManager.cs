@@ -36,6 +36,7 @@ public interface IAccountManager
 
     Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken);
@@ -45,6 +46,7 @@ public interface IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken);
 

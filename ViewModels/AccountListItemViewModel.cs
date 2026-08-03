@@ -53,6 +53,21 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public bool IsLowBalance { get; private set; }
 
+    /// <summary>当前状态分类（正常/低余额/未知/失败），由快照与最近错误派生。</summary>
+    public AccountStatusKind StatusKind { get; private set; } = AccountStatusKind.Unknown;
+
+    public string StatusKindText => StatusKind switch
+    {
+        AccountStatusKind.Normal => "正常",
+        AccountStatusKind.Low => "低余额",
+        AccountStatusKind.Failed => "失败",
+        _ => "未知",
+    };
+
+    /// <summary>通知激活定位时的高亮标记（由主窗口清除）。</summary>
+    [ObservableProperty]
+    private bool _isHighlighted;
+
     [ObservableProperty]
     private bool _isRefreshing;
 
@@ -144,6 +159,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         {
             LastErrorText = "最近一次查询未成功";
         }
+
+        RecomputeStatusKind();
     }
 
     partial void OnIsRefreshingChanged(bool value) =>
@@ -158,8 +175,11 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     partial void OnLastSuccessTextChanged(string value) =>
         OnPropertyChanged(nameof(LastSuccessLine));
 
-    partial void OnLastErrorTextChanged(string value) =>
+    partial void OnLastErrorTextChanged(string value)
+    {
         HasLastError = !string.IsNullOrEmpty(value);
+        RecomputeStatusKind();
+    }
 
     public void ApplySnapshot(BalanceSnapshot snapshot)
     {
@@ -173,6 +193,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
             .Select(b => new BalanceLine(b))
             .ToList();
         RecomputeThresholdSummary();
+        RecomputeStatusKind();
     }
 
     public void ApplyError(BalanceQueryError? error)
@@ -182,6 +203,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         {
             AvailabilityText = "不可用";
         }
+
+        RecomputeStatusKind();
     }
 
     /// <summary>查询完成后从最新账户/记录状态刷新卡片显示（含监控与阈值）。</summary>
@@ -193,6 +216,20 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         RecomputeThresholdSummary();
         OnPropertyChanged(nameof(AvailabilityText));
         OnPropertyChanged(nameof(LastSuccessLine));
+        RecomputeStatusKind();
+    }
+
+    private void RecomputeStatusKind()
+    {
+        StatusKind = !string.IsNullOrEmpty(LastErrorText)
+            ? AccountStatusKind.Failed
+            : !HasSnapshot
+                ? AccountStatusKind.Unknown
+                : IsLowBalance
+                    ? AccountStatusKind.Low
+                    : AccountStatusKind.Normal;
+        OnPropertyChanged(nameof(StatusKind));
+        OnPropertyChanged(nameof(StatusKindText));
     }
 
     private void RecomputeThresholdSummary()

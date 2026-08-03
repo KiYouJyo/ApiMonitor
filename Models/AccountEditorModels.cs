@@ -18,6 +18,9 @@ public sealed class AccountEditorContext
 
     public bool HasStoredCredential { get; init; }
 
+    /// <summary>编辑时当前账户保存的凭据模式（新增时为 null）。</summary>
+    public string? CredentialMode { get; init; }
+
     /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
     public required MonitoringSettings InitialMonitoring { get; init; }
 
@@ -37,6 +40,9 @@ public sealed class AccountEditorResult
     public string DisplayName { get; set; } = string.Empty;
 
     public string? ApiKey { get; set; }
+
+    /// <summary>用户选择的 Provider 凭据模式（如 openrouter 的 api-key / management-key）。</summary>
+    public string? CredentialMode { get; set; }
 
     public MonitoringSettings Monitoring { get; set; } = new();
 }

@@ -16,6 +16,9 @@ public sealed class ProviderRegistry
 
     public IReadOnlyList<IApiBalanceProvider> All => _providers.Values.ToList();
 
+    /// <summary>注册表能力列表（供“添加账户”页面与筛选动态生成）。</summary>
+    public IReadOnlyList<ProviderInfo> Infos => _providers.Values.Select(p => p.Info).ToList();
+
     public IApiBalanceProvider? GetById(string providerId) =>
         !string.IsNullOrWhiteSpace(providerId) && _providers.TryGetValue(providerId, out var provider)
             ? provider

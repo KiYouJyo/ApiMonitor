@@ -18,6 +18,35 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public IReadOnlyList<int> RefreshIntervals => MonitoringIntervals.Options;
 
+    /// <summary>当前选中 Provider 的凭据选项（来自注册表，不写死在 XAML）。</summary>
+    public IReadOnlyList<ProviderCredentialOption> CredentialOptions { get; private set; } =
+        Array.Empty<ProviderCredentialOption>();
+
+    public bool ShowCredentialModeSelector => CredentialOptions.Count > 1;
+
+    /// <summary>RadioButtons 与凭据模式的互相映射（凭据选项来自注册表）。</summary>
+    public int CredentialModeIndex
+    {
+        get
+        {
+            int index = CredentialOptions.ToList()
+                .FindIndex(o => string.Equals(o.CredentialTypeId, SelectedCredentialMode, StringComparison.OrdinalIgnoreCase));
+            return index < 0 ? 0 : index;
+        }
+        set
+        {
+            if (value >= 0 && value < CredentialOptions.Count)
+            {
+                SelectedCredentialMode = CredentialOptions[value].CredentialTypeId;
+            }
+        }
+    }
+
+    /// <summary>当前 Provider 描述与密钥输入说明。</summary>
+    public string ProviderDescription { get; private set; } = string.Empty;
+
+    public string ApiKeyInputHint { get; private set; } = string.Empty;
+
     public bool IsEditing => _context.AccountId is not null;
 
     public bool HasStoredCredential => _context.HasStoredCredential;
@@ -27,6 +56,18 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSave), nameof(CanTest))]
     private string _selectedProviderId;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    private string _selectedCredentialMode = string.Empty;
+
+    /// <summary>编辑时保存的原始凭据模式（用于“更改模式必须重新测试连接”）。</summary>
+    private readonly string? _effectiveOriginalMode;
+
+    /// <summary>凭据模式更改后必须重新测试连接才能保存。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    private bool _modeChangedRequiresRetest;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSave))]
@@ -76,6 +117,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public bool CanSave =>
         !IsTesting
+        && !ModeChangedRequiresRetest
         && !string.IsNullOrWhiteSpace(DisplayName)
         && (!string.IsNullOrWhiteSpace(ApiKey) || (IsEditing && HasStoredCredential))
         && ThresholdsValid
@@ -107,6 +149,14 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         AutoRefreshEnabled = context.InitialMonitoring.AutoRefreshEnabled;
         RefreshIntervalMinutes = context.InitialMonitoring.RefreshIntervalMinutes;
 
+        ApplyProviderCapabilities(context.InitialProviderId);
+        SelectedCredentialMode = context.CredentialMode ?? ProviderInfoFor(context.InitialProviderId)?.DefaultCredentialOption.CredentialTypeId ?? string.Empty;
+        // 旧账户未保存凭据模式时按该 Provider 默认模式视为“未更改”，避免升级后要求重测。
+        _effectiveOriginalMode = IsEditing
+            ? context.CredentialMode
+                ?? ProviderInfoFor(context.InitialProviderId)?.DefaultCredentialOption.CredentialTypeId
+            : null;
+
         var rules = context.InitialMonitoring.Thresholds;
         foreach (var metric in context.CurrentMetrics)
         {
@@ -132,6 +182,33 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     partial void OnIsTestingChanged(bool value) =>
         TestCommand.NotifyCanExecuteChanged();
 
+    partial void OnSelectedProviderIdChanged(string value)
+    {
+        ApplyProviderCapabilities(value);
+        // 切换 Provider 时恢复该 Provider 的默认凭据模式（编辑中切换 Provider 视为新配置）。
+        SelectedCredentialMode = ProviderInfoFor(value)?.DefaultCredentialOption.CredentialTypeId ?? string.Empty;
+        OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanTest));
+    }
+
+    partial void OnSelectedCredentialModeChanged(string value)
+    {
+        OnPropertyChanged(nameof(CredentialModeIndex));
+        if (IsEditing
+            && _effectiveOriginalMode is not null
+            && !string.Equals(value, _effectiveOriginalMode, StringComparison.OrdinalIgnoreCase))
+        {
+            // 更改模式要求重新测试连接：清除旧测试结果并提示。
+            ModeChangedRequiresRetest = true;
+            HasTestResult = false;
+            HasValidationMessage = false;
+        }
+        else
+        {
+            ModeChangedRequiresRetest = false;
+        }
+    }
+
     public void SetApiKey(string password) => ApiKey = password;
 
     private async Task TestConnectionAsync(CancellationToken cancellationToken)
@@ -143,11 +220,16 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         {
             var result = await _accountManager.TestConnectionAsync(
                 SelectedProviderId,
+                SelectedCredentialMode,
                 string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
                 _context.AccountId,
                 cancellationToken);
 
             HasTestResult = true;
+            if (result.IsSuccess)
+            {
+                ModeChangedRequiresRetest = false;
+            }
             if (result.IsSuccess && result.Snapshot is { } snapshot)
             {
                 TestSeverity = StatusSeverity.Success;
@@ -227,6 +309,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             ProviderId = SelectedProviderId,
             DisplayName = DisplayName.Trim(),
             ApiKey = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
+            CredentialMode = SelectedCredentialMode,
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = AutoRefreshEnabled,
@@ -270,4 +353,21 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         ValidationMessage = message;
         HasValidationMessage = true;
     }
+
+    private void ApplyProviderCapabilities(string providerId)
+    {
+        var info = ProviderInfoFor(providerId);
+        CredentialOptions = info?.CredentialOptions ?? Array.Empty<ProviderCredentialOption>();
+        ProviderDescription = info?.Description ?? string.Empty;
+        ApiKeyInputHint = info?.ApiKeyInputHint ?? string.Empty;
+        OnPropertyChanged(nameof(CredentialOptions));
+        OnPropertyChanged(nameof(ShowCredentialModeSelector));
+        OnPropertyChanged(nameof(CredentialModeIndex));
+        OnPropertyChanged(nameof(ProviderDescription));
+        OnPropertyChanged(nameof(ApiKeyInputHint));
+    }
+
+    private ProviderInfo? ProviderInfoFor(string providerId) =>
+        _context.Providers.FirstOrDefault(p =>
+            string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
 }

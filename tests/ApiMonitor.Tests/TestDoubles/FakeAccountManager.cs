@@ -12,7 +12,23 @@ public sealed class FakeAccountManager : IAccountManager
 
     public event EventHandler? AccountsChanged;
 
-    public List<ProviderInfo> ProviderList { get; } = new() { new ProviderInfo("deepseek", "DeepSeek") };
+    public List<ProviderInfo> ProviderList { get; } = new()
+    {
+        new ProviderInfo(
+            "deepseek",
+            "DeepSeek",
+            "测试 Provider",
+            SupportsAccountBalance: true,
+            SupportsKeyQuota: false,
+            SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
+            CredentialOptions: new[]
+            {
+                new ProviderCredentialOption("api-key", "API Key", "普通密钥", IsDefault: true),
+            },
+            ApiKeyInputHint: "sk-…",
+            HelpUrl: "https://example.test/",
+            SupportsTestConnection: true),
+    };
 
     public List<ApiAccount> Accounts { get; } = new();
 
@@ -115,6 +131,7 @@ public sealed class FakeAccountManager : IAccountManager
 
     public Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken) =>
@@ -125,6 +142,7 @@ public sealed class FakeAccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken)
     {
@@ -139,6 +157,7 @@ public sealed class FakeAccountManager : IAccountManager
             HasCredential = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
             Monitoring = monitoring,
         };
         Accounts.RemoveAll(a => a.AccountId == id);

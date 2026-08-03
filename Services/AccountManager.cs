@@ -49,8 +49,7 @@ public sealed class AccountManager : IAccountManager
 
     public bool HasActiveRefresh => Volatile.Read(ref _activeRefreshCount) > 0;
 
-    public IReadOnlyList<ProviderInfo> Providers =>
-        _registry.All.Select(p => new ProviderInfo(p.ProviderId, p.DisplayName)).ToList();
+    public IReadOnlyList<ProviderInfo> Providers => _registry.Infos;
 
     private DateTimeOffset NowUtc => _time.GetUtcNow();
 
@@ -144,6 +143,7 @@ public sealed class AccountManager : IAccountManager
 
     public async Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken)
@@ -177,6 +177,7 @@ public sealed class AccountManager : IAccountManager
             HasCredential = false,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
         };
 
         return await provider.QueryBalanceAsync(probe, key, cancellationToken);
@@ -187,6 +188,7 @@ public sealed class AccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken)
     {
@@ -237,6 +239,7 @@ public sealed class AccountManager : IAccountManager
             HasCredential = hasCredential,
             CreatedAtUtc = existing?.CreatedAtUtc ?? now,
             UpdatedAtUtc = now,
+            CredentialMode = string.IsNullOrWhiteSpace(credentialMode) ? null : credentialMode.Trim(),
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = monitoring.AutoRefreshEnabled,
@@ -244,6 +247,7 @@ public sealed class AccountManager : IAccountManager
                 NextRefreshAtUtc = next,
                 Thresholds = thresholds,
             },
+            Notification = existing?.Notification ?? new AccountNotificationSettings(),
         };
 
         if (existing is null)

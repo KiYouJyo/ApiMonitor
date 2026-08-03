@@ -7,6 +7,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ApiMonitor.ViewModels;
 
+/// <summary>主界面 Provider 筛选选项（ProviderId 为空字符串表示“全部”）。</summary>
+public sealed record ProviderFilterOption(string ProviderId, string DisplayName);
+
+/// <summary>主界面状态筛选选项。</summary>
+public sealed record StatusFilterOption(AccountStatusFilter Filter, string DisplayName);
+
 /// <summary>
 /// 主界面 ViewModel。所有网络与持久化操作都通过服务接口完成；
 /// 自动刷新结果通过事件 + UI 线程调用器回写账户卡片。
@@ -23,6 +29,45 @@ public sealed partial class MainViewModel : ObservableObject
     private int _statusGeneration;
 
     public ObservableCollection<AccountListItemViewModel> Accounts { get; } = new();
+
+    /// <summary>经过 Provider/状态筛选后实际显示的账户列表（ListView 绑定此集合）。</summary>
+    public ObservableCollection<AccountListItemViewModel> FilteredAccounts { get; } = new();
+
+    /// <summary>Provider 筛选选项：全部 + 注册表中的每个 Provider。</summary>
+    public IReadOnlyList<ProviderFilterOption> ProviderFilterOptions { get; private set; } =
+        new[] { new ProviderFilterOption(string.Empty, "全部 Provider") };
+
+    public IReadOnlyList<StatusFilterOption> StatusFilterOptions { get; } = new[]
+    {
+        new StatusFilterOption(AccountStatusFilter.All, "全部状态"),
+        new StatusFilterOption(AccountStatusFilter.Normal, "正常"),
+        new StatusFilterOption(AccountStatusFilter.Low, "低余额"),
+        new StatusFilterOption(AccountStatusFilter.Unknown, "未知"),
+        new StatusFilterOption(AccountStatusFilter.Failed, "失败"),
+    };
+
+    [ObservableProperty]
+    private string _selectedProviderFilter = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
+    private AccountStatusFilter _selectedStatusFilter = AccountStatusFilter.All;
+
+    [ObservableProperty]
+    private int _totalAccountCount;
+
+    [ObservableProperty]
+    private int _lowBalanceAccountCount;
+
+    [ObservableProperty]
+    private int _failedAccountCount;
+
+    /// <summary>通知激活定位的目标账户 ID（由视图滚动到对应卡片并高亮）。</summary>
+    [ObservableProperty]
+    private string? _highlightedAccountId;
+
+    [ObservableProperty]
+    private bool _hasActiveFilters;
 
     /// <summary>“通知区域与启动”设置区（由 CompositionRoot 注入；独立 ViewModel 便于测试）。</summary>
     public TraySettingsViewModel? TraySettings { get; set; }
@@ -42,6 +87,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>是否有已加载账户（由账户集合派生，加载中不改变）。</summary>
     public bool HasAccounts => Accounts.Count > 0;
+
+    public string AccountSummaryText =>
+        $"共 {TotalAccountCount} 个账户 · 低余额 {LowBalanceAccountCount} · 查询失败 {FailedAccountCount}";
 
     [ObservableProperty]
     private bool _isStatusVisible;
@@ -87,6 +135,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         _accountManager.RefreshStarted += OnRefreshStarted;
         _accountManager.RefreshCompleted += OnRefreshCompleted;
+        _accountManager.AccountsChanged += OnAccountsChanged;
     }
 
     partial void OnIsLoadingChanged(bool value) =>
@@ -94,6 +143,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnIsRefreshingAllChanged(bool value) =>
         RefreshAllCommand.NotifyCanExecuteChanged();
+
+    partial void OnSelectedProviderFilterChanged(string value) => ApplyFilters();
+
+    partial void OnSelectedStatusFilterChanged(AccountStatusFilter value)
+    {
+        HasActiveFilters = SelectedStatusFilter != AccountStatusFilter.All
+            || !string.IsNullOrEmpty(SelectedProviderFilter);
+        ApplyFilters();
+    }
 
     /// <summary>应用启动时加载本地数据；文件损坏/迁移失败时显示恢复提示而不是崩溃。</summary>
     public async Task InitializeAsync()
@@ -138,6 +196,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialProviderId = _accountManager.Providers.FirstOrDefault()?.ProviderId ?? string.Empty,
             InitialDisplayName = string.Empty,
             HasStoredCredential = false,
+            CredentialMode = null,
             InitialMonitoring = new MonitoringSettings(),
             CurrentMetrics = Array.Empty<BalanceMetric>(),
         };
@@ -155,6 +214,7 @@ public sealed partial class MainViewModel : ObservableObject
                 result.ProviderId,
                 result.DisplayName,
                 result.ApiKey,
+                result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token);
             await ReloadAccountsAsync(_lifetime.Token);
@@ -186,6 +246,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialProviderId = account.ProviderId,
             InitialDisplayName = account.DisplayName,
             HasStoredCredential = account.HasCredential,
+            CredentialMode = account.CredentialMode,
             InitialMonitoring = CloneMonitoring(account.Monitoring),
             CurrentMetrics = item is { HasSnapshot: true } ? item.LatestMetricsForEditor : Array.Empty<BalanceMetric>(),
         };
@@ -203,6 +264,7 @@ public sealed partial class MainViewModel : ObservableObject
                 result.ProviderId,
                 result.DisplayName,
                 string.IsNullOrWhiteSpace(result.ApiKey) ? null : result.ApiKey,
+                result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token);
             await ReloadAccountsAsync(_lifetime.Token);
@@ -389,12 +451,20 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _accountManager.RefreshStarted -= OnRefreshStarted;
         _accountManager.RefreshCompleted -= OnRefreshCompleted;
+        _accountManager.AccountsChanged -= OnAccountsChanged;
         _lifetime.Cancel();
     }
 
     private async Task ReloadAccountsAsync(CancellationToken cancellationToken)
     {
         var accounts = await _accountManager.GetAllAccountsAsync(cancellationToken);
+        ProviderFilterOptions = new[]
+            {
+                new ProviderFilterOption(string.Empty, "全部 Provider"),
+            }
+            .Concat(_accountManager.Providers.Select(p => new ProviderFilterOption(p.ProviderId, p.DisplayName)))
+            .ToList();
+        OnPropertyChanged(nameof(ProviderFilterOptions));
 
         Accounts.Clear();
         foreach (var account in accounts.OrderBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase))
@@ -416,6 +486,9 @@ public sealed partial class MainViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(HasAccounts));
+        OnPropertyChanged(nameof(AccountSummaryText));
+        RefreshSummary();
+        ApplyFilters();
     }
 
     private async Task ApplyRefreshOutcomeAsync(
@@ -438,6 +511,8 @@ public sealed partial class MainViewModel : ObservableObject
         {
             item.RefreshDisplay();
         }
+
+        RefreshSummary();
     }
 
     private void OnRefreshStarted(object? sender, AccountRefreshStartedEventArgs e)
@@ -455,6 +530,70 @@ public sealed partial class MainViewModel : ObservableObject
     private void OnRefreshCompleted(object? sender, AccountRefreshCompletedEventArgs e)
     {
         _ui.Post(() => _ = HandleRefreshCompletedAsync(e));
+    }
+
+    private void OnAccountsChanged(object? sender, EventArgs e)
+    {
+        _ui.Post(() => _ = ReloadAccountsAsync(_lifetime.Token));
+    }
+
+    /// <summary>把指定账户定位到主界面（通知激活共用）：必要时清除筛选并高亮卡片。</summary>
+    public void FocusAccount(string accountId)
+    {
+        _ui.Post(() =>
+        {
+            if (SelectedProviderFilter != string.Empty || SelectedStatusFilter != AccountStatusFilter.All)
+            {
+                SelectedProviderFilter = string.Empty;
+                SelectedStatusFilter = AccountStatusFilter.All;
+            }
+
+            foreach (var item in Accounts)
+            {
+                item.IsHighlighted =
+                    string.Equals(item.Account.AccountId, accountId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            HighlightedAccountId = accountId;
+        });
+    }
+
+    private void ApplyFilters()
+    {
+        FilteredAccounts.Clear();
+        foreach (var item in Accounts)
+        {
+            if (!string.IsNullOrEmpty(SelectedProviderFilter)
+                && !string.Equals(item.Account.ProviderId, SelectedProviderFilter, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!MatchesStatusFilter(item))
+            {
+                continue;
+            }
+
+            FilteredAccounts.Add(item);
+        }
+    }
+
+    private bool MatchesStatusFilter(AccountListItemViewModel item) =>
+        SelectedStatusFilter switch
+        {
+            AccountStatusFilter.Normal => item.StatusKind == AccountStatusKind.Normal,
+            AccountStatusFilter.Low => item.StatusKind == AccountStatusKind.Low,
+            AccountStatusFilter.Unknown => item.StatusKind == AccountStatusKind.Unknown,
+            AccountStatusFilter.Failed => item.StatusKind == AccountStatusKind.Failed,
+            _ => true,
+        };
+
+    private void RefreshSummary()
+    {
+        TotalAccountCount = Accounts.Count;
+        LowBalanceAccountCount = Accounts.Count(a => a.StatusKind == AccountStatusKind.Low);
+        FailedAccountCount = Accounts.Count(a => a.StatusKind == AccountStatusKind.Failed);
+        OnPropertyChanged(nameof(AccountSummaryText));
     }
 
     private async Task HandleRefreshCompletedAsync(AccountRefreshCompletedEventArgs e)

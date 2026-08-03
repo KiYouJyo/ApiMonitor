@@ -61,7 +61,8 @@ public sealed class CompositionRoot
 
         var http = new HttpRequestService(TimeSpan.FromSeconds(15));
         var deepSeek = new DeepSeekBalanceProvider(http, Log);
-        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek });
+        var openRouter = new OpenRouterBalanceProvider(http, Log);
+        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek, openRouter });
 
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);
