@@ -1,5 +1,36 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.4.0] - 2026-08-03
+
+### Added
+
+- Native Windows notification-area icon (Shell_NotifyIconW, NOTIFYICON_VERSION_4, stable GUID, dedicated hidden message window)
+- Close-to-tray behavior: closing the main window hides it to the notification area (configurable to exit instead)
+- Tray menu for opening the main and compact windows, refreshing all accounts, toggling sign-in startup and exiting
+- Single-instance activation: a second launch redirects to and activates the existing instance
+- Optional start at Windows sign-in (MSIX StartupTask, off by default; sign-in startup stays in the tray only)
+- Explorer restart recovery: the tray icon reappears automatically after Explorer restarts
+- Tray Tooltip balance-status summary (normal / low-balance count / no data / refreshing / recent failure), without API keys
+- Persistent notification-area and startup settings (tray-settings.json, schema 3 → 4)
+- Multi-size tray icon (16/20/24/32/48/256)
+- In-place upgrade from v0.3.1 preserving accounts, balance history, thresholds, compact-window settings and Credential Locker keys
+
+### Fixed
+
+- Fixed the tray context menu appearing near the upper-left corner
+- Corrected NOTIFYICON_VERSION_4 callback parsing (event in LOWORD(lParam), icon ID in HIWORD(lParam), cursor anchor from GetCursorPos / wParam)
+- Positioned the context menu near the cursor or the notification icon, with monitor-aware expansion direction
+- Fixed reopening a hidden main window from the tray menu
+
+### Changed
+
+- Application lifecycle now remains active while the tray icon is running
+- Closing the final visible window no longer necessarily exits the application
+- Explicit exit now performs centralized cleanup (scheduler, in-flight requests, settings, tray icon, windows)
+- Settings schema upgraded for tray and startup preferences
+
 ## [0.3.1] - 2026-08-03
 
 - 新增一键侧载安装体验：双击 `Install.cmd`，确认一次 UAC 后自动完成证书导入、依赖检查与 MSIX 安装/升级

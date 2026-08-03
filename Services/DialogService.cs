@@ -107,4 +107,42 @@ public sealed class DialogService : IDialogService
             _log?.Error($"显示历史对话框失败: {ex}");
         }
     }
+
+    public async Task<FirstCloseChoice> ShowFirstCloseExplanationAsync(CancellationToken cancellationToken)
+    {
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
+        {
+            _log?.Error("无法显示首次关闭说明对话框：XamlRoot 为空。");
+            return FirstCloseChoice.Hide;
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "隐藏到通知区域",
+            Content = "ApiMonitor 将继续在通知区域运行。你可以单击右下角图标重新打开，或从托盘菜单退出。",
+            PrimaryButtonText = "隐藏并继续运行",
+            SecondaryButtonText = "不再提示",
+            CloseButtonText = "取消",
+            DefaultButton = ContentDialogButton.Primary,
+        };
+
+        try
+        {
+            dialog.XamlRoot = xamlRoot;
+            using var registration = cancellationToken.Register(dialog.Hide);
+            var result = await dialog.ShowAsync();
+            return result switch
+            {
+                ContentDialogResult.Primary => FirstCloseChoice.Hide,
+                ContentDialogResult.Secondary => FirstCloseChoice.HideAndDontAskAgain,
+                _ => FirstCloseChoice.Cancel,
+            };
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示首次关闭说明对话框失败: {ex.GetType().Name}");
+            return FirstCloseChoice.Hide;
+        }
+    }
 }

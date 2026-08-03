@@ -21,6 +21,8 @@ public sealed class AccountManager : IAccountManager
     private readonly Dictionary<string, AccountBalanceRecord> _records = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _refreshLocks = new(StringComparer.OrdinalIgnoreCase);
 
+    private int _activeRefreshCount;
+
     public event EventHandler<AccountRefreshStartedEventArgs>? RefreshStarted;
 
     public event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
@@ -44,6 +46,8 @@ public sealed class AccountManager : IAccountManager
     }
 
     public IReadOnlyList<string> RecoveryMessages { get; private set; } = Array.Empty<string>();
+
+    public bool HasActiveRefresh => Volatile.Read(ref _activeRefreshCount) > 0;
 
     public IReadOnlyList<ProviderInfo> Providers =>
         _registry.All.Select(p => new ProviderInfo(p.ProviderId, p.DisplayName)).ToList();
@@ -339,7 +343,15 @@ public sealed class AccountManager : IAccountManager
                         this,
                         new AccountRefreshStartedEventArgs { AccountId = accountId, Source = source });
 
-                    result = await provider.QueryBalanceAsync(account, apiKey, cancellationToken);
+                    Interlocked.Increment(ref _activeRefreshCount);
+                    try
+                    {
+                        result = await provider.QueryBalanceAsync(account, apiKey, cancellationToken);
+                    }
+                    finally
+                    {
+                        Interlocked.Decrement(ref _activeRefreshCount);
+                    }
 
                     record.LastQueryAttemptAt = NowUtc;
                     if (result.IsSuccess && result.Snapshot is { } snapshot)
@@ -394,6 +406,49 @@ public sealed class AccountManager : IAccountManager
         finally
         {
             semaphore.Release();
+        }
+    }
+
+    public async Task RefreshAllAccountsAsync(
+        BalanceQuerySource source,
+        CancellationToken cancellationToken)
+    {
+        var accounts = _accounts.Where(a => a.HasCredential).ToList();
+        foreach (var account in accounts)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _ = RefreshSafelyAsync(account.AccountId, source, cancellationToken);
+            try
+            {
+                // 错峰：避免瞬间对同一 Provider 发起大量请求。
+                await Task.Delay(500, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+    }
+
+    private async Task RefreshSafelyAsync(
+        string accountId,
+        BalanceQuerySource source,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await RefreshAccountAsync(accountId, source, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"刷新全部中账户失败: {ex.GetType().Name}");
         }
     }
 

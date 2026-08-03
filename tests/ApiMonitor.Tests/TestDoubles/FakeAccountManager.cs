@@ -29,6 +29,8 @@ public sealed class FakeAccountManager : IAccountManager
 
     public TaskCompletionSource? LoadGate { get; set; }
 
+    public TaskCompletionSource? RefreshAllGate { get; set; }
+
     public int RefreshCalls { get; private set; }
 
     public BalanceQuerySource? LastRefreshSource { get; private set; }
@@ -48,6 +50,34 @@ public sealed class FakeAccountManager : IAccountManager
     public IReadOnlyList<ProviderInfo> Providers => ProviderList;
 
     public IReadOnlyList<string> RecoveryMessages => RecoveryMessagesList;
+
+    public bool HasActiveRefresh => ActiveRefreshCount > 0;
+
+    public int ActiveRefreshCount { get; set; }
+
+    public int RefreshAllCalls { get; private set; }
+
+    public BalanceQuerySource? LastRefreshAllSource { get; private set; }
+
+    public async Task RefreshAllAccountsAsync(BalanceQuerySource source, CancellationToken cancellationToken)
+    {
+        RefreshAllCalls++;
+        LastRefreshAllSource = source;
+        if (RefreshAllGate is { } gate)
+        {
+            await gate.Task.WaitAsync(cancellationToken);
+        }
+
+        foreach (var accountId in Accounts.Where(a => a.HasCredential).Select(a => a.AccountId).ToList())
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await RefreshAccountAsync(accountId, source, cancellationToken);
+        }
+    }
 
     public async Task<IReadOnlyList<ApiAccount>> LoadAsync(CancellationToken cancellationToken)
     {
