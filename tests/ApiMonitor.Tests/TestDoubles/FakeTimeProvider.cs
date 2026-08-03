@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Tests.TestDoubles;
+namespace ApiMonitor.Tests.TestDoubles;
 
 public sealed class FakeTimeProvider : TimeProvider
 {

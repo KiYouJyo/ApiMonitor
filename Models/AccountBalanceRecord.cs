@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 与账户关联的本地余额记录：最近尝试/成功时间与最后一次成功快照。

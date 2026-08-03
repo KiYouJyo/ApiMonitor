@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Providers;
+namespace ApiMonitor.Providers;
 
 /// <summary>
 /// 代码内注册的 Provider 注册表（不采用反射加载不受信任 DLL 的插件机制）。

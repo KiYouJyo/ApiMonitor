@@ -1,10 +1,10 @@
 using System.Net;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.Tests.TestDoubles;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
+using ApiMonitor.Tests.TestDoubles;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class DeepSeekBalanceProviderTests
 {

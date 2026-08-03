@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>添加/编辑账户对话框的 ViewModel（测试连接只预览结果，保存才写入）。</summary>
 public sealed partial class AccountEditorViewModel : ObservableObject

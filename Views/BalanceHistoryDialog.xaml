@@ -1,9 +1,9 @@
 <ContentDialog
-    x:Class="ApiBalanceMonitor.Views.BalanceHistoryDialog"
+    x:Class="ApiMonitor.Views.BalanceHistoryDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModels="using:ApiBalanceMonitor.ViewModels"
-    xmlns:converters="using:ApiBalanceMonitor.Views.Converters"
+    xmlns:viewModels="using:ApiMonitor.ViewModels"
+    xmlns:converters="using:ApiMonitor.Views.Converters"
     Title="余额历史"
     CloseButtonText="关闭"
     DefaultButton="Close">

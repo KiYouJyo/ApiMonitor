@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
+using ApiMonitor.Services;
 
-namespace ApiBalanceMonitor.Tests.TestDoubles;
+namespace ApiMonitor.Tests.TestDoubles;
 
 public sealed class FakeAccountManager : IAccountManager
 {

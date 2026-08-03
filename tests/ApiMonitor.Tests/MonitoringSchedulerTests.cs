@@ -1,9 +1,9 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
-using ApiBalanceMonitor.Tests.TestDoubles;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
+using ApiMonitor.Tests.TestDoubles;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class MonitoringSchedulerTests
 {

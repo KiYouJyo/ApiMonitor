@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>账户卡片中单行币种余额的展示模型。</summary>
 public sealed class BalanceLine

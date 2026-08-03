@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 
-namespace ApiBalanceMonitor.Tests.TestDoubles;
+namespace ApiMonitor.Tests.TestDoubles;
 
 public sealed class FakeSecretStore : ISecretStore
 {

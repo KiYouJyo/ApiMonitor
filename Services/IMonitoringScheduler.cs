@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 应用运行期间的自动刷新调度服务。单一调度循环检查到期账户，

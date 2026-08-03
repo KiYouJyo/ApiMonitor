@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class HistoryRetentionTests
 {

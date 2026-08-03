@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 账户、余额查询与本地数据门面：ViewModel 与调度服务只依赖此接口。

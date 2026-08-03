@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace ApiBalanceMonitor.Helpers;
+namespace ApiMonitor.Helpers;
 
 /// <summary>余额显示格式化，金额始终使用 decimal。</summary>
 public static class BalanceFormatter

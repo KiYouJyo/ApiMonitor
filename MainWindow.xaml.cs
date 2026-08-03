@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 using Microsoft.UI.Xaml;
 
-namespace ApiBalanceMonitor;
+namespace ApiMonitor;
 
 public sealed partial class MainWindow : Window
 {
@@ -11,7 +11,7 @@ public sealed partial class MainWindow : Window
     {
         _compositionRoot = compositionRoot;
         InitializeComponent();
-        Title = "ApiBalanceMonitor";
+        Title = "ApiMonitor";
         Closed += OnWindowClosed;
     }
 

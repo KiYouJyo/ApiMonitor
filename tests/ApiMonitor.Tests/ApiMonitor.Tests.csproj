@@ -40,6 +40,8 @@
     <Compile Include="../../Services/IHttpRequestService.cs" Link="Services/IHttpRequestService.cs" />
     <Compile Include="../../Services/HttpRequestService.cs" Link="Services/HttpRequestService.cs" />
     <Compile Include="../../Services/ISecretStore.cs" Link="Services/ISecretStore.cs" />
+    <Compile Include="../../Services/CredentialLockerSecretStore.cs" Link="Services/CredentialLockerSecretStore.cs" />
+    <Compile Include="../../Services/AppPaths.cs" Link="Services/AppPaths.cs" />
     <Compile Include="../../Services/AtomicJsonFile.cs" Link="Services/AtomicJsonFile.cs" />
     <Compile Include="../../Services/StorageModels.cs" Link="Services/StorageModels.cs" />
     <Compile Include="../../Services/IAccountStore.cs" Link="Services/IAccountStore.cs" />

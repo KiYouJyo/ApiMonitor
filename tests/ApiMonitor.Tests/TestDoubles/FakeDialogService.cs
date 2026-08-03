@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 
-namespace ApiBalanceMonitor.Tests.TestDoubles;
+namespace ApiMonitor.Tests.TestDoubles;
 
 public sealed class FakeDialogService : IDialogService
 {

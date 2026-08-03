@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 public static class ThresholdEvaluator
 {

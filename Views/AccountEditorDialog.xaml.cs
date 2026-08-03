@@ -1,9 +1,9 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.Models;
+using ApiMonitor.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace ApiBalanceMonitor.Views;
+namespace ApiMonitor.Views;
 
 public sealed partial class AccountEditorDialog : ContentDialog
 {

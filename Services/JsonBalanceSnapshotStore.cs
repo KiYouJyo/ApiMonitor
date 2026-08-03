@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 最新余额快照、查询时间与余额历史的 JSON 持久化实现。

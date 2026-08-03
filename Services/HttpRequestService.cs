@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 默认 HTTP 实现。超时由 HttpClient.Timeout 控制（当前为 15 秒），

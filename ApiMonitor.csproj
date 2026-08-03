@@ -3,9 +3,9 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>ApiBalanceMonitor</RootNamespace>
+    <RootNamespace>ApiMonitor</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\ApiBalanceMonitor.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\ApiMonitor.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <!-- Prefer the requested project platform over the MSBuild host process architecture. -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
@@ -53,7 +53,7 @@
 
   <ItemGroup>
     <Content Include="PRIVACY.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="Assets\ApiBalanceMonitor.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Assets\ApiMonitor.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Assets\Square150x150Logo.png" />
     <Content Include="Assets\Square44x44Logo.png" />
     <Content Include="Assets\StoreLogo.png" />

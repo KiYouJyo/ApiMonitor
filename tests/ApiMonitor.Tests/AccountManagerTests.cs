@@ -1,11 +1,11 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.Services;
-using ApiBalanceMonitor.Tests.TestDoubles;
-using ApiBalanceMonitor.Tests.TestHelpers;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
+using ApiMonitor.Services;
+using ApiMonitor.Tests.TestDoubles;
+using ApiMonitor.Tests.TestHelpers;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class AccountManagerTests
 {

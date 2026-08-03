@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 基于单一 PeriodicTimer 的调度循环：每 30 秒检查一次到期账户并触发自动刷新。

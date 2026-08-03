@@ -1,9 +1,9 @@
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 
-namespace ApiBalanceMonitor.Views.Converters;
+namespace ApiMonitor.Views.Converters;
 
 public sealed class BoolToVisibilityConverter : IValueConverter
 {

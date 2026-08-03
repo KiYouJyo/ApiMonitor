@@ -1,9 +1,9 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Tests.TestDoubles;
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.Models;
+using ApiMonitor.Tests.TestDoubles;
+using ApiMonitor.ViewModels;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class BalanceHistoryViewModelTests
 {

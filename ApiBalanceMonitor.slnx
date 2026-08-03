@@ -1,9 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-  </Configurations>
-  <Folder Name="/tests/">
-    <Project Path="tests/ApiBalanceMonitor.Tests/ApiBalanceMonitor.Tests.csproj" />
-  </Folder>
-  <Project Path="ApiBalanceMonitor.csproj" />
-</Solution>

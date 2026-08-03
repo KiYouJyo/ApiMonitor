@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>对话框抽象，让 MainViewModel 保持可测试。</summary>
 public interface IDialogService

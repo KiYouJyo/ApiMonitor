@@ -1,6 +1,6 @@
 using Microsoft.UI.Dispatching;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 public sealed class UiThreadInvoker : IUiThreadInvoker
 {

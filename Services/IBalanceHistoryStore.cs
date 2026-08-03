@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 余额历史文件层接口（历史数据与最新快照存放在同一 records 文件中）。

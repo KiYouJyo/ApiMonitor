@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 public enum BalanceQuerySource
 {

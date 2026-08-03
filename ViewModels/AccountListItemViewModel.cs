@@ -1,10 +1,10 @@
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>账户卡片视图模型，持有刷新/复制/编辑/删除/历史命令与展示状态。</summary>
 public sealed partial class AccountListItemViewModel : ObservableObject

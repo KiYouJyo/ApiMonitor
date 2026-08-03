@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class DelayedClipboardGuardTests
 {

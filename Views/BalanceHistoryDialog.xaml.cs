@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
-namespace ApiBalanceMonitor.Views;
+namespace ApiMonitor.Views;
 
 public sealed partial class BalanceHistoryDialog : ContentDialog
 {

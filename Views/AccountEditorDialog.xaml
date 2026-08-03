@@ -1,9 +1,9 @@
 <ContentDialog
-    x:Class="ApiBalanceMonitor.Views.AccountEditorDialog"
+    x:Class="ApiMonitor.Views.AccountEditorDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:viewModels="using:ApiBalanceMonitor.ViewModels"
-    xmlns:converters="using:ApiBalanceMonitor.Views.Converters"
+    xmlns:viewModels="using:ApiMonitor.ViewModels"
+    xmlns:converters="using:ApiMonitor.Views.Converters"
     Title="{Binding Title}"
     PrimaryButtonText="保存"
     SecondaryButtonText="取消"

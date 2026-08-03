@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ApiBalanceMonitor.Providers.Dto;
+namespace ApiMonitor.Providers.Dto;
 
 /// <summary>
 /// DeepSeek 官方余额接口的独立 DTO，只负责接收 JSON，

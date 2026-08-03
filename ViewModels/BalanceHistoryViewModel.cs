@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>账户余额历史对话框的 ViewModel。</summary>
 public sealed partial class BalanceHistoryViewModel : ObservableObject

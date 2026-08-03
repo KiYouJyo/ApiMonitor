@@ -1,10 +1,10 @@
 using System.Globalization;
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>编辑对话框中单个币种的阈值编辑项（含当前余额与实时状态）。</summary>
 public sealed partial class ThresholdEditorItem : ObservableObject

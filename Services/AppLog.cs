@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 轻量本地日志。调用方必须保证消息不含 API Key、

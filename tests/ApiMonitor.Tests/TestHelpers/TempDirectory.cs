@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Tests.TestHelpers;
+namespace ApiMonitor.Tests.TestHelpers;
 
 internal sealed class TempDirectory : IDisposable
 {

@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 账户级自动刷新设置与低余额阈值规则。

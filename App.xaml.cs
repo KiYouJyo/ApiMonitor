@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
-namespace ApiBalanceMonitor;
+namespace ApiMonitor;
 
 public partial class App : Application
 {

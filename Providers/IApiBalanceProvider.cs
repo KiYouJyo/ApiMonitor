@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Providers;
+namespace ApiMonitor.Providers;
 
 /// <summary>
 /// 通用 API 余额 Provider 抽象。实现负责把各自接口映射到通用领域模型，

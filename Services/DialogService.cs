@@ -1,10 +1,10 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.ViewModels;
-using ApiBalanceMonitor.Views;
+using ApiMonitor.Models;
+using ApiMonitor.ViewModels;
+using ApiMonitor.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// WinUI 对话框实现。ContentDialog 属于 UI 层，

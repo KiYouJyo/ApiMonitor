@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 组合账户存储、凭据存储、快照/历史存储与 Provider 注册表的门面实现。

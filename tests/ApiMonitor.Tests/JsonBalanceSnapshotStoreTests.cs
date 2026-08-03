@@ -1,9 +1,9 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
-using ApiBalanceMonitor.Tests.TestHelpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
+using ApiMonitor.Tests.TestHelpers;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class JsonBalanceSnapshotStoreTests
 {

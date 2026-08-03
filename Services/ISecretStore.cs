@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 安全凭据存储抽象。第一阶段使用 Windows Credential Locker，

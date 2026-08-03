@@ -1,11 +1,11 @@
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
-using ApiBalanceMonitor.Tests.TestDoubles;
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
+using ApiMonitor.Tests.TestDoubles;
+using ApiMonitor.ViewModels;
 using System.Reflection;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 public sealed class MainViewModelTests
 {

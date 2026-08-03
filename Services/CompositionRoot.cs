@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.Providers;
+using ApiMonitor.ViewModels;
 using Microsoft.UI.Dispatching;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 清晰的组合根：集中创建服务、Provider 注册表与 ViewModel，

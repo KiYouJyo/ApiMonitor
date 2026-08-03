@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Reflection;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>
 /// 主界面 ViewModel。所有网络与持久化操作都通过服务接口完成；
@@ -25,7 +25,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
     public string SubtitleText { get; } =
-        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，支持 DeepSeek）。";
+        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，当前支持 DeepSeek）。";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]

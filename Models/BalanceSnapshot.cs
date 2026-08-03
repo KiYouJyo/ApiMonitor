@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 某账户在某时刻的一次余额快照，可包含多个币种。

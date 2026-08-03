@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 一个 API 账户的普通元数据。API Key 永不保存在此模型中，

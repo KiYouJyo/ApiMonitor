@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Providers;
+using ApiMonitor.Providers;
 
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 打开账户编辑对话框所需的上下文。Provider 列表来自注册表，

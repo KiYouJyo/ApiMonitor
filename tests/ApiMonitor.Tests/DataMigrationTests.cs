@@ -1,10 +1,10 @@
 using System.Text.Json;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Services;
-using ApiBalanceMonitor.Tests.TestHelpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
+using ApiMonitor.Tests.TestHelpers;
 using Xunit;
 
-namespace ApiBalanceMonitor.Tests;
+namespace ApiMonitor.Tests;
 
 /// <summary>v0.1.0（schemaVersion 1）→ v0.2.0（schemaVersion 2）数据迁移测试。</summary>
 public sealed class DataMigrationTests
