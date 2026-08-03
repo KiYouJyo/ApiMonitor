@@ -7,7 +7,7 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
-- Current release: **v0.3.1**
+- Current release: **v0.4.0**
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -18,7 +18,7 @@
 - When installing v0.3.0, uninstall the old v0.2.0 test package first.
 - Local accounts, balance history, and Credential Locker API keys from v0.2.0 are **not** migrated automatically; add your accounts and API keys again after installing v0.3.0.
 
-Starting with **v0.3.1**, the installer supports true in-place upgrades: **v0.3.0 → v0.3.1** keeps your accounts, balance history, thresholds, window settings, and Credential Locker API keys.
+Since **v0.3.1**, the installer supports true in-place upgrades. **v0.4.0** upgrades in place over v0.3.1: accounts, balance history, thresholds, compact-window settings, and Credential Locker API keys are preserved. The installer never enables the start-with-Windows startup task automatically.
 
 ## Features
 
@@ -28,6 +28,8 @@ Starting with **v0.3.1**, the installer supports true in-place upgrades: **v0.3.
 - Per-currency low-balance threshold rules
 - Automatic refresh while the app is running
 - Manual refresh and one-click secure copy of the API key
+- Notification-area (tray) residency: close to tray, tray menu, single-instance launch
+- Optional "start with Windows" (MSIX StartupTask, off by default)
 - Local snapshot restore after restart
 - Compact always-on-top balance window (single instance per app)
 - Account and currency selection in the compact window
@@ -54,7 +56,7 @@ Starting with **v0.3.1**, the installer supports true in-place upgrades: **v0.3.
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.3.1.0_x64_Test.zip`.
+1. Download `ApiMonitor_0.4.0.0_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** ("User Account Control") with **Yes**.

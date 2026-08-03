@@ -1,4 +1,4 @@
-# ApiMonitor v0.3.1 卸载说明（Uninstall.cmd）
+# ApiMonitor v0.4.0 卸载说明（Uninstall.cmd）
 
 ## 普通卸载
 
@@ -34,7 +34,7 @@
 ## 数据和 API Key 注意事项
 
 - ApiMonitor 的 API Key 存放在 **Windows Credential Locker**，卸载包不会主动删除凭据项，但重新安装后应用只能读取其自己的凭据资源。
-- 账户 JSON、余额历史与设置位于应用 LocalState 中；原地升级（v0.3.0 → v0.3.1）会保留这些数据，卸载则不会保留。
+- 账户 JSON、余额历史与设置位于应用 LocalState 中；原地升级（v0.3.1 → v0.4.0）会保留这些数据，卸载则不会保留。
 - 不要在任何日志、Issue 或聊天中粘贴真实 API Key。
 
 ## 退出码

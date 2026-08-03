@@ -195,11 +195,11 @@ try {
     $certExpired = New-TestCert -Subject 'CN=ApiMonitorDev' -WithCodeSigningEku -NotBefore (Get-Date).AddDays(-800) -NotAfter (Get-Date).AddDays(-400)
     Assert-True ($certA.Thumbprint -ne $certB.Thumbprint) '两个测试证书的 Thumbprint 不同'
 
-    $msixName = 'ApiMonitor_0.3.1.0_x64.msix'
+    $msixName = 'ApiMonitor_0.4.0.0_x64.msix'
     $goodManifest = @'
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
-  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.3.1.0" ProcessorArchitecture="x64" />
+  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.4.0.0" ProcessorArchitecture="x64" />
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="12.0.0.0" />
   </Dependencies>
@@ -259,15 +259,15 @@ try {
     Write-TestSection 'Manifest：版本与 Identity'
     $info = Get-MsixManifestInfo $msixPath
     Assert-Equal 'ApiMonitor' $info.Name 'Identity Name = ApiMonitor'
-    Assert-Equal '0.3.1.0' $info.Version '包版本 = 0.3.1.0'
+    Assert-Equal '0.4.0.0' $info.Version '包版本 = 0.4.0.0'
     Assert-Equal 'CN=ApiMonitorDev' $info.Publisher 'Publisher = CN=ApiMonitorDev'
     Assert-True (Assert-ManifestIdentity $info).Ok 'Assert-ManifestIdentity 通过'
 
-    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.3.1.0'; Publisher = 'CN=WrongPublisher' }
+    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.4.0.0'; Publisher = 'CN=WrongPublisher' }
     Assert-False (Assert-ManifestIdentity $wrongPublisher).Ok '错误 Publisher 被拒绝'
-    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.3.1.0'; Publisher = 'CN=ApiMonitorDev' }
+    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.4.0.0'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongName).Ok '错误 Identity Name 被拒绝'
-    $wrongVersion = @{ Name = 'ApiMonitor'; Version = '0.3.1.1'; Publisher = 'CN=ApiMonitorDev' }
+    $wrongVersion = @{ Name = 'ApiMonitor'; Version = '0.4.0.1'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongVersion).Ok '错误版本被拒绝'
 
     # -----------------------------------------------------------------------
@@ -332,11 +332,11 @@ try {
             Status            = 'Ok'
         }
     }
-    Assert-Equal 'Install' (Resolve-PackageAction $null '0.3.1.0' 'CN=ApiMonitorDev') '未安装 -> Install'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.3.0.0') '0.3.1.0' 'CN=ApiMonitorDev') '低版本允许原地升级'
-    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.3.1.0') '0.3.1.0' 'CN=ApiMonitorDev') '相同版本不重复安装'
-    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.3.2.0') '0.3.1.0' 'CN=ApiMonitorDev') '更高版本拒绝降级'
-    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.3.1.0' 'CN=SomeoneElse') '0.3.1.0' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
+    Assert-Equal 'Install' (Resolve-PackageAction $null '0.4.0.0' 'CN=ApiMonitorDev') '未安装 -> Install'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.3.0.0') '0.4.0.0' 'CN=ApiMonitorDev') '低版本允许原地升级'
+    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.4.0.0' 'CN=ApiMonitorDev') '相同版本不重复安装'
+    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.4.0.1') '0.4.0.0' 'CN=ApiMonitorDev') '更高版本拒绝降级'
+    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0' 'CN=SomeoneElse') '0.4.0.0' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.1.0') -eq 0) '版本比较：相等'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.0.0') -gt 0) '版本比较：更高'
     Assert-True ((Compare-PackageVersion '2.3.0.0' '2.3.1.0') -lt 0) '版本比较：更低'

@@ -8,6 +8,7 @@
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
         <converters:StatusSeverityConverter x:Key="StatusSeverityConverter" />
     </UserControl.Resources>
 
@@ -16,6 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
@@ -153,5 +155,60 @@
                 <TextBlock Text="正在加载本地数据…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </Grid>
+
+        <!-- 通知区域与启动设置（v0.4.0） -->
+        <Border
+            Grid.Row="3"
+            Padding="16,14"
+            CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="通知区域与启动" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock
+                            Text="ApiMonitor 正在通知区域运行。隐藏到通知区域后，余额自动刷新将继续运行；选择“退出 ApiMonitor”才会完全结束程序。"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button
+                        Grid.Column="1"
+                        Content="退出 ApiMonitor"
+                        Command="{Binding TraySettings.ExitApplicationCommand}"
+                        VerticalAlignment="Top" />
+                </Grid>
+
+                <TextBlock Text="关闭主窗口时：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <RadioButtons
+                    MaxColumns="2"
+                    SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
+                    <x:String>隐藏到通知区域</x:String>
+                    <x:String>退出 ApiMonitor</x:String>
+                </RadioButtons>
+
+                <ToggleSwitch
+                    IsOn="{Binding TraySettings.StartWithWindows, Mode=TwoWay}"
+                    IsEnabled="{Binding TraySettings.IsStartupTaskBusy, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
+                    <ToggleSwitch.Header>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="登录 Windows 时启动 ApiMonitor" />
+                            <TextBlock
+                                Text="启用后，ApiMonitor 将在登录时驻留通知区域，不自动弹出主窗口。"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"
+                                MaxWidth="420" />
+                        </StackPanel>
+                    </ToggleSwitch.Header>
+                </ToggleSwitch>
+
+                <TextBlock
+                    Text="{Binding TraySettings.StartupTaskStatusText, Mode=OneWay}"
+                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding TraySettings.HasStartupTaskStatusText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

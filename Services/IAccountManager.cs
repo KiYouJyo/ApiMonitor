@@ -21,6 +21,9 @@ public interface IAccountManager
 
     IReadOnlyList<string> RecoveryMessages { get; }
 
+    /// <summary>是否有账户正在执行真实查询（供托盘/菜单显示“正在刷新”状态）。</summary>
+    bool HasActiveRefresh { get; }
+
     Task<IReadOnlyList<ApiAccount>> LoadAsync(CancellationToken cancellationToken);
 
     Task<IReadOnlyList<ApiAccount>> GetAllAccountsAsync(CancellationToken cancellationToken);
@@ -52,6 +55,12 @@ public interface IAccountManager
         string accountId,
         BalanceQuerySource source,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 刷新全部账户：只刷新当前存在且凭据可用的账户，复用账户级并发锁
+    /// （已在刷新中的账户自动跳过），逐个错峰，一个失败不影响其他。
+    /// </summary>
+    Task RefreshAllAccountsAsync(BalanceQuerySource source, CancellationToken cancellationToken);
 
     /// <summary>返回已启用自动刷新且到期的账户 ID（NextRefreshAtUtc 为空视为到期）。</summary>
     Task<IReadOnlyList<string>> GetAutoRefreshDueAccountIdsAsync(

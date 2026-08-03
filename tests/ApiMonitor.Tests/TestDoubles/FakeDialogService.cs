@@ -9,6 +9,10 @@ public sealed class FakeDialogService : IDialogService
 
     public bool ConfirmDeleteResult { get; set; } = true;
 
+    public FirstCloseChoice FirstCloseResult { get; set; } = FirstCloseChoice.Hide;
+
+    public int FirstCloseCalls { get; private set; }
+
     public Task<AccountEditorResult?> ShowAccountEditorAsync(
         AccountEditorContext context,
         CancellationToken cancellationToken) =>
@@ -19,4 +23,10 @@ public sealed class FakeDialogService : IDialogService
 
     public Task ShowHistoryAsync(string accountId, CancellationToken cancellationToken) =>
         Task.CompletedTask;
+
+    public Task<FirstCloseChoice> ShowFirstCloseExplanationAsync(CancellationToken cancellationToken)
+    {
+        FirstCloseCalls++;
+        return Task.FromResult(FirstCloseResult);
+    }
 }

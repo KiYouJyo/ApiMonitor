@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem ApiMonitor v0.3.1 one-click sideload installer.
+rem ApiMonitor v0.4.0 one-click sideload installer.
 rem Always run from this script's own directory; the .ps1 also resolves paths itself.
 
 set "EXITCODE=0"

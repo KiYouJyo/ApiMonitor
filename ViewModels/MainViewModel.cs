@@ -24,6 +24,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<AccountListItemViewModel> Accounts { get; } = new();
 
+    /// <summary>“通知区域与启动”设置区（由 CompositionRoot 注入；独立 ViewModel 便于测试）。</summary>
+    public TraySettingsViewModel? TraySettings { get; set; }
+
     /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
     public string SubtitleText { get; } =
         $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，当前支持 DeepSeek）。";
@@ -31,6 +34,11 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
     private bool _isLoading;
+
+    /// <summary>是否正在执行“刷新全部账户”（托盘/主界面共用状态）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RefreshAllCommand))]
+    private bool _isRefreshingAll;
 
     /// <summary>是否有已加载账户（由账户集合派生，加载中不改变）。</summary>
     public bool HasAccounts => Accounts.Count > 0;
@@ -50,6 +58,8 @@ public sealed partial class MainViewModel : ObservableObject
     public AsyncRelayCommand AddAccountCommand { get; }
 
     public RelayCommand OpenCompactWindowCommand { get; }
+
+    public AsyncRelayCommand RefreshAllCommand { get; }
 
     public MainViewModel(
         IAccountManager accountManager,
@@ -71,6 +81,9 @@ public sealed partial class MainViewModel : ObservableObject
         StatusMessage = string.Empty;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAsync, () => !IsLoading);
         OpenCompactWindowCommand = new RelayCommand(() => _openCompactWindow());
+        RefreshAllCommand = new AsyncRelayCommand(
+            RefreshAllAsync,
+            () => HasAccounts && !IsRefreshingAll);
 
         _accountManager.RefreshStarted += OnRefreshStarted;
         _accountManager.RefreshCompleted += OnRefreshCompleted;
@@ -78,6 +91,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnIsLoadingChanged(bool value) =>
         AddAccountCommand.NotifyCanExecuteChanged();
+
+    partial void OnIsRefreshingAllChanged(bool value) =>
+        RefreshAllCommand.NotifyCanExecuteChanged();
 
     /// <summary>应用启动时加载本地数据；文件损坏/迁移失败时显示恢复提示而不是崩溃。</summary>
     public async Task InitializeAsync()
@@ -261,6 +277,35 @@ public sealed partial class MainViewModel : ObservableObject
         else
         {
             ShowStatus(StatusSeverity.Error, "查询失败", result.Error?.Message ?? "未知错误。");
+        }
+    }
+
+    /// <summary>刷新全部账户：复用账户级并发锁，正在刷新的账户自动跳过。</summary>
+    public async Task RefreshAllAsync()
+    {
+        if (IsRefreshingAll || !HasAccounts)
+        {
+            return;
+        }
+
+        IsRefreshingAll = true;
+        try
+        {
+            await _accountManager.RefreshAllAccountsAsync(
+                BalanceQuerySource.Manual,
+                _lifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"刷新全部账户失败: {ex.GetType().Name}");
+            ShowStatus(StatusSeverity.Error, "刷新失败", "刷新全部账户时发生错误，请稍后重试。");
+        }
+        finally
+        {
+            IsRefreshingAll = false;
         }
     }
 
