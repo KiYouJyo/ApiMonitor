@@ -4,7 +4,11 @@
 
 ### Self-signed certificate
 
-GitHub releases are signed with a self-signed developer certificate. Install the public certificate (`ApiMonitorDev.cer`) into **Local Machine > Trusted People** before installing the MSIX. Only install certificates you trust and only from the official repository.
+Since v0.3.1, `Install.cmd` performs all certificate steps automatically. The public certificate (`ApiMonitorDev.cer`) is imported only into **Local Machine > Trusted People** (never Trusted Root), and only after the script verifies the SHA-256 checksums, the full signer thumbprint, the Subject (`CN=ApiMonitorDev`), the Code Signing EKU, and the package Identity. You still see one normal UAC prompt because machine-level certificate trust requires administrator consent. Only install certificates you trust and only from the official repository.
+
+### Upgrading v0.3.0 to v0.3.1
+
+v0.3.1 upgrades **in place** over v0.3.0: accounts, balance history, thresholds, window settings, and Credential Locker API keys are preserved. Just run `Install.cmd` again.
 
 ### Upgrading from v0.2.0 to v0.3.0
 
@@ -18,13 +22,15 @@ Never paste real API keys into issues or logs during this process.
 
 ### Windows App Runtime
 
-The app requires Windows App Runtime 2.3.1 or later. The full test package includes the runtime dependencies; if Windows still reports a missing runtime, install the official Microsoft Windows App Runtime redistributable.
+The app requires Windows App Runtime 2.3.1 or later. The full test package includes the runtime dependencies under `Dependencies\x64`, and `Install.cmd` installs only what the current x64 system is missing (same or higher installed versions are skipped). If Windows still reports a missing runtime, install the official Microsoft Windows App Runtime redistributable.
 
 ### MSIX installation fails
 
-- v0.3.0 builds use a new package identity and will not install over a v0.2.0 package; uninstall the old test package first.
-- If the error is about an existing package, check whether you are trying to install an older or mismatched package.
-- Run `Add-AppxPackage -Path <file>.msix` from an elevated PowerShell if prompted, or use `Add-AppDevPackage.ps1`.
+- Check the exit code shown by `Install.cmd` and the log file `%TEMP%\ApiMonitor-Install-*.log`; the code mapping is documented in `INSTALL.md`.
+- Exit code 6 means a security check failed (checksum/certificate/thumbprint mismatch): re-download the full `Test.zip`, verify the SHA-256 values, and never install files from unknown sources.
+- Exit code 4 means a newer version is already installed; the installer refuses to downgrade.
+- Exit code 5 means another package with the same name but a different Publisher exists; resolve that conflict first.
+- For manual troubleshooting, see the manual fallback in `INSTALL.md`.
 
 ## Balance query issues
 

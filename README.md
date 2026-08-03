@@ -7,7 +7,7 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
-- Current release: **v0.3.0**
+- Current release: **v0.3.1**
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -17,6 +17,8 @@
 - **v0.3.0 uses a new, complete ApiMonitor package identity** (package name and publisher). The v0.2.0 sideload package will **not** upgrade in place to v0.3.0.
 - When installing v0.3.0, uninstall the old v0.2.0 test package first.
 - Local accounts, balance history, and Credential Locker API keys from v0.2.0 are **not** migrated automatically; add your accounts and API keys again after installing v0.3.0.
+
+Starting with **v0.3.1**, the installer supports true in-place upgrades: **v0.3.0 → v0.3.1** keeps your accounts, balance history, thresholds, window settings, and Credential Locker API keys.
 
 ## Features
 
@@ -50,16 +52,23 @@
 
 ## Installation
 
-The recommended way is the **full test package** (`.zip`) from the Release assets:
+The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.3.0.0_x64_Test.zip`.
-2. Verify the SHA-256 checksum against `SHA256SUMS.txt`.
-3. Install the included public certificate (`ApiMonitorDev.cer`) into **Local Machine > Trusted People**.
-4. Run `Add-AppDevPackage.ps1` (or install the `.msix` with `Add-AppxPackage`).
+1. Download `ApiMonitor_0.3.1.0_x64_Test.zip`.
+2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
+3. Double-click **`Install.cmd`**.
+4. Confirm the **one UAC prompt** ("User Account Control") with **Yes**.
+5. Wait for the script to verify, trust the certificate, install dependencies, and install/upgrade the app. When asked, press `Y` to launch ApiMonitor.
 
-If you previously installed a v0.2.0 test package, uninstall it first (`Get-AppxPackage -Name ApiMonitor | Remove-AppxPackage`) so the new package installs cleanly.
+Uninstalling is equally simple: double-click **`Uninstall.cmd`** and follow the prompts (you can choose whether to also remove the developer certificate).
 
-> The GitHub release is signed with a self-signed developer certificate. Only install certificates you trust and only from the official repository. The Microsoft Store version will be signed and distributed by Microsoft.
+> The GitHub sideload release is signed with a self-signed developer certificate. The installer script automatically completes the trust step for you, but it does **not** bypass Windows security:
+> - The certificate is only imported into **Local Machine > Trusted People**, never into Trusted Root.
+> - The script verifies the SHA-256 checksums, the full certificate thumbprint (from both the MSIX signature and the bundled `.cer`), the certificate Subject `CN=ApiMonitorDev`, the Code Signing EKU, the validity period, and the package Identity before installing anything.
+> - You still have to accept the one UAC prompt; that is the normal Windows mechanism for machine-level certificate trust.
+> - Only install certificates you trust and only from the official repository. The future Microsoft Store version (v1.0) will be signed and distributed by Microsoft and will not need this flow.
+
+See [INSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/INSTALL.md) for graphical steps, SmartScreen notes, common errors and exit codes, the manual fallback, and SHA-256 verification. See [UNINSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/UNINSTALL.md) for uninstall and certificate cleanup details.
 
 See [SUPPORT.md](SUPPORT.md) for common installation issues.
 
