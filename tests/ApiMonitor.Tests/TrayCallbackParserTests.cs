@@ -61,8 +61,8 @@ public sealed class TrayCallbackParserTests
         var evt = TrayCallbackParser.ParseTrayCallback(new nint(0x012F00C8), new nint(0x0000007B));
 
         Assert.NotNull(evt.WParamPoint);
-        Assert.Equal(200, evt.WParamPoint.Value.X);
-        Assert.Equal(303, evt.WParamPoint.Value.Y);
+        Assert.Equal(200, evt.WParamPoint!.Value.X);
+        Assert.Equal(303, evt.WParamPoint!.Value.Y);
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public sealed class TrayCallbackParserTests
         // x = -100 (0xFF9C), y = -50 (0xFFCE)
         var evt = TrayCallbackParser.ParseTrayCallback(new nint(0xFFCEFF9C), new nint(0x0000007B));
 
-        Assert.Equal(-100, evt.WParamPoint.Value.X);
-        Assert.Equal(-50, evt.WParamPoint.Value.Y);
+        Assert.Equal(-100, evt.WParamPoint!.Value.X);
+        Assert.Equal(-50, evt.WParamPoint!.Value.Y);
     }
 
     [Fact]
