@@ -1,8 +1,14 @@
 # ApiMonitor 隐私说明 / Privacy Policy
 
-最后更新：2026-08-03 · 版本：v0.2.0
+最后更新：2026-08-03 · 对应：main（v0.3.0 开发中）
 
 ApiMonitor 是一款本地运行的 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。
+
+## 版本说明
+
+- **v0.2.0（当前正式 Release）**：侧载包仍使用旧包标识安装，其本地数据与凭据与后续版本相互隔离。
+- **v0.3.0（开发中，本文档描述的目标行为）**：使用完整 ApiMonitor 包身份（`ApiMonitor` / `CN=ApiMonitorDev`），本地数据目录与 Credential Locker 资源统一为 ApiMonitor。
+- v0.2.0 侧载包不会原地升级到 v0.3.0；v0.3.0 不迁移 v0.2.0 的本地数据与凭据，请勿期待旧包数据自动转移。
 
 ## 数据收集与处理
 

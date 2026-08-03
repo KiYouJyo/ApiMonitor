@@ -3,12 +3,22 @@
 [简体中文](README.zh-CN.md)
 
 ![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
-- Current version: **v0.2.0**
+- Current release: **v0.2.0**
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
+- License: [MIT](LICENSE)
+
+## Development status
+
+- **v0.2.0** is the current formal release.
+- `main` is preparing **v0.3.0**, which will introduce the compact always-on-top balance window.
+- **v0.3.0 uses a new, complete ApiMonitor package identity** (package name and publisher). The v0.2.0 sideload package will **not** upgrade in place to v0.3.0.
+- When installing a v0.3.0 build, remove the old v0.2.0 test package first.
+- Local data from v0.2.0 is not migrated; v0.3.0 starts with fresh local data and credentials.
 
 ## Features
 
@@ -22,7 +32,7 @@
 
 ## Security and privacy design
 
-- API keys are stored in the **Windows Credential Locker**, never in JSON, logs, or diagnostics.
+- API keys are stored in the **Windows Credential Locker** under the ApiMonitor resource, never in JSON, logs, or diagnostics.
 - API keys are only sent to the corresponding provider's official endpoint (currently the DeepSeek balance API).
 - Account metadata, balance snapshots, history, and settings are stored only in the local app data directory.
 - Automatic refresh only runs while the app is running; there is no tray resident and no system notification in this version.
@@ -66,7 +76,9 @@ dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug
 dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 ```
 
-The project uses the single-project MSIX tooling; the package identity and publisher are kept stable for compatible updates.
+The project uses the single-project MSIX tooling. The complete ApiMonitor identity (`ApiMonitor` / `CN=ApiMonitorDev`) is used from v0.3.0 onward.
+
+Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek or Microsoft, and neither company licenses or endorses this project.
 
 ## Project structure
 

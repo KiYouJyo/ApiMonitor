@@ -1,5 +1,9 @@
 # Third-Party Notices
 
+ApiMonitor itself is licensed under the [MIT License](LICENSE). The third-party
+components listed below remain subject to their own licenses; the MIT license
+of this project does not replace or modify those terms.
+
 ApiMonitor uses the following major third-party components. Licenses are referenced by name; see each project's official repository for the full license text.
 
 | Component | Purpose | Project / License |

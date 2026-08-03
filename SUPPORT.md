@@ -12,7 +12,8 @@ The app requires Windows App Runtime 2.3.1 or later. The full test package inclu
 
 ### MSIX installation fails
 
-- Make sure the previous version uses the same package identity; if the error is about an existing package, check whether you are trying to install an older or mismatched package.
+- v0.3.0 builds use a new package identity and will not install over a v0.2.0 package; uninstall the old test package first.
+- If the error is about an existing package, check whether you are trying to install an older or mismatched package.
 - Run `Add-AppxPackage -Path <file>.msix` from an elevated PowerShell if prompted, or use `Add-AppDevPackage.ps1`.
 
 ## Balance query issues

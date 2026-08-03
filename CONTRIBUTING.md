@@ -30,6 +30,11 @@ Thanks for your interest in contributing to ApiMonitor.
 - Never paste real API keys into issues, PRs, or logs.
 - When adding a provider, keep the API key out of URLs, JSON, logs, exceptions, and telemetry.
 
+## License and code of conduct
+
+- This project is licensed under the [MIT License](LICENSE). By contributing, you agree that your contributions are licensed under the same terms.
+- All community participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). Report concerns through the repository's security or maintenance channels.
+
 ## Provider extension guidelines
 
 - Implement `IApiBalanceProvider` and register it through `ProviderRegistry`.
