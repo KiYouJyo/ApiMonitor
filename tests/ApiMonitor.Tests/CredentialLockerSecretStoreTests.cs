@@ -5,7 +5,7 @@ using Xunit;
 namespace ApiMonitor.Tests;
 
 /// <summary>
-/// 凭据迁移测试：仅使用内存假凭据存储，绝不访问真实 Credential Locker。
+/// Credential Locker 正常读写测试：仅使用内存假凭据存储，绝不访问真实 Credential Locker。
 /// </summary>
 public sealed class CredentialLockerSecretStoreTests
 {
@@ -34,29 +34,24 @@ public sealed class CredentialLockerSecretStoreTests
     }
 
     [Fact]
-    public async Task GetAsync_PrefersNewResource_AndKeepsLegacyUntouched()
+    public async Task SetAsync_WritesApiMonitorResource()
     {
         var (store, vault) = Create();
-        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real-new";
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-legacy";
 
-        var secret = await store.GetAsync("acct-1", CancellationToken.None);
+        await store.SetAsync("acct-1", "sk-test-only-not-real", CancellationToken.None);
 
-        Assert.Equal("sk-test-only-not-real-new", secret);
-        Assert.True(vault.Items.ContainsKey(("ApiBalanceMonitor", "acct-1")));
+        Assert.Equal("sk-test-only-not-real", vault.Items[("ApiMonitor", "acct-1")]);
     }
 
     [Fact]
-    public async Task GetAsync_LegacyOnly_MigratesToNew_AndRemovesLegacy()
+    public async Task GetAsync_ReturnsSavedSecret()
     {
         var (store, vault) = Create();
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-legacy";
+        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real";
 
         var secret = await store.GetAsync("acct-1", CancellationToken.None);
 
-        Assert.Equal("sk-test-only-not-real-legacy", secret);
-        Assert.Equal("sk-test-only-not-real-legacy", vault.Items[("ApiMonitor", "acct-1")]);
-        Assert.False(vault.Items.ContainsKey(("ApiBalanceMonitor", "acct-1")));
+        Assert.Equal("sk-test-only-not-real", secret);
     }
 
     [Fact]
@@ -70,36 +65,22 @@ public sealed class CredentialLockerSecretStoreTests
     }
 
     [Fact]
-    public async Task GetAsync_MigrationIsIdempotent()
+    public async Task SetAsync_ReplacesExistingSecret()
     {
         var (store, vault) = Create();
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-legacy";
-
-        await store.GetAsync("acct-1", CancellationToken.None);
-        var second = await store.GetAsync("acct-1", CancellationToken.None);
-
-        Assert.Equal("sk-test-only-not-real-legacy", second);
-        Assert.False(vault.Items.ContainsKey(("ApiBalanceMonitor", "acct-1")));
-    }
-
-    [Fact]
-    public async Task SetAsync_WritesNew_AndRemovesLegacy()
-    {
-        var (store, vault) = Create();
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-old";
+        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real-old";
 
         await store.SetAsync("acct-1", "sk-test-only-not-real-new", CancellationToken.None);
 
+        Assert.Single(vault.Items);
         Assert.Equal("sk-test-only-not-real-new", vault.Items[("ApiMonitor", "acct-1")]);
-        Assert.False(vault.Items.ContainsKey(("ApiBalanceMonitor", "acct-1")));
     }
 
     [Fact]
-    public async Task DeleteAsync_RemovesNewAndLegacy()
+    public async Task DeleteAsync_RemovesStoredSecret()
     {
         var (store, vault) = Create();
-        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real-new";
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-legacy";
+        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real";
 
         await store.DeleteAsync("acct-1", CancellationToken.None);
 
@@ -107,11 +88,29 @@ public sealed class CredentialLockerSecretStoreTests
     }
 
     [Fact]
-    public void Contains_ReturnsTrue_WhenOnlyLegacyExists()
+    public async Task DeleteAsync_WhenMissing_IsNoOp()
     {
         var (store, vault) = Create();
-        vault.Items[("ApiBalanceMonitor", "acct-1")] = "sk-test-only-not-real-legacy";
+
+        await store.DeleteAsync("acct-missing", CancellationToken.None);
+
+        Assert.Empty(vault.Items);
+    }
+
+    [Fact]
+    public void Contains_ReturnsTrue_WhenCredentialExists()
+    {
+        var (store, vault) = Create();
+        vault.Items[("ApiMonitor", "acct-1")] = "sk-test-only-not-real";
 
         Assert.True(store.Contains("acct-1"));
+    }
+
+    [Fact]
+    public void Contains_ReturnsFalse_WhenMissing()
+    {
+        var (store, _) = Create();
+
+        Assert.False(store.Contains("acct-missing"));
     }
 }

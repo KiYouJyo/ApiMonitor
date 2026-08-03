@@ -4,17 +4,12 @@ namespace ApiMonitor.Services;
 
 /// <summary>
 /// 基于 Windows Credential Locker（PasswordVault）的实现。
-/// API Key 绝不写入 JSON、日志或测试快照。
-/// 凭据资源名已由旧标识 ApiBalanceMonitor 迁移到 ApiMonitor：
-/// 读取时优先新资源，找不到时兼容读取旧资源并安全迁移。
+/// API Key 绝不写入 JSON、日志或测试快照；只使用 ApiMonitor 凭据资源。
 /// </summary>
 public sealed class CredentialLockerSecretStore : ISecretStore
 {
     /// <summary>当前凭据资源名（ApiMonitor）。</summary>
     internal const string ResourceName = "ApiMonitor";
-
-    /// <summary>旧版凭据资源名（ApiBalanceMonitor），仅用于兼容读取与一次性迁移。</summary>
-    internal const string LegacyResourceName = "ApiBalanceMonitor";
 
     private readonly IPasswordVaultAdapter _vault;
     private readonly AppLog? _log;
@@ -34,8 +29,7 @@ public sealed class CredentialLockerSecretStore : ISecretStore
     {
         try
         {
-            return _vault.Retrieve(ResourceName, accountId) is not null
-                || _vault.Retrieve(LegacyResourceName, accountId) is not null;
+            return _vault.Retrieve(ResourceName, accountId) is not null;
         }
         catch
         {
@@ -48,18 +42,10 @@ public sealed class CredentialLockerSecretStore : ISecretStore
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
-            var credential =
-                _vault.Retrieve(ResourceName, accountId)
-                ?? _vault.Retrieve(LegacyResourceName, accountId);
+            var credential = _vault.Retrieve(ResourceName, accountId);
             if (credential is null)
             {
                 return Task.FromResult<string?>(null);
-            }
-
-            if (credential.Resource == LegacyResourceName)
-            {
-                // 旧资源命中：先写入新资源，成功后删除旧条目（幂等）。
-                TryMigrateLegacy(accountId, credential.Password);
             }
 
             return Task.FromResult<string?>(credential.Password);
@@ -90,7 +76,6 @@ public sealed class CredentialLockerSecretStore : ISecretStore
             }
 
             _vault.Add(new PasswordCredential(ResourceName, accountId, secret));
-            RemoveLegacy(accountId);
             return Task.CompletedTask;
         }
         catch (Exception ex)
@@ -106,7 +91,6 @@ public sealed class CredentialLockerSecretStore : ISecretStore
         try
         {
             RemoveCredential(ResourceName, accountId);
-            RemoveCredential(LegacyResourceName, accountId);
         }
         catch
         {
@@ -115,22 +99,6 @@ public sealed class CredentialLockerSecretStore : ISecretStore
 
         return Task.CompletedTask;
     }
-
-    private void TryMigrateLegacy(string accountId, string secret)
-    {
-        try
-        {
-            _vault.Add(new PasswordCredential(ResourceName, accountId, secret));
-            RemoveLegacy(accountId);
-        }
-        catch
-        {
-            // 迁移失败不影响本次读取；下次读取会再次尝试。
-        }
-    }
-
-    private void RemoveLegacy(string accountId) =>
-        RemoveCredential(LegacyResourceName, accountId);
 
     private void RemoveCredential(string resource, string accountId)
     {
@@ -142,7 +110,7 @@ public sealed class CredentialLockerSecretStore : ISecretStore
     }
 }
 
-/// <summary>PasswordVault 的最小适配接口，便于对迁移逻辑做单元测试。</summary>
+/// <summary>PasswordVault 的最小适配接口，便于对凭据读写逻辑做单元测试。</summary>
 internal interface IPasswordVaultAdapter
 {
     PasswordCredential? Retrieve(string resource, string userName);
