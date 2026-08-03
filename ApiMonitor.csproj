@@ -33,10 +33,10 @@
     <WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>true</WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>
     <!-- Never let generated test outputs participate in WinUI PRI resource discovery. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);tests\**\*</DefaultItemExcludes>
-    <Version>0.3.0.0</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
-    <InformationalVersion>0.3.0.0</InformationalVersion>
+    <Version>0.3.1.0</Version>
+    <AssemblyVersion>0.3.1.0</AssemblyVersion>
+    <FileVersion>0.3.1.0</FileVersion>
+    <InformationalVersion>0.3.1.0</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

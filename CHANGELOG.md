@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## [0.3.1] - 2026-08-03
+
+- 新增一键侧载安装体验：双击 `Install.cmd`，确认一次 UAC 后自动完成证书导入、依赖检查与 MSIX 安装/升级
+- 安装程序自动校验 SHA-256、MSIX 签名证书完整 Thumbprint、证书 Subject/EKU/有效期与包 Identity
+- 证书只导入 Local Machine\TrustedPeople，绝不导入 Trusted Root；同 Thumbprint 已存在时跳过
+- 支持 v0.3.0 → v0.3.1 原地升级，保留账户、余额历史、阈值、窗口设置与 Credential Locker 凭据
+- 相同版本不重复安装；更高版本拒绝降级；同名不同 Publisher 的冲突包明确报错
+- 依赖仅安装当前 x64 系统所需；已安装相同或更高版本时跳过
+- 新增 `Uninstall.cmd`：仅卸载当前用户的 ApiMonitor（精确 Identity 匹配，不使用 -AllUsers），可选择按完整 Thumbprint 清理证书
+- 安装/卸载日志写入 `%TEMP%`，不包含 API Key、Credential Locker 内容或余额数据
+- 新增隔离临时目录运行安装工具测试（69 项），CI 中不修改机器级证书库、不安装真实包
+- 更新 README、README.zh-CN、SUPPORT 与安装/卸载文档
 
 ## [0.3.0] - 2026-08-03
 

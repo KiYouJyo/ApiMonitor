@@ -24,6 +24,9 @@ jobs:
       - name: Run all tests
         run: dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug --no-restore
 
+      - name: Run installer tooling tests (isolated temp directory)
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\Installer.Tests.ps1
+
       - name: Build Debug x64
         run: dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 

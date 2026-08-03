@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前正式版本：**v0.3.0**
+- 当前正式版本：**v0.3.1**
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store
 - 许可证：[MIT](LICENSE)
@@ -16,6 +16,8 @@
 - **v0.3.0 使用全新的完整 ApiMonitor 包身份**（包名与发布者）。v0.2.0 侧载包**不会原地升级**到 v0.3.0。
 - 安装 v0.3.0 构建前，请先卸载旧的 v0.2.0 测试包。
 - v0.2.0 的本地账户、余额历史和 Credential Locker API Key **不会自动迁移**；安装 v0.3.0 后需要重新添加账户与 API Key。
+
+从 **v0.3.1** 开始，安装程序支持真正的原地升级：**v0.3.0 → v0.3.1** 会保留你的账户、余额历史、阈值、窗口设置和 Credential Locker API Key。
 
 ## 主要功能
 
@@ -49,16 +51,23 @@
 
 ## 安装方式
 
-推荐使用 Release 资产中的**完整测试包**（`.zip`）：
+推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.3.0.0_x64_Test.zip`。
-2. 使用 `SHA256SUMS.txt` 核验 SHA-256 校验和。
-3. 将随附的公开证书（`ApiMonitorDev.cer`）安装到 **本地计算机 > 受信任人**。
-4. 运行 `Add-AppDevPackage.ps1`（或用 `Add-AppxPackage` 安装 `.msix`）。
+1. 下载 `ApiMonitor_0.3.1.0_x64_Test.zip`。
+2. 解压到任意目录（路径可包含空格和中文）。
+3. 双击 **`Install.cmd`**。
+4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
+5. 等待脚本自动完成校验、证书信任、依赖检查与安装/升级；询问是否启动时输入 `Y`（默认）即可。
 
-如果之前安装过 v0.2.0 测试包，请先卸载（`Get-AppxPackage -Name ApiMonitor | Remove-AppxPackage`），再安装新包。
+卸载同样简单：双击 **`Uninstall.cmd`** 并按提示操作（可自行选择是否同时移除开发证书）。
 
-> GitHub Release 使用自签名开发证书签名。请只安装你信任且来自官方仓库的证书。Microsoft Store 版本将由微软签名和分发。
+> GitHub 侧载版本使用自签名开发证书。安装脚本会自动完成信任步骤，但**不会绕过** Windows 安全机制：
+> - 证书只导入 **本地计算机 > 受信任人（Trusted People）**，绝不导入受信任根证书颁发机构。
+> - 脚本在安装前校验 SHA-256、MSIX 签名与随包 CER 的**完整 Thumbprint**、证书 Subject（`CN=ApiMonitorDev`）、代码签名 EKU、有效期以及包 Identity。
+> - 你仍需要确认一次 UAC，这是 Windows 对机器级证书信任的正常机制。
+> - 请只安装你信任且来自官方仓库的证书。未来的 Microsoft Store 版本（v1.0）将由微软签名和分发，不再需要该流程。
+
+图形化步骤、SmartScreen 说明、常见错误与退出码、手动安装备用方案和 SHA-256 校验方法见 [INSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/INSTALL.md)；卸载与证书清理说明见 [UNINSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/UNINSTALL.md)。
 
 常见安装问题参见 [SUPPORT.md](SUPPORT.md)。
 
