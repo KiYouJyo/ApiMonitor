@@ -94,10 +94,10 @@
                                 <StackPanel Spacing="6">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind AvailabilityText}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind AvailabilityText, Mode=OneWay}" FontWeight="SemiBold" />
                                         <TextBlock Text="·" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind AutoRefreshStatusText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock Text="{x:Bind RefreshIntervalText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind AutoRefreshStatusText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind RefreshIntervalText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="{x:Bind LastSuccessLine, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -126,7 +126,7 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                     <TextBlock
-                                        Text="{x:Bind LastErrorText}"
+                                        Text="{x:Bind LastErrorText, Mode=OneWay}"
                                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                         Visibility="{x:Bind HasLastError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>

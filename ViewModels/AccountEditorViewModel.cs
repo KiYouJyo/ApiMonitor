@@ -68,6 +68,9 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public ObservableCollection<ThresholdEditorItem> ThresholdItems { get; } = new();
 
+    /// <summary>尚无任何币种余额时显示提示，避免阈值区空白。</summary>
+    public bool ShowThresholdEmptyHint => ThresholdItems.Count == 0;
+
     public bool ThresholdsValid => ThresholdItems.All(i =>
         string.IsNullOrWhiteSpace(i.ThresholdText) || i.TryParseAmount(out _));
 
@@ -112,6 +115,12 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
             ThresholdItems.Add(item);
         }
+
+        ThresholdItems.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ShowThresholdEmptyHint));
+            OnPropertyChanged(nameof(CanSave));
+        };
     }
 
     partial void OnDisplayNameChanged(string value) =>
@@ -150,6 +159,9 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                         snapshot.Balances.Select(b =>
                             $"{b.Currency} 总余额 {BalanceFormatter.Format(b.TotalBalance)}"))
                         + "。点击保存后才会写入账户与凭据。";
+
+                // 把接口返回的币种余额同步到阈值区，让添加流程也能直接配置阈值。
+                ApplyTestBalances(snapshot.Balances);
             }
             else
             {
@@ -227,6 +239,25 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             },
         };
         return true;
+    }
+
+    private void ApplyTestBalances(IReadOnlyList<BalanceAmount> balances)
+    {
+        var rules = _context.InitialMonitoring.Thresholds;
+        foreach (var balance in balances)
+        {
+            var existing = ThresholdItems.FirstOrDefault(i => i.Currency == balance.Currency);
+            if (existing is not null)
+            {
+                existing.CurrentTotal = balance.TotalBalance;
+                continue;
+            }
+
+            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
+            var item = new ThresholdEditorItem(balance.Currency, balance.TotalBalance, rule);
+            item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
+            ThresholdItems.Add(item);
+        }
     }
 
     private void ShowValidation(string message)

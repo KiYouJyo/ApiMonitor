@@ -11,7 +11,8 @@ public sealed partial class ThresholdEditorItem : ObservableObject
 {
     public string Currency { get; }
 
-    public decimal CurrentTotal { get; }
+    [ObservableProperty]
+    private decimal _currentTotal;
 
     public string CurrentBalanceText => BalanceFormatter.Format(CurrentTotal);
 
@@ -33,12 +34,19 @@ public sealed partial class ThresholdEditorItem : ObservableObject
     public ThresholdEditorItem(string currency, decimal currentTotal, BalanceThresholdRule? rule)
     {
         Currency = currency;
-        CurrentTotal = currentTotal;
+        _currentTotal = currentTotal;
         OriginalRule = rule;
         _isEnabled = rule?.IsEnabled ?? false;
         _thresholdText = rule is not null
             ? rule.ThresholdAmount.ToString("0.##", CultureInfo.CurrentCulture)
             : string.Empty;
+        Recompute();
+    }
+
+    partial void OnCurrentTotalChanged(decimal value)
+    {
+        OnPropertyChanged(nameof(CurrentBalanceText));
+        OnPropertyChanged(nameof(CurrentBalanceLine));
         Recompute();
     }
 

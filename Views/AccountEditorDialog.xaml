@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels="using:ApiBalanceMonitor.ViewModels"
     xmlns:converters="using:ApiBalanceMonitor.Views.Converters"
-    Style="{StaticResource AccountEditorDialogStyle}"
     Title="{Binding Title}"
     PrimaryButtonText="保存"
     SecondaryButtonText="取消"
@@ -432,13 +431,19 @@
                                 PlaceholderText="0.00"
                                 VerticalAlignment="Center" />
                             <StackPanel Grid.Column="3" Spacing="2" VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind CurrentBalanceLine}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{x:Bind StatusLine}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{x:Bind CurrentBalanceLine, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{x:Bind StatusLine, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <TextBlock
+                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各币种低余额阈值。"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="{Binding ShowThresholdEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}" />
 
             <TextBlock
                 Text="{Binding ValidationMessage}"

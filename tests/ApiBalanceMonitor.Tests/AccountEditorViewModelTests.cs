@@ -158,4 +158,132 @@ public sealed class AccountEditorViewModelTests
         Assert.True(vm.TryBuildResult(out var result));
         Assert.Empty(result!.Monitoring.Thresholds);
     }
+
+    [Fact]
+    public void NewAccount_WithoutBalances_ShowsThresholdEmptyHint()
+    {
+        var vm = new AccountEditorViewModel(new FakeAccountManager(), CreateContext());
+
+        Assert.True(vm.ShowThresholdEmptyHint);
+        Assert.Empty(vm.ThresholdItems);
+    }
+
+    [Fact]
+    public async Task TestConnectionSuccess_PopulatesThresholdRowsFromBalances()
+    {
+        var manager = new FakeAccountManager
+        {
+            RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
+            {
+                AccountId = "test",
+                ProviderId = "deepseek",
+                RetrievedAt = DateTimeOffset.UtcNow,
+                Balances = new[]
+                {
+                    new BalanceAmount { Currency = "CNY", TotalBalance = 10.5m },
+                    new BalanceAmount { Currency = "USD", TotalBalance = 2.25m },
+                },
+            }),
+        };
+        var vm = new AccountEditorViewModel(manager, CreateContext());
+        vm.DisplayName = "Test";
+        vm.ApiKey = "sk-test-only-not-real";
+
+        await vm.TestCommand.ExecuteAsync(null);
+
+        Assert.False(vm.ShowThresholdEmptyHint);
+        Assert.Equal(2, vm.ThresholdItems.Count);
+        Assert.Equal(10.5m, vm.ThresholdItems.Single(i => i.Currency == "CNY").CurrentTotal);
+        Assert.Equal(2.25m, vm.ThresholdItems.Single(i => i.Currency == "USD").CurrentTotal);
+    }
+
+    [Fact]
+    public async Task TestConnectionSuccess_UpdatesExistingRowTotal()
+    {
+        var manager = new FakeAccountManager
+        {
+            RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
+            {
+                AccountId = "test",
+                ProviderId = "deepseek",
+                RetrievedAt = DateTimeOffset.UtcNow,
+                Balances = new[]
+                {
+                    new BalanceAmount { Currency = "CNY", TotalBalance = 20m },
+                },
+            }),
+        };
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = new[]
+            {
+                new BalanceAmount { Currency = "CNY", TotalBalance = 10m },
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "sk-test-only-not-real";
+
+        await vm.TestCommand.ExecuteAsync(null);
+
+        var item = Assert.Single(vm.ThresholdItems);
+        Assert.Equal(20m, item.CurrentTotal);
+        Assert.Equal("当前余额：20.00", item.CurrentBalanceLine);
+    }
+
+    [Fact]
+    public async Task TestConnectionFailure_KeepsThresholdItemsAndHint()
+    {
+        var manager = new FakeAccountManager
+        {
+            RefreshResult = BalanceQueryResult.Failure(BalanceErrorKind.Unauthorized, "API Key 无效。"),
+        };
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = new[]
+            {
+                new BalanceAmount { Currency = "CNY", TotalBalance = 10m },
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "sk-test-only-not-real";
+
+        await vm.TestCommand.ExecuteAsync(null);
+
+        var item = Assert.Single(vm.ThresholdItems);
+        Assert.Equal(10m, item.CurrentTotal);
+        Assert.False(vm.ShowThresholdEmptyHint);
+    }
+
+    [Fact]
+    public async Task TestConnectionSuccess_WithEmptyBalances_KeepsHint()
+    {
+        var manager = new FakeAccountManager
+        {
+            RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
+            {
+                AccountId = "test",
+                ProviderId = "deepseek",
+                RetrievedAt = DateTimeOffset.UtcNow,
+                Balances = Array.Empty<BalanceAmount>(),
+            }),
+        };
+        var vm = new AccountEditorViewModel(manager, CreateContext());
+        vm.DisplayName = "Test";
+        vm.ApiKey = "sk-test-only-not-real";
+
+        await vm.TestCommand.ExecuteAsync(null);
+
+        Assert.True(vm.ShowThresholdEmptyHint);
+        Assert.Empty(vm.ThresholdItems);
+    }
 }

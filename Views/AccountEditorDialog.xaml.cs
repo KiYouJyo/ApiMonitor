@@ -16,6 +16,13 @@ public sealed partial class AccountEditorDialog : ContentDialog
         ViewModel = viewModel;
         InitializeComponent();
         DataContext = viewModel;
+
+        // 对话框自身的 Resources 需在 InitializeComponent 之后才可用，
+        // 因此局部圆角样式在此应用，而不是在 XAML 根元素上引用。
+        if (Resources.TryGetValue("AccountEditorDialogStyle", out var style) && style is Style dialogStyle)
+        {
+            Style = dialogStyle;
+        }
     }
 
     private void OnApiKeyPasswordChanged(object sender, RoutedEventArgs e)
