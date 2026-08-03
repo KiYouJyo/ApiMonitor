@@ -40,9 +40,9 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="180"
-                    ItemsSource="{Binding Accounts}"
+                    ItemsSource="{Binding Insights.Accounts}"
                     DisplayMemberPath="DisplayName"
-                    SelectedItem="{Binding SelectedAccount, Mode=TwoWay}" />
+                    SelectedItem="{Binding Insights.SelectedAccount, Mode=TwoWay}" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="4">
                 <TextBlock
@@ -50,9 +50,9 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="200"
-                    ItemsSource="{Binding Metrics}"
+                    ItemsSource="{Binding Insights.Metrics}"
                     DisplayMemberPath="DisplayName"
-                    SelectedItem="{Binding SelectedMetric, Mode=TwoWay}" />
+                    SelectedItem="{Binding Insights.SelectedMetric, Mode=TwoWay}" />
             </StackPanel>
             <StackPanel Grid.Column="2" Spacing="4">
                 <TextBlock
@@ -60,15 +60,15 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="150"
-                    ItemsSource="{Binding Ranges}"
+                    ItemsSource="{Binding Insights.Ranges}"
                     DisplayMemberPath="DisplayName"
-                    SelectedItem="{Binding SelectedRange, Mode=TwoWay}" />
+                    SelectedItem="{Binding Insights.SelectedRange, Mode=TwoWay}" />
             </StackPanel>
             <StackPanel Grid.Column="3" Spacing="4" VerticalAlignment="Bottom" HorizontalAlignment="Right">
                 <Button
                     x:Uid="Insights.ExportCsv"
-                    Command="{Binding ExportCsvCommand}"
-                    Visibility="{Binding HasData, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    Command="{Binding Insights.ExportCsvCommand}"
+                    Visibility="{Binding Insights.HasData, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
         </Grid>
 
@@ -86,9 +86,9 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="8"
-                Visibility="{Binding HasData, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                Visibility="{Binding Insights.HasData, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                 <TextBlock
-                    Text="{Binding EmptyMessage}"
+                    Text="{Binding Insights.EmptyMessage}"
                     TextAlignment="Center"
                     MaxWidth="480"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -96,7 +96,7 @@
             </StackPanel>
 
             <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="12" Visibility="{Binding HasData, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Spacing="12" Visibility="{Binding Insights.HasData, Converter={StaticResource BoolToVisibilityConverter}}">
                     <!-- 趋势图（轻量本地控件） -->
                     <Border
                         Padding="14,10"
@@ -106,12 +106,12 @@
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                         <StackPanel Spacing="6">
                             <TextBlock
-                                Text="{Binding SelectedMetric.DisplayName, Mode=OneWay}"
+                                Text="{Binding Insights.SelectedMetric.DisplayName, Mode=OneWay}"
                                 Style="{StaticResource SubtitleTextBlockStyle}" />
                             <controls:TrendChartControl
-                                Points="{Binding TrendPoints, Mode=OneWay}"
-                                Unit="{Binding SelectedMetric.Unit, Mode=OneWay}"
-                                ChartSummary="{Binding ChartSummaryText, Mode=OneWay}" />
+                                Points="{Binding Insights.TrendPoints, Mode=OneWay}"
+                                Unit="{Binding Insights.SelectedMetric.Unit, Mode=OneWay}"
+                                ChartSummary="{Binding Insights.ChartSummaryText, Mode=OneWay}" />
                         </StackPanel>
                     </Border>
 
@@ -128,7 +128,7 @@
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
                                 <TextBlock x:Uid="Insights.CurrentValue" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{Binding CurrentValueText, Mode=OneWay}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Insights.CurrentValueText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
                         <Border
@@ -140,7 +140,7 @@
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
                                 <TextBlock x:Uid="Insights.ChangeInRange" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{Binding ChangeInRangeText, Mode=OneWay}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Insights.ChangeInRangeText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
                         <Border
@@ -152,7 +152,7 @@
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
                                 <TextBlock x:Uid="Insights.DailyConsumption" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{Binding DailyConsumptionText, Mode=OneWay}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Insights.DailyConsumptionText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
                         <Border
@@ -164,13 +164,13 @@
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
                                 <TextBlock x:Uid="Insights.EstimatedDaysLeft" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{Binding EstimatedDaysLeftText, Mode=OneWay}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Insights.EstimatedDaysLeftText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
                     <TextBlock
-                        Text="{Binding EstimateExplanationText, Mode=OneWay}"
+                        Text="{Binding Insights.EstimateExplanationText, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                 </StackPanel>
@@ -188,7 +188,7 @@
                     x:Name="HistoryList"
                     Visibility="Collapsed"
                     MaxHeight="300"
-                    ItemsSource="{Binding HistoryRows}">
+                    ItemsSource="{Binding Insights.HistoryRows}">
                     <ListView.HeaderTemplate>
                         <DataTemplate>
                             <Grid ColumnDefinitions="110,70,*,110,90,60,60">
@@ -223,7 +223,7 @@
             Grid.Row="3"
             Width="24"
             Height="24"
-            IsActive="{Binding IsLoading}"
+            IsActive="{Binding Insights.IsLoading}"
             HorizontalAlignment="Left" />
     </Grid>
 </UserControl>

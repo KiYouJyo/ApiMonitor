@@ -309,6 +309,8 @@ public sealed class CompositionRoot
             new LocalDataFolderOpener(),
             filePicker,
             backupService,
+            languageService.CurrentLanguageCode,
+            _appearanceService.Theme.ToString(),
             Log);
 
         MainViewModel.AppearanceSettings = AppearanceSettings;

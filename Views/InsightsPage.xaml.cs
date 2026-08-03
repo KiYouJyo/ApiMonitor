@@ -20,12 +20,10 @@ public sealed partial class InsightsPage : UserControl
         get => (MainViewModel?)DataContext;
         set
         {
+            // 保持 DataContext = MainViewModel（页面 Visibility 绑定依赖其
+            // 能解析 CurrentPage）；页面内部通过 MainViewModel.Insights
+            // 访问 InsightsViewModel 属性。
             DataContext = value;
-            if (value?.Insights is { } insights)
-            {
-                // 绑定到共享的 InsightsViewModel（与主页同一账户服务）。
-                DataContext = insights;
-            }
         }
     }
 

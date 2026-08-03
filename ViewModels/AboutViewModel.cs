@@ -130,6 +130,8 @@ public sealed partial class AboutViewModel : ObservableObject
         ILocalDataFolderOpener dataFolderOpener,
         IFilePickerService filePicker,
         IPortableBackupService backup,
+        string languageCode,
+        string themeName,
         AppLog? log = null)
     {
         _updateCheck = updateCheck;
@@ -140,6 +142,10 @@ public sealed partial class AboutViewModel : ObservableObject
         _filePicker = filePicker;
         _backup = backup;
         _log = log ?? new AppLog(System.IO.Path.GetTempPath());
+
+        // 语言与主题状态来自统一服务，避免默认值错误显示。
+        CurrentLanguageText = $"当前 UI 语言：{languageCode}";
+        CurrentThemeText = $"当前主题：{FormatThemeName(themeName)}";
 
         foreach (var provider in providers.OrderBy(p => p.ProviderId, StringComparer.OrdinalIgnoreCase))
         {
@@ -161,10 +167,18 @@ public sealed partial class AboutViewModel : ObservableObject
     public void SetEnvironmentTexts(string languageCode, string themeName)
     {
         CurrentLanguageText = $"当前 UI 语言：{languageCode}";
-        CurrentThemeText = $"当前主题：{themeName}";
+        CurrentThemeText = $"当前主题：{FormatThemeName(themeName)}";
         OnPropertyChanged(nameof(CurrentLanguageText));
         OnPropertyChanged(nameof(CurrentThemeText));
     }
+
+    private static string FormatThemeName(string themeName) =>
+        themeName switch
+        {
+            nameof(AppThemePreference.Light) => "浅色",
+            nameof(AppThemePreference.Dark) => "深色",
+            _ => "跟随系统",
+        };
 
     private async Task OpenReleasePageAsync()
     {

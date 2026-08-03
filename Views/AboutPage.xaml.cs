@@ -21,11 +21,10 @@ public sealed partial class AboutPage : UserControl
         get => (MainViewModel?)DataContext;
         set
         {
+            // 保持 DataContext = MainViewModel：MainPage.xaml 的页面 Visibility
+            // 绑定依赖子 UserControl 的 DataContext 能解析 CurrentPage。
+            // 页面内部通过 MainViewModel.About 访问 AboutViewModel 属性。
             DataContext = value;
-            if (value?.About is { } about)
-            {
-                DataContext = about;
-            }
         }
     }
 
