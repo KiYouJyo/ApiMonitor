@@ -158,25 +158,9 @@ public sealed class CompositionRoot
     public void AttachMainWindow(MainWindow window)
     {
         WindowManager.RegisterMainWindow(window);
-        _showMainWindow = () =>
-        {
-            try
-            {
-                if (window.AppWindow.Presenter is OverlappedPresenter
-                    {
-                        State: OverlappedPresenterState.Minimized
-                    } presenter)
-                {
-                    presenter.Restore();
-                }
-            }
-            catch
-            {
-                // 恢复失败时仍尝试激活。
-            }
-
-            window.Activate();
-        };
+        // 使用 IMainWindowController.Show（恢复最小化 + Activate + 可见标志），
+        // 保证从托盘/单实例重定向打开时对已隐藏（AppWindow.Hide）的窗口同样有效。
+        _showMainWindow = window.Show;
         _closeMainWindow = () =>
         {
             try

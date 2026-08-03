@@ -28,8 +28,18 @@ internal sealed class TrayNativeHost : ITrayNativeHost
     private IntPtr _hIcon = IntPtr.Zero;
     private bool _classRegistered;
     private uint _taskbarCreatedMessage;
+    private bool _isMenuOpen;
 
     private string _tooltipText = string.Empty;
+
+    // 测试注入点：覆盖原生调用以验证顺序，CI 不真正弹出托盘菜单。
+    internal Func<IntPtr, uint, int, int, IntPtr, IntPtr, nuint>? TrackPopupMenuImpl { get; set; }
+    internal Action<IntPtr>? SetForegroundWindowImpl { get; set; }
+    internal Action<IntPtr>? PostNullMessageImpl { get; set; }
+    internal Action? SetTrayFocusImpl { get; set; }
+    internal Func<TrayScreenRect?>? IconRectImpl { get; set; }
+    internal Func<TrayScreenPoint, TrayScreenRect?>? WorkAreaForPointImpl { get; set; }
+    internal IntPtr? MessageWindowOverride { get; set; }
 
     public TrayNativeHost(string iconFilePath, Guid iconId, AppLog? log = null)
     {
@@ -40,7 +50,7 @@ internal sealed class TrayNativeHost : ITrayNativeHost
 
     public event Action? LeftClick;
     public event Action? LeftDoubleClick;
-    public event Action<TrayScreenPoint>? ContextMenuRequested;
+    public event Action<TrayContextMenuRequest>? ContextMenuRequested;
     public event Action? TaskbarCreated;
 
     public bool IsMessageWindowAlive => _hWnd != IntPtr.Zero;
@@ -210,16 +220,28 @@ internal sealed class TrayNativeHost : ITrayNativeHost
         }
     }
 
-    public uint? ShowContextMenu(IReadOnlyList<TrayMenuItem> items, TrayScreenPoint position)
+    public uint? ShowContextMenu(IReadOnlyList<TrayMenuItem> items, TrayContextMenuRequest request)
     {
-        if (_hWnd == IntPtr.Zero)
+        if ((MessageWindowOverride is null && _hWnd == IntPtr.Zero) || _isMenuOpen)
         {
+            // 同一时刻只允许一个托盘菜单；连续快速右键直接忽略。
             return null;
         }
 
+        _isMenuOpen = true;
         IntPtr menu = IntPtr.Zero;
         try
         {
+            // 解析最终锚点与展开方向（屏幕坐标，物理像素，不做任何缩放/客户区转换）。
+            var placement = ResolvePlacement(request);
+            if (placement is null)
+            {
+                _log?.Error("托盘菜单位置解析失败，放弃显示（不会弹出到屏幕左上角）。");
+                return null;
+            }
+
+            _log?.Info($"托盘菜单锚点来源: {request.Source}，位置 ({placement.Value.X}, {placement.Value.Y})。");
+
             menu = NativeMethods.CreatePopupMenu();
             if (menu == IntPtr.Zero)
             {
@@ -257,25 +279,157 @@ internal sealed class TrayNativeHost : ITrayNativeHost
                 }
             }
 
-            // 防止右键弹出菜单后立即被激活状态切换关闭。
-            NativeMethods.SetForegroundWindow(_hWnd);
+            // 菜单显示前：把隐藏消息窗口设为前台窗口，保证菜单获得键盘焦点。
+            if (SetForegroundWindowImpl is { } setForeground)
+            {
+                setForeground(_hWnd);
+            }
+            else
+            {
+                NativeMethods.SetForegroundWindow(_hWnd);
+            }
 
-            uint command = (uint)NativeMethods.TrackPopupMenuEx(
-                menu,
-                NativeMethods.TPM_RIGHTBUTTON | NativeMethods.TPM_RETURNCMD,
-                position.X,
-                position.Y,
-                _hWnd,
-                IntPtr.Zero);
+            uint trackFlags = NativeMethods.TPM_RIGHTBUTTON
+                | NativeMethods.TPM_RETURNCMD
+                | NativeMethods.TPM_NONOTIFY
+                | placement.Value.AlignFlags;
 
-            return command == 0 ? null : command;
+            nuint result = TrackPopupMenuImpl is { } track
+                ? track(menu, trackFlags, placement.Value.X, placement.Value.Y, _hWnd, IntPtr.Zero)
+                : NativeMethods.TrackPopupMenuEx(menu, trackFlags, placement.Value.X, placement.Value.Y, _hWnd, IntPtr.Zero);
+
+            // 菜单已关闭：把焦点安全返回通知区域，再分发命令。
+            if (PostNullMessageImpl is { } postNull)
+            {
+                postNull(_hWnd);
+            }
+            else
+            {
+                NativeMethods.PostMessageW(_hWnd, NativeMethods.WM_NULL, IntPtr.Zero, IntPtr.Zero);
+            }
+
+            if (SetTrayFocusImpl is { } setFocus)
+            {
+                setFocus();
+            }
+            else
+            {
+                SetTrayFocus();
+            }
+
+            return result == 0 ? null : (uint)result;
         }
         finally
         {
+            _isMenuOpen = false;
             if (menu != IntPtr.Zero)
             {
                 NativeMethods.DestroyMenu(menu);
             }
+        }
+    }
+
+    /// <summary>把焦点返回通知区域（NIM_SETFOCUS），不激活主窗口。</summary>
+    private void SetTrayFocus()
+    {
+        try
+        {
+            var data = NativeMethods.NOTIFYICONDATAW.Create();
+            data.hWnd = _hWnd;
+            data.uID = 0;
+            data.uFlags = NativeMethods.NIF_GUID;
+            data.guidItem = _iconId;
+            NativeMethods.Shell_NotifyIconW(NativeMethods.NIM_SETFOCUS, ref data);
+        }
+        catch
+        {
+            // 焦点返回失败不影响菜单命令分发。
+        }
+    }
+
+    /// <summary>
+    /// 按锚点优先级解析最终菜单位置：
+    /// GetCursorPos 屏幕坐标 → wParam 坐标 → Shell_NotifyIconGetRect 图标矩形。
+    /// 全部失败返回 null（放弃显示），绝不使用未经验证的 (0,0)。
+    /// </summary>
+    internal TrayMenuPlacement? ResolvePlacement(TrayContextMenuRequest request)
+    {
+        TrayScreenPoint? cursor = request.Source == TrayAnchorSource.Cursor
+            ? request.Point
+            : null;
+        TrayScreenPoint? wParamPoint = request.Source == TrayAnchorSource.WParam
+            ? request.Point
+            : null;
+        TrayScreenRect? iconRect = TryGetIconRect();
+
+        return TrayMenuPositionCalculator.Resolve(
+            cursor,
+            wParamPoint,
+            iconRect,
+            GetWorkAreaForPoint);
+    }
+
+    private TrayScreenRect? GetWorkAreaForPoint(TrayScreenPoint point)
+    {
+        if (WorkAreaForPointImpl is { } injected)
+        {
+            return injected(point);
+        }
+
+        try
+        {
+            var pt = new NativeMethods.POINT { X = point.X, Y = point.Y };
+            IntPtr monitor = NativeMethods.MonitorFromPoint(pt, NativeMethods.MONITOR_DEFAULTTONULL);
+            if (monitor == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var info = new NativeMethods.MONITORINFO { cbSize = (uint)Marshal.SizeOf<NativeMethods.MONITORINFO>() };
+            if (!NativeMethods.GetMonitorInfoW(monitor, ref info))
+            {
+                return null;
+            }
+
+            return new TrayScreenRect(
+                info.rcWork.Left,
+                info.rcWork.Top,
+                info.rcWork.Right,
+                info.rcWork.Bottom);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private TrayScreenRect? TryGetIconRect()
+    {
+        if (IconRectImpl is { } injected)
+        {
+            return injected();
+        }
+
+        try
+        {
+            var identifier = new NativeMethods.NOTIFYICONIDENTIFIER
+            {
+                cbSize = (uint)Marshal.SizeOf<NativeMethods.NOTIFYICONIDENTIFIER>(),
+                hWnd = _hWnd,
+                uID = 0,
+                guidItem = _iconId,
+            };
+
+            if (!NativeMethods.Shell_NotifyIconGetRect(ref identifier, out var rect))
+            {
+                return null;
+            }
+
+            return new TrayScreenRect(rect.Left, rect.Top, rect.Right, rect.Bottom);
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -339,18 +493,35 @@ internal sealed class TrayNativeHost : ITrayNativeHost
 
         if (msg == NativeMethods.TRAY_CALLBACK_MESSAGE)
         {
-            switch ((uint)lParam)
+            var trayEvent = TrayCallbackParser.ParseTrayCallback(wParam, lParam);
+            switch (trayEvent.Kind)
             {
-                case NativeMethods.WM_LBUTTONUP:
+                case TrayCallbackEventKind.LeftClick:
                     LeftClick?.Invoke();
                     return IntPtr.Zero;
 
-                case NativeMethods.WM_LBUTTONDBLCLK:
+                case TrayCallbackEventKind.LeftDoubleClick:
                     LeftDoubleClick?.Invoke();
                     return IntPtr.Zero;
 
-                case NativeMethods.WM_CONTEXTMENU:
-                    ContextMenuRequested?.Invoke(PointFromLParam(lParam));
+                case TrayCallbackEventKind.ContextMenu:
+                    // 同一线程立即获取鼠标屏幕坐标（NOTIFYICON_VERSION_4 的 wParam 坐标为后备）。
+                    if (NativeMethods.GetCursorPos(out var pt))
+                    {
+                        ContextMenuRequested?.Invoke(
+                            new TrayContextMenuRequest(new TrayScreenPoint(pt.X, pt.Y), TrayAnchorSource.Cursor));
+                    }
+                    else if (trayEvent.WParamPoint is { } wParamPoint)
+                    {
+                        ContextMenuRequested?.Invoke(
+                            new TrayContextMenuRequest(wParamPoint, TrayAnchorSource.WParam));
+                    }
+                    else
+                    {
+                        ContextMenuRequested?.Invoke(
+                            new TrayContextMenuRequest(default, TrayAnchorSource.None));
+                    }
+
                     return IntPtr.Zero;
 
                 default:
@@ -364,13 +535,6 @@ internal sealed class TrayNativeHost : ITrayNativeHost
         }
 
         return NativeMethods.DefWindowProcW(hWnd, msg, wParam, lParam);
-    }
-
-    private static TrayScreenPoint PointFromLParam(IntPtr lParam)
-    {
-        int x = (short)((long)lParam & 0xFFFF);
-        int y = (short)(((long)lParam >> 16) & 0xFFFF);
-        return new TrayScreenPoint(x, y);
     }
 
     /// <summary>把 Tooltip 安全截断到 NOTIFYICONDATA 支持的长度（128 WCHAR，含结尾 NUL）。</summary>

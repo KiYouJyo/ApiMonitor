@@ -25,6 +25,8 @@ public sealed class FakeTrayNativeHost : ITrayNativeHost
 
     public List<IReadOnlyList<TrayMenuItem>> MenuItems { get; } = new();
 
+    public List<TrayContextMenuRequest> ContextMenuRequests { get; } = new();
+
     public uint? ShowContextMenuResult { get; set; }
 
     public bool Disposed { get; private set; }
@@ -35,7 +37,7 @@ public sealed class FakeTrayNativeHost : ITrayNativeHost
 
     public event Action? LeftDoubleClick;
 
-    public event Action<TrayScreenPoint>? ContextMenuRequested;
+    public event Action<TrayContextMenuRequest>? ContextMenuRequested;
 
     public event Action? TaskbarCreated;
 
@@ -43,7 +45,14 @@ public sealed class FakeTrayNativeHost : ITrayNativeHost
 
     public void RaiseLeftDoubleClick() => LeftDoubleClick?.Invoke();
 
-    public void RaiseContextMenu(TrayScreenPoint point) => ContextMenuRequested?.Invoke(point);
+    public void RaiseContextMenu(TrayContextMenuRequest request)
+    {
+        ContextMenuRequests.Add(request);
+        ContextMenuRequested?.Invoke(request);
+    }
+
+    public void RaiseContextMenu(TrayScreenPoint point, TrayAnchorSource source = TrayAnchorSource.Cursor) =>
+        RaiseContextMenu(new TrayContextMenuRequest(point, source));
 
     public void RaiseTaskbarCreated() => TaskbarCreated?.Invoke();
 
@@ -73,7 +82,7 @@ public sealed class FakeTrayNativeHost : ITrayNativeHost
         return DeleteIconResult;
     }
 
-    public uint? ShowContextMenu(IReadOnlyList<TrayMenuItem> items, TrayScreenPoint position)
+    public uint? ShowContextMenu(IReadOnlyList<TrayMenuItem> items, TrayContextMenuRequest request)
     {
         MenuItems.Add(items);
         return ShowContextMenuResult;

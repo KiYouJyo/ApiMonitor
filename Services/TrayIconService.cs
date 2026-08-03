@@ -199,7 +199,7 @@ public sealed class TrayIconService : ITrayIconService
         ShowMainWindow();
     }
 
-    private void OnContextMenuRequested(TrayScreenPoint point)
+    private void OnContextMenuRequested(TrayContextMenuRequest request)
     {
         if (_exiting)
         {
@@ -207,7 +207,7 @@ public sealed class TrayIconService : ITrayIconService
         }
 
         var items = _menuService.BuildMenu(BuildMenuContext());
-        uint? command = _host.ShowContextMenu(items, point);
+        uint? command = _host.ShowContextMenu(items, request);
         if (command is null)
         {
             return;

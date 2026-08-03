@@ -74,6 +74,10 @@
     <Compile Include="../../Services/ITrayIconService.cs" Link="Services/ITrayIconService.cs" />
     <Compile Include="../../Services/TrayIconService.cs" Link="Services/TrayIconService.cs" />
     <Compile Include="../../Services/ITrayNativeHost.cs" Link="Services/ITrayNativeHost.cs" />
+    <Compile Include="../../Services/NativeMethods.cs" Link="Services/NativeMethods.cs" />
+    <Compile Include="../../Services/TrayNativeHost.cs" Link="Services/TrayNativeHost.cs" />
+    <Compile Include="../../Services/TrayCallbackParser.cs" Link="Services/TrayCallbackParser.cs" />
+    <Compile Include="../../Services/TrayMenuPositionCalculator.cs" Link="Services/TrayMenuPositionCalculator.cs" />
     <Compile Include="../../Services/TrayStatusProvider.cs" Link="Services/TrayStatusProvider.cs" />
     <Compile Include="../../Services/TrayMenuService.cs" Link="Services/TrayMenuService.cs" />
     <Compile Include="../../Services/IApplicationExitCoordinator.cs" Link="Services/IApplicationExitCoordinator.cs" />

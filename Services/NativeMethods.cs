@@ -75,6 +75,8 @@ internal static partial class NativeMethods
     // ------------------------------------------------------------------
     public const uint WS_POPUP = 0x80000000;
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
+
+    public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_CLOSE = 0x0010;
     public const uint WM_USER = 0x0400;
@@ -179,8 +181,13 @@ internal static partial class NativeMethods
 
     public const uint TPM_RIGHTBUTTON = 0x00000002;
     public const uint TPM_RETURNCMD = 0x00000100;
+    public const uint TPM_NONOTIFY = 0x00000080;
+    public const uint TPM_LEFTALIGN = 0x00000000;
+    public const uint TPM_RIGHTALIGN = 0x00000008;
+    public const uint TPM_TOPALIGN = 0x00000000;
+    public const uint TPM_BOTTOMALIGN = 0x00002000;
 
-    /// <summary>托盘菜单命令 ID 起点。</summary>
+    /// <summary>菜单命令 ID 起点。</summary>
     public const uint MENU_ID_BASE = 0x1000;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -189,6 +196,37 @@ internal static partial class NativeMethods
         public int X;
         public int Y;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MONITORINFO
+    {
+        public uint cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    /// <summary>Shell_NotifyIconGetRect 需要的图标标识（与 NIM_ADD 的 guidItem 对应）。</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NOTIFYICONIDENTIFIER
+    {
+        public uint cbSize;
+        public IntPtr hWnd;
+        public uint uID;
+        public Guid guidItem;
+    }
+
+    public const uint MONITOR_DEFAULTTONULL = 0x00000000;
+    public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -233,4 +271,24 @@ internal static partial class NativeMethods
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, uint fByPos);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    // ------------------------------------------------------------------
+    // 托盘图标矩形 / 显示器工作区（菜单定位）
+    // ------------------------------------------------------------------
+    [DllImport("shell32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool Shell_NotifyIconGetRect(
+        ref NOTIFYICONIDENTIFIER identifier,
+        out RECT iconLocation);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetMonitorInfoW(IntPtr hMonitor, ref MONITORINFO lpmi);
 }
