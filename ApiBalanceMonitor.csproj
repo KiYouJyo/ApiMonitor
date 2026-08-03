@@ -25,12 +25,18 @@
     <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
     <WindowsAppSdkBootstrapInitialize>true</WindowsAppSdkBootstrapInitialize>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+    <!--
+      Bootstrap errors out for processes with package identity (genuine MSIX installs).
+      This option makes it a no-op there, so the same build runs both packaged and
+      under development registration / unpackaged.
+    -->
+    <WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>true</WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>
     <!-- Never let generated test outputs participate in WinUI PRI resource discovery. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);tests\**\*</DefaultItemExcludes>
-    <Version>0.1.0</Version>
-    <AssemblyVersion>0.1.0</AssemblyVersion>
-    <FileVersion>0.1.0</FileVersion>
-    <InformationalVersion>0.1.0</InformationalVersion>
+    <Version>0.1.0.1</Version>
+    <AssemblyVersion>0.1.0.1</AssemblyVersion>
+    <FileVersion>0.1.0.1</FileVersion>
+    <InformationalVersion>0.1.0.1</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

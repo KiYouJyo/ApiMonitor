@@ -17,6 +17,8 @@ public sealed class FakeAccountManager : IAccountManager
     public BalanceQueryResult RefreshResult { get; set; } =
         BalanceQueryResult.Failure(BalanceErrorKind.Unknown, "未配置测试结果");
 
+    public string? ApiKeyResult { get; set; }
+
     public TaskCompletionSource? RefreshGate { get; set; }
 
     public TaskCompletionSource? LoadGate { get; set; }
@@ -51,6 +53,12 @@ public sealed class FakeAccountManager : IAccountManager
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(Records.TryGetValue(accountId, out var record) ? record : null);
+    }
+
+    public Task<string?> GetApiKeyAsync(string accountId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(ApiKeyResult);
     }
 
     public Task<BalanceQueryResult> TestConnectionAsync(

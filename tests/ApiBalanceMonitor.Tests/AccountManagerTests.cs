@@ -121,4 +121,21 @@ public sealed class AccountManagerTests
         Assert.Equal(2, manager.RecoveryMessages.Count);
         Assert.All(manager.RecoveryMessages, m => Assert.Contains("备份", m));
     }
+
+    [Fact]
+    public async Task GetApiKey_ReturnsStoredSecretOrNull()
+    {
+        var (manager, _, _) = CreateManager();
+        await manager.SaveAccountAsync(
+            "acct-key",
+            "deepseek",
+            "Test",
+            "sk-test-only-not-real",
+            CancellationToken.None);
+
+        Assert.Equal(
+            "sk-test-only-not-real",
+            await manager.GetApiKeyAsync("acct-key", CancellationToken.None));
+        Assert.Null(await manager.GetApiKeyAsync("missing", CancellationToken.None));
+    }
 }

@@ -1,5 +1,6 @@
 using ApiBalanceMonitor.Providers;
 using ApiBalanceMonitor.ViewModels;
+using Microsoft.UI.Dispatching;
 
 namespace ApiBalanceMonitor.Services;
 
@@ -15,7 +16,7 @@ public sealed class CompositionRoot
 
     public DialogService DialogService { get; }
 
-    public CompositionRoot()
+    public CompositionRoot(DispatcherQueue dispatcherQueue)
     {
         string dataDirectory = AppPaths.GetLocalDataDirectory();
         Directory.CreateDirectory(dataDirectory);
@@ -29,6 +30,7 @@ public sealed class CompositionRoot
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);
         var snapshotStore = new JsonBalanceSnapshotStore(dataDirectory);
+        var clipboard = new WindowsClipboardService(dispatcherQueue, Log);
 
         var accountManager = new AccountManager(
             accountStore,
@@ -37,7 +39,7 @@ public sealed class CompositionRoot
             registry,
             Log);
 
-        DialogService = new DialogService(accountManager);
-        MainViewModel = new MainViewModel(accountManager, DialogService, Log);
+        DialogService = new DialogService(accountManager, Log);
+        MainViewModel = new MainViewModel(accountManager, DialogService, Log, clipboard);
     }
 }

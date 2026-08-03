@@ -1,4 +1,5 @@
 using ApiBalanceMonitor.Services;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace ApiBalanceMonitor;
@@ -16,11 +17,13 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _compositionRoot = new CompositionRoot();
+        _compositionRoot = new CompositionRoot(DispatcherQueue.GetForCurrentThread());
         _window = new MainWindow(_compositionRoot);
         _window.RootPage.ViewModel = _compositionRoot.MainViewModel;
-        _compositionRoot.DialogService.Attach(_window.RootPage.XamlRoot);
         _window.Activate();
+
+        // Resolve the XamlRoot lazily at show time; it may still be null right after Activate.
+        _compositionRoot.DialogService.Attach(() => _window.RootPage.XamlRoot);
 
         _ = _compositionRoot.MainViewModel.InitializeAsync();
     }

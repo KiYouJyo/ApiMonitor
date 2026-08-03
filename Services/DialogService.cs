@@ -13,33 +13,53 @@ namespace ApiBalanceMonitor.Services;
 public sealed class DialogService : IDialogService
 {
     private readonly IAccountManager _accountManager;
-    private XamlRoot? _xamlRoot;
+    private readonly AppLog? _log;
+    private Func<XamlRoot?>? _xamlRootProvider;
 
-    public DialogService(IAccountManager accountManager)
+    public DialogService(IAccountManager accountManager, AppLog? log = null)
     {
         _accountManager = accountManager;
+        _log = log;
     }
 
-    public void Attach(XamlRoot xamlRoot) => _xamlRoot = xamlRoot;
+    public void Attach(Func<XamlRoot?> xamlRootProvider) => _xamlRootProvider = xamlRootProvider;
 
     public async Task<AccountEditorResult?> ShowAccountEditorAsync(
         AccountEditorContext context,
         CancellationToken cancellationToken)
     {
-        var viewModel = new AccountEditorViewModel(_accountManager, context);
-        var dialog = new AccountEditorDialog(viewModel);
-        if (_xamlRoot is not null)
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
         {
-            dialog.XamlRoot = _xamlRoot;
+            _log?.Error("无法显示账户对话框：XamlRoot 为空。");
+            return null;
         }
 
-        using var registration = cancellationToken.Register(dialog.Hide);
-        var result = await dialog.ShowAsync();
-        return result == ContentDialogResult.Primary ? dialog.Result : null;
+        try
+        {
+            var viewModel = new AccountEditorViewModel(_accountManager, context);
+            var dialog = new AccountEditorDialog(viewModel) { XamlRoot = xamlRoot };
+
+            using var registration = cancellationToken.Register(dialog.Hide);
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary ? dialog.Result : null;
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示账户对话框失败: {ex}");
+            return null;
+        }
     }
 
     public async Task<bool> ConfirmDeleteAsync(string accountName, CancellationToken cancellationToken)
     {
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
+        {
+            _log?.Error("无法显示确认对话框：XamlRoot 为空。");
+            return false;
+        }
+
         var dialog = new ContentDialog
         {
             Title = "删除账户",
@@ -49,13 +69,18 @@ public sealed class DialogService : IDialogService
             DefaultButton = ContentDialogButton.Close,
         };
 
-        if (_xamlRoot is not null)
+        try
         {
-            dialog.XamlRoot = _xamlRoot;
-        }
+            dialog.XamlRoot = xamlRoot;
 
-        using var registration = cancellationToken.Register(dialog.Hide);
-        var result = await dialog.ShowAsync();
-        return result == ContentDialogResult.Primary;
+            using var registration = cancellationToken.Register(dialog.Hide);
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示确认对话框失败: {ex.GetType().Name}");
+            return false;
+        }
     }
 }

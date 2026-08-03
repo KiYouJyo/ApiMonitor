@@ -46,10 +46,14 @@
     <Compile Include="../../Services/IAccountManager.cs" Link="Services/IAccountManager.cs" />
     <Compile Include="../../Services/AccountManager.cs" Link="Services/AccountManager.cs" />
     <Compile Include="../../Services/IDialogService.cs" Link="Services/IDialogService.cs" />
+    <Compile Include="../../Services/IClipboardService.cs" Link="Services/IClipboardService.cs" />
+    <Compile Include="../../Services/ClipboardPolicy.cs" Link="Services/ClipboardPolicy.cs" />
+    <Compile Include="../../Services/DelayedClipboardGuard.cs" Link="Services/DelayedClipboardGuard.cs" />
     <Compile Include="../../Helpers/BalanceFormatter.cs" Link="Helpers/BalanceFormatter.cs" />
     <Compile Include="../../ViewModels/StatusSeverity.cs" Link="ViewModels/StatusSeverity.cs" />
     <Compile Include="../../ViewModels/BalanceLine.cs" Link="ViewModels/BalanceLine.cs" />
     <Compile Include="../../ViewModels/AccountListItemViewModel.cs" Link="ViewModels/AccountListItemViewModel.cs" />
+    <Compile Include="../../ViewModels/AccountEditorViewModel.cs" Link="ViewModels/AccountEditorViewModel.cs" />
     <Compile Include="../../ViewModels/MainViewModel.cs" Link="ViewModels/MainViewModel.cs" />
   </ItemGroup>
 </Project>

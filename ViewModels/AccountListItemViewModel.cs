@@ -11,6 +11,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     private readonly Func<Task> _refreshAsync;
     private readonly Func<Task> _editAsync;
     private readonly Func<Task> _deleteAsync;
+    private readonly Func<Task> _copyAsync;
 
     public ApiAccount Account { get; }
 
@@ -24,6 +25,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     private bool _isRefreshing;
 
     [ObservableProperty]
+    private bool _isCopying;
+
+    [ObservableProperty]
     private bool _isAvailable;
 
     [ObservableProperty]
@@ -33,7 +37,10 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     private string _availabilityText = "不可用";
 
     [ObservableProperty]
-    private string _lastSuccessText = "尚未查询";
+    private string _lastSuccessText = "尚未成功更新";
+
+    /// <summary>账户卡片“最近成功更新”整行文本（含前缀）。</summary>
+    public string LastSuccessLine => $"最近成功更新：{LastSuccessText}";
 
     [ObservableProperty]
     private string _lastErrorText = string.Empty;
@@ -50,22 +57,26 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public IAsyncRelayCommand DeleteCommand { get; }
 
+    public IAsyncRelayCommand CopyKeyCommand { get; }
+
     public AccountListItemViewModel(
         ApiAccount account,
         string providerDisplayName,
         AccountBalanceRecord? record,
         Func<Task> refreshAsync,
         Func<Task> editAsync,
-        Func<Task> deleteAsync)
+        Func<Task> deleteAsync,
+        Func<Task> copyAsync)
     {
         Account = account;
         ProviderDisplayName = providerDisplayName;
         _refreshAsync = refreshAsync;
         _editAsync = editAsync;
         _deleteAsync = deleteAsync;
+        _copyAsync = copyAsync;
 
         AvailabilityText = "不可用";
-        LastSuccessText = "尚未查询";
+        LastSuccessText = "尚未成功更新";
         LastErrorText = string.Empty;
         BalanceLines = Array.Empty<BalanceLine>();
 
@@ -74,6 +85,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
             () => !IsRefreshing);
         EditCommand = new AsyncRelayCommand(() => _editAsync());
         DeleteCommand = new AsyncRelayCommand(() => _deleteAsync());
+        CopyKeyCommand = new AsyncRelayCommand(
+            () => _copyAsync(),
+            () => !IsCopying && Account.HasCredential);
 
         if (record?.LastSuccessfulSnapshot is { } snapshot)
         {
@@ -92,6 +106,12 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     partial void OnIsRefreshingChanged(bool value) =>
         RefreshCommand.NotifyCanExecuteChanged();
+
+    partial void OnIsCopyingChanged(bool value) =>
+        CopyKeyCommand.NotifyCanExecuteChanged();
+
+    partial void OnLastSuccessTextChanged(string value) =>
+        OnPropertyChanged(nameof(LastSuccessLine));
 
     partial void OnLastErrorTextChanged(string value) =>
         HasLastError = !string.IsNullOrEmpty(value);
@@ -122,5 +142,5 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     }
 
     private static string FormatTime(DateTimeOffset value) =>
-        value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+        value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
 }

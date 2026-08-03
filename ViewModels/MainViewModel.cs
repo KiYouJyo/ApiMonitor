@@ -14,8 +14,10 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private readonly IAccountManager _accountManager;
     private readonly IDialogService _dialogs;
+    private readonly IClipboardService _clipboard;
     private readonly AppLog _log;
     private readonly CancellationTokenSource _lifetime = new();
+    private int _statusGeneration;
 
     public ObservableCollection<AccountListItemViewModel> Accounts { get; } = new();
 
@@ -40,11 +42,16 @@ public sealed partial class MainViewModel : ObservableObject
 
     public AsyncRelayCommand AddAccountCommand { get; }
 
-    public MainViewModel(IAccountManager accountManager, IDialogService dialogs, AppLog log)
+    public MainViewModel(
+        IAccountManager accountManager,
+        IDialogService dialogs,
+        AppLog log,
+        IClipboardService clipboard)
     {
         _accountManager = accountManager;
         _dialogs = dialogs;
         _log = log;
+        _clipboard = clipboard;
 
         StatusSeverity = StatusSeverity.Informational;
         StatusTitle = string.Empty;
@@ -201,6 +208,53 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>复制指定账户的 API Key 到剪贴板，成功后安排延迟清理。</summary>
+    public async Task CopyKeyAsync(string accountId)
+    {
+        var item = Accounts.FirstOrDefault(i => i.Account.AccountId == accountId);
+        if (item is null || item.IsCopying)
+        {
+            return;
+        }
+
+        item.IsCopying = true;
+        try
+        {
+            string? apiKey = await _accountManager.GetApiKeyAsync(accountId, _lifetime.Token);
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                ShowStatus(
+                    StatusSeverity.Error,
+                    "复制失败",
+                    "未找到该账户保存的 API Key，请重新编辑账户并保存密钥。");
+                return;
+            }
+
+            await _clipboard.SetSensitiveTextAsync(
+                apiKey,
+                TimeSpan.FromSeconds(30),
+                _lifetime.Token);
+
+            ShowStatus(
+                StatusSeverity.Success,
+                "已复制",
+                "API Key 已复制，30 秒后将尝试从剪贴板清除");
+            AutoHideStatusAfter(TimeSpan.FromSeconds(5));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"复制 API Key 失败: {ex.GetType().Name}");
+            ShowStatus(StatusSeverity.Error, "复制失败", "复制 API Key 失败，请重试。");
+        }
+        finally
+        {
+            item.IsCopying = false;
+        }
+    }
+
     /// <summary>手动刷新单个账户；执行期间防止重复点击。</summary>
     public async Task RefreshAccountAsync(string accountId)
     {
@@ -260,7 +314,8 @@ public sealed partial class MainViewModel : ObservableObject
                 record,
                 () => RefreshAccountAsync(account.AccountId),
                 () => EditAccountAsync(account.AccountId),
-                () => DeleteAccountAsync(account.AccountId)));
+                () => DeleteAccountAsync(account.AccountId),
+                () => CopyKeyAsync(account.AccountId)));
         }
 
         OnPropertyChanged(nameof(HasAccounts));
@@ -268,9 +323,34 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void ShowStatus(StatusSeverity severity, string title, string message)
     {
+        _statusGeneration++;
         StatusSeverity = severity;
         StatusTitle = title;
         StatusMessage = message;
         IsStatusVisible = true;
+    }
+
+    /// <summary>让状态提示在数秒后自动消失；期间出现新提示则不隐藏新提示。</summary>
+    private void AutoHideStatusAfter(TimeSpan delay)
+    {
+        int generation = _statusGeneration;
+        _ = AutoHideStatusCoreAsync(generation, delay);
+    }
+
+    private async Task AutoHideStatusCoreAsync(int generation, TimeSpan delay)
+    {
+        try
+        {
+            await Task.Delay(delay, _lifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (generation == _statusGeneration)
+        {
+            IsStatusVisible = false;
+        }
     }
 }

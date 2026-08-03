@@ -80,6 +80,12 @@ public sealed class AccountManager : IAccountManager
             _records.TryGetValue(accountId, out var record) ? record : null);
     }
 
+    public Task<string?> GetApiKeyAsync(string accountId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return _secretStore.GetAsync(accountId, cancellationToken);
+    }
+
     public async Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
         string? apiKey,

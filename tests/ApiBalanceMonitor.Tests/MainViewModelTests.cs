@@ -38,19 +38,24 @@ public sealed class MainViewModelTests
             },
         };
 
-    private static (MainViewModel ViewModel, FakeAccountManager Manager, FakeDialogService Dialogs) CreateSut()
+    private static (
+        MainViewModel ViewModel,
+        FakeAccountManager Manager,
+        FakeDialogService Dialogs,
+        FakeClipboardService Clipboard) CreateSut()
     {
         var manager = new FakeAccountManager();
         var dialogs = new FakeDialogService();
+        var clipboard = new FakeClipboardService();
         var log = new AppLog(Path.Combine(Path.GetTempPath(), $"abm-log-{Guid.NewGuid():N}"));
-        var viewModel = new MainViewModel(manager, dialogs, log);
-        return (viewModel, manager, dialogs);
+        var viewModel = new MainViewModel(manager, dialogs, log, clipboard);
+        return (viewModel, manager, dialogs, clipboard);
     }
 
     [Fact]
     public async Task InitializeAsync_PopulatesAccounts()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.Accounts.Add(Account());
 
         await viewModel.InitializeAsync();
@@ -64,7 +69,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task InitializeAsync_ShowsRecoveryWarning()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.RecoveryMessagesList.Add("accounts.json 内容损坏，已备份并重置。");
 
         await viewModel.InitializeAsync();
@@ -77,7 +82,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task RefreshSuccess_UpdatesItemAndShowsSuccess()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
         await viewModel.InitializeAsync();
@@ -96,7 +101,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task RefreshFailure_ShowsErrorAndKeepsNoSnapshot()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.RefreshResult = BalanceQueryResult.Failure(
             BalanceErrorKind.Unauthorized,
@@ -118,7 +123,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task RefreshShowsLoadingState_AndPreventsDuplicateCalls()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.RefreshGate = new TaskCompletionSource();
         manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
@@ -143,7 +148,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task InitializeShowsLoadingState()
     {
-        var (viewModel, manager, _) = CreateSut();
+        var (viewModel, manager, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.LoadGate = new TaskCompletionSource();
 
@@ -163,7 +168,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task AddAccount_SavesViaDialogResult()
     {
-        var (viewModel, manager, dialogs) = CreateSut();
+        var (viewModel, manager, dialogs, _) = CreateSut();
         dialogs.EditorResult = new AccountEditorResult
         {
             SaveRequested = true,
@@ -182,7 +187,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task DeleteAccount_AfterConfirmation_Deletes()
     {
-        var (viewModel, manager, dialogs) = CreateSut();
+        var (viewModel, manager, dialogs, _) = CreateSut();
         manager.Accounts.Add(Account());
         dialogs.ConfirmDeleteResult = true;
         await viewModel.InitializeAsync();
@@ -197,7 +202,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task DeleteAccount_Cancel_DoesNotDelete()
     {
-        var (viewModel, manager, dialogs) = CreateSut();
+        var (viewModel, manager, dialogs, _) = CreateSut();
         manager.Accounts.Add(Account());
         dialogs.ConfirmDeleteResult = false;
         await viewModel.InitializeAsync();
@@ -206,5 +211,65 @@ public sealed class MainViewModelTests
 
         Assert.Equal(0, manager.DeleteCalls);
         Assert.True(viewModel.HasAccounts);
+    }
+
+    [Fact]
+    public async Task CopyKey_FoundCredential_CallsClipboardWithKeyAndShowsSuccess()
+    {
+        var (viewModel, manager, _, clipboard) = CreateSut();
+        manager.Accounts.Add(Account());
+        manager.ApiKeyResult = "sk-test-only-not-real";
+        await viewModel.InitializeAsync();
+
+        await viewModel.CopyKeyAsync("acct-1");
+
+        var copied = Assert.Single(clipboard.SetCalls);
+        Assert.Equal("sk-test-only-not-real", copied);
+        Assert.Equal(TimeSpan.FromSeconds(30), clipboard.LastClearAfter);
+        Assert.Equal(StatusSeverity.Success, viewModel.StatusSeverity);
+        Assert.True(viewModel.IsStatusVisible);
+        Assert.Contains("已复制", viewModel.StatusTitle);
+    }
+
+    [Fact]
+    public async Task CopyKey_MissingCredential_DoesNotTouchClipboardAndShowsError()
+    {
+        var (viewModel, manager, _, clipboard) = CreateSut();
+        manager.Accounts.Add(Account());
+        manager.ApiKeyResult = null;
+        await viewModel.InitializeAsync();
+
+        await viewModel.CopyKeyAsync("acct-1");
+
+        Assert.Empty(clipboard.SetCalls);
+        Assert.Equal(StatusSeverity.Error, viewModel.StatusSeverity);
+        Assert.Contains("未找到该账户保存的 API Key", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CopyKey_ResetsBusyStateAndDoesNotLogKey()
+    {
+        var manager = new FakeAccountManager();
+        manager.Accounts.Add(Account());
+        manager.ApiKeyResult = "sk-test-only-not-real";
+        var dialogs = new FakeDialogService();
+        var clipboard = new FakeClipboardService();
+        string logDir = Path.Combine(Path.GetTempPath(), $"abm-log-{Guid.NewGuid():N}");
+        var log = new AppLog(logDir);
+        var viewModel = new MainViewModel(manager, dialogs, log, clipboard);
+        await viewModel.InitializeAsync();
+        var item = viewModel.Accounts[0];
+
+        await viewModel.CopyKeyAsync("acct-1");
+
+        Assert.False(item.IsCopying);
+        Assert.True(item.CopyKeyCommand.CanExecute(null));
+
+        string logPath = Path.Combine(logDir, "app.log");
+        if (File.Exists(logPath))
+        {
+            string logContent = File.ReadAllText(logPath);
+            Assert.DoesNotContain("sk-test-only-not-real", logContent, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

@@ -19,6 +19,9 @@ public interface IAccountManager
 
     Task<AccountBalanceRecord?> GetRecordAsync(string accountId, CancellationToken cancellationToken);
 
+    /// <summary>通过账户 ID 读取安全凭据存储中的 API Key；不存在时返回 null。</summary>
+    Task<string?> GetApiKeyAsync(string accountId, CancellationToken cancellationToken);
+
     Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
         string? apiKey,

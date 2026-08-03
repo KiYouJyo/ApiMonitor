@@ -70,6 +70,11 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     {
         _accountManager = accountManager;
         _context = context;
+
+        // Initialize commands before assigning observable properties: the generated
+        // property setters raise On*Changed hooks that notify the TestCommand.
+        TestCommand = new AsyncRelayCommand(TestConnectionAsync, () => CanTest);
+
         SelectedProviderId = context.InitialProviderId;
         DisplayName = context.InitialDisplayName ?? string.Empty;
         ApiKey = string.Empty;
@@ -77,8 +82,6 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         TestTitle = string.Empty;
         TestResultText = string.Empty;
         ValidationMessage = string.Empty;
-
-        TestCommand = new AsyncRelayCommand(TestConnectionAsync, () => CanTest);
     }
 
     partial void OnDisplayNameChanged(string value) =>

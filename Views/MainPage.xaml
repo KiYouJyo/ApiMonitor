@@ -86,6 +86,7 @@
                                             Height="20"
                                             IsActive="{x:Bind IsRefreshing, Mode=OneWay}" />
                                         <Button Content="刷新" Command="{x:Bind RefreshCommand}" />
+                                        <Button Content="复制密钥" Command="{x:Bind CopyKeyCommand}" />
                                         <Button Content="编辑" Command="{x:Bind EditCommand}" />
                                         <Button Content="删除" Command="{x:Bind DeleteCommand}" />
                                     </StackPanel>
@@ -103,7 +104,7 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                     <TextBlock
-                                        Text="最近成功更新：{x:Bind LastSuccessText}"
+                                        Text="{x:Bind LastSuccessLine, Mode=OneWay}"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock
                                         Text="{x:Bind LastErrorText}"
