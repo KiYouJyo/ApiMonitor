@@ -14,6 +14,9 @@ public sealed class FakeAccountManager : IAccountManager
 
     public event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
 
+    public void RaiseAccountDeleted(string accountId) =>
+        AccountDeleted?.Invoke(this, new AccountDeletedEventArgs { AccountId = accountId });
+
     public List<ProviderInfo> ProviderList { get; } = new()
     {
         new ProviderInfo(

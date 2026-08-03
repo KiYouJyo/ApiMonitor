@@ -12,7 +12,9 @@
       Dependencies\x64\Microsoft.WindowsAppRuntime.2.msix
 
   Then writes ApiMonitor_<Version>_x64_Test.zip plus a release-root
-  SHA256SUMS.txt covering the MSIX and the zip (same layout as v0.3.0).
+  SHA256SUMS.txt covering the MSIX and the zip.
+  Since v0.5.0 the stage folder is created directly under the output
+  directory (packaging\output\ApiMonitor_<Version>_x64_Test).
 
   The script never copies private keys (PFX/P12), LocalState, Credential Locker
   content, user JSON, logs, Debug builds, or source caches.
@@ -35,7 +37,7 @@ if (-not $OutputDirectory) {
     $OutputDirectory = Join-Path $repoRoot 'packaging\output'
 }
 
-$releaseDir = Join-Path $OutputDirectory ("release-" + $Version)
+$releaseDir = $OutputDirectory
 $stageName = ('ApiMonitor_{0}_x64_Test' -f $Version)
 $stageDir = Join-Path $releaseDir $stageName
 $msixName = ('ApiMonitor_{0}_x64.msix' -f $Version)
