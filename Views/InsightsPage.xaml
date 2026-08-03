@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:ApiMonitor.Views.Controls"
     xmlns:viewModels="using:ApiMonitor.ViewModels"
-    xmlns:converters="using:ApiMonitor.Views.Converters">
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -21,9 +22,9 @@
 
         <!-- 标题与副标题 -->
         <StackPanel Spacing="4">
-            <TextBlock x:Uid="Insights.Title" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Insights.Title" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
-                x:Uid="Insights.Subtitle"
+                loc:Loc.Key="Insights.Subtitle"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
         </StackPanel>
@@ -36,7 +37,7 @@
             RowSpacing="10">
             <StackPanel Spacing="4">
                 <TextBlock
-                    x:Uid="Insights.Account"
+                    loc:Loc.Key="Insights.Account"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="180"
@@ -46,7 +47,7 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="4">
                 <TextBlock
-                    x:Uid="Insights.Metric"
+                    loc:Loc.Key="Insights.Metric"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="200"
@@ -56,7 +57,7 @@
             </StackPanel>
             <StackPanel Grid.Column="2" Spacing="4">
                 <TextBlock
-                    x:Uid="Insights.TimeRange"
+                    loc:Loc.Key="Insights.TimeRange"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <ComboBox
                     MinWidth="150"
@@ -66,7 +67,7 @@
             </StackPanel>
             <StackPanel Grid.Column="3" Spacing="4" VerticalAlignment="Bottom" HorizontalAlignment="Right">
                 <Button
-                    x:Uid="Insights.ExportCsv"
+                    loc:Loc.Key="Insights.ExportCsv"
                     Command="{Binding Insights.ExportCsvCommand}"
                     Visibility="{Binding Insights.HasData, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
@@ -127,7 +128,7 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
-                                <TextBlock x:Uid="Insights.CurrentValue" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock loc:Loc.Key="Insights.CurrentValue" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{Binding Insights.CurrentValueText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
@@ -139,7 +140,7 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
-                                <TextBlock x:Uid="Insights.ChangeInRange" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock loc:Loc.Key="Insights.ChangeInRange" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{Binding Insights.ChangeInRangeText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
@@ -151,7 +152,7 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
-                                <TextBlock x:Uid="Insights.DailyConsumption" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock loc:Loc.Key="Insights.DailyConsumption" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{Binding Insights.DailyConsumptionText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
@@ -163,7 +164,7 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel Spacing="4">
-                                <TextBlock x:Uid="Insights.EstimatedDaysLeft" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock loc:Loc.Key="Insights.EstimatedDaysLeft" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{Binding Insights.EstimatedDaysLeftText, Mode=OneWay}" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
@@ -180,7 +181,7 @@
             <StackPanel Grid.Row="2" Spacing="6">
                 <ToggleButton
                     x:Name="HistoryToggle"
-                    x:Uid="Insights.ShowHistory"
+                    loc:Loc.Key="Insights.ShowHistory"
                     Checked="OnHistoryToggleChanged"
                     Unchecked="OnHistoryToggleChanged"
                     HorizontalAlignment="Left" />
@@ -192,13 +193,13 @@
                     <ListView.HeaderTemplate>
                         <DataTemplate>
                             <Grid ColumnDefinitions="110,70,*,110,90,60,60">
-                                <TextBlock x:Uid="Insights.ColTime" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="1" x:Uid="Insights.ColProvider" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="2" x:Uid="Insights.ColAccount" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="3" x:Uid="Insights.ColMetric" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="4" x:Uid="Insights.ColValue" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="5" x:Uid="Insights.ColUnit" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="6" x:Uid="Insights.ColSource" FontWeight="SemiBold" />
+                                <TextBlock loc:Loc.Key="Insights.ColTime" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" loc:Loc.Key="Insights.ColProvider" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" loc:Loc.Key="Insights.ColAccount" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="3" loc:Loc.Key="Insights.ColMetric" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="4" loc:Loc.Key="Insights.ColValue" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="5" loc:Loc.Key="Insights.ColUnit" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="6" loc:Loc.Key="Insights.ColSource" FontWeight="SemiBold" />
                             </Grid>
                         </DataTemplate>
                     </ListView.HeaderTemplate>

@@ -2,7 +2,8 @@
     x:Class="ApiMonitor.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:ApiMonitor.Views.Converters">
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -16,7 +17,7 @@
             MaxWidth="720"
             HorizontalAlignment="Left">
 
-            <TextBlock x:Uid="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
             <!-- 1. 通知区域与启动 -->
             <Border
@@ -28,20 +29,20 @@
                 <StackPanel Spacing="14">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="4">
-                            <TextBlock x:Uid="Settings.TraySection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock loc:Loc.Key="Settings.TraySection" Style="{StaticResource SubtitleTextBlockStyle}" />
                             <TextBlock
-                                x:Uid="Settings.TrayDescription"
+                                loc:Loc.Key="Settings.TrayDescription"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
                         <Button
                             Grid.Column="1"
-                            x:Uid="Settings.ExitApplication"
+                            loc:Loc.Key="Settings.ExitApplication"
                             Command="{Binding TraySettings.ExitApplicationCommand}"
                             VerticalAlignment="Top" />
                     </Grid>
 
-                    <TextBlock x:Uid="Settings.CloseBehavior" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock loc:Loc.Key="Settings.CloseBehavior" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <RadioButtons
                         MaxColumns="2"
                         SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
@@ -79,19 +80,19 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="14">
-                    <TextBlock x:Uid="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding NotificationSettings.LocalOnlyExplanationText, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <ToggleSwitch
-                        x:Uid="Settings.EnableNotifications"
+                        loc:Loc.Key="Settings.EnableNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <TextBlock
-                            x:Uid="Settings.RepeatInterval"
+                            loc:Loc.Key="Settings.RepeatInterval"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" />
                         <ComboBox
@@ -104,7 +105,7 @@
                             SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
                     </Grid>
                     <ToggleSwitch
-                        x:Uid="Settings.RecoveryNotifications"
+                        loc:Loc.Key="Settings.RecoveryNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
@@ -132,10 +133,10 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="14">
-                    <TextBlock x:Uid="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <TextBlock
-                            x:Uid="Settings.Theme"
+                            loc:Loc.Key="Settings.Theme"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" />
                         <ComboBox
@@ -148,7 +149,7 @@
                     </Grid>
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <TextBlock
-                            x:Uid="Settings.Language"
+                            loc:Loc.Key="Settings.Language"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" />
                         <ComboBox
@@ -160,7 +161,7 @@
                             SelectedItem="{Binding AppearanceSettings.SelectedLanguage, Mode=TwoWay}" />
                     </Grid>
                     <TextBlock
-                        x:Uid="Settings.AppearanceDescription"
+                        loc:Loc.Key="Settings.AppearanceDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <TextBlock
@@ -179,20 +180,20 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="14">
-                    <TextBlock x:Uid="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding DataManagement.DescriptionText, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Button
-                            x:Uid="Settings.ExportBackup"
+                            loc:Loc.Key="Settings.ExportBackup"
                             Command="{Binding DataManagement.ExportBackupCommand}" />
                         <Button
-                            x:Uid="Settings.ImportBackup"
+                            loc:Loc.Key="Settings.ImportBackup"
                             Command="{Binding DataManagement.ImportBackupCommand}" />
                         <Button
-                            x:Uid="Settings.OpenDataFolder"
+                            loc:Loc.Key="Settings.OpenDataFolder"
                             Command="{Binding DataManagement.OpenDataFolderCommand}" />
                     </StackPanel>
                     <TextBlock
@@ -211,7 +212,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="6">
-                    <TextBlock x:Uid="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding SubtitleText}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

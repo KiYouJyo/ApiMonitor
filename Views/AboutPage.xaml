@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels="using:ApiMonitor.ViewModels"
-    xmlns:converters="using:ApiMonitor.Views.Converters">
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -14,7 +15,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Padding="28,20,28,24" Spacing="14" MaxWidth="760" HorizontalAlignment="Left">
 
-            <TextBlock x:Uid="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
             <!-- 1. 产品信息 -->
             <Border
@@ -33,7 +34,7 @@
                         <StackPanel Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="{Binding About.ProductName}" Style="{StaticResource SubtitleTextBlockStyle}" />
                             <TextBlock
-                                x:Uid="About.Tagline"
+                                loc:Loc.Key="About.Tagline"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -43,8 +44,8 @@
                     <TextBlock Text="{Binding About.ArchitectureText, Mode=OneWay}" />
                     <TextBlock Text="{Binding About.PackageIdentityText, Mode=OneWay}" />
                     <TextBlock Text="{Binding About.PublisherText, Mode=OneWay}" />
-                    <TextBlock x:Uid="About.License" />
-                    <TextBlock x:Uid="About.Copyright" />
+                    <TextBlock loc:Loc.Key="About.License" />
+                    <TextBlock loc:Loc.Key="About.Copyright" />
                 </StackPanel>
             </Border>
 
@@ -56,7 +57,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock Text="{Binding About.ProviderCountText, Mode=OneWay}" />
                     <ItemsControl ItemsSource="{Binding About.Providers}">
                         <ItemsControl.ItemTemplate>
@@ -66,7 +67,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock
-                        x:Uid="About.CapabilitiesSummary"
+                        loc:Loc.Key="About.CapabilitiesSummary"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <TextBlock Text="{Binding About.CurrentLanguageText, Mode=OneWay}" />
@@ -82,7 +83,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="6">
-                    <TextBlock x:Uid="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <ItemsControl ItemsSource="{Binding About.PrivacyItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -101,7 +102,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <ItemsControl ItemsSource="{Binding About.Links}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:AboutLinkRow">
@@ -125,15 +126,15 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.OpenLocalDocuments" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.OpenLocalDocuments" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
-                        x:Uid="About.LocalDocsDescription"
+                        loc:Loc.Key="About.LocalDocsDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button x:Uid="About.DocsPrivacy" Tag="privacy" Click="OnLocalDocClicked" />
-                        <Button x:Uid="About.DocsLicense" Tag="license" Click="OnLocalDocClicked" />
-                        <Button x:Uid="About.DocsThirdParty" Tag="third-party" Click="OnLocalDocClicked" />
+                        <Button loc:Loc.Key="About.DocsPrivacy" Tag="privacy" Click="OnLocalDocClicked" />
+                        <Button loc:Loc.Key="About.DocsLicense" Tag="license" Click="OnLocalDocClicked" />
+                        <Button loc:Loc.Key="About.DocsThirdParty" Tag="third-party" Click="OnLocalDocClicked" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -146,15 +147,15 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
-                        x:Uid="About.UpdateDescription"
+                        loc:Loc.Key="About.UpdateDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button x:Uid="About.CheckUpdates" Command="{Binding About.CheckUpdatesCommand}" />
+                        <Button loc:Loc.Key="About.CheckUpdates" Command="{Binding About.CheckUpdatesCommand}" />
                         <Button
-                            x:Uid="About.OpenReleasePage"
+                            loc:Loc.Key="About.OpenReleasePage"
                             Command="{Binding About.OpenReleasePageCommand}"
                             Visibility="{Binding About.HasUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
@@ -179,12 +180,12 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
-                        x:Uid="About.DiagnosticsDescription"
+                        loc:Loc.Key="About.DiagnosticsDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
-                    <Button x:Uid="About.CopyDiagnostics" Command="{Binding About.CopyDiagnosticsCommand}" />
+                    <Button loc:Loc.Key="About.CopyDiagnostics" Command="{Binding About.CopyDiagnosticsCommand}" />
                 </StackPanel>
             </Border>
 
@@ -196,12 +197,12 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Uid="About.LocalDataTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="About.LocalDataTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
-                        x:Uid="About.LocalDataDescription"
+                        loc:Loc.Key="About.LocalDataDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
-                    <Button x:Uid="About.OpenDataFolder" Command="{Binding About.OpenDataFolderCommand}" />
+                    <Button loc:Loc.Key="About.OpenDataFolder" Command="{Binding About.OpenDataFolderCommand}" />
                 </StackPanel>
             </Border>
         </StackPanel>
