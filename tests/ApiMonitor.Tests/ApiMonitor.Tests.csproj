@@ -110,5 +110,23 @@
     <Compile Include="../../ViewModels/CompactWindowViewModel.cs" Link="ViewModels/CompactWindowViewModel.cs" />
     <Compile Include="../../ViewModels/TraySettingsViewModel.cs" Link="ViewModels/TraySettingsViewModel.cs" />
     <Compile Include="../../ViewModels/NotificationSettingsViewModel.cs" Link="ViewModels/NotificationSettingsViewModel.cs" />
+    <Compile Include="../../ViewModels/AppearanceSettingsViewModel.cs" Link="ViewModels/AppearanceSettingsViewModel.cs" />
+    <Compile Include="../../ViewModels/DataManagementViewModel.cs" Link="ViewModels/DataManagementViewModel.cs" />
+    <Compile Include="../../ViewModels/InsightsViewModel.cs" Link="ViewModels/InsightsViewModel.cs" />
+    <Compile Include="../../ViewModels/AboutViewModel.cs" Link="ViewModels/AboutViewModel.cs" />
+    <Compile Include="../../Services/AppInfo.cs" Link="Services/AppInfo.cs" />
+    <Compile Include="../../Services/AppearanceSettingsStore.cs" Link="Services/AppearanceSettingsStore.cs" />
+    <Compile Include="../../Services/AppearanceService.cs" Link="Services/AppearanceService.cs" />
+    <Compile Include="../../Services/LanguageService.cs" Link="Services/LanguageService.cs" />
+    <Compile Include="../../Services/ConsumptionEstimateService.cs" Link="Services/ConsumptionEstimateService.cs" />
+    <Compile Include="../../Services/TrendDataBuilder.cs" Link="Services/TrendDataBuilder.cs" />
+    <Compile Include="../../Services/CsvHistoryExporter.cs" Link="Services/CsvHistoryExporter.cs" />
+    <Compile Include="../../Services/InsightsHistoryProvider.cs" Link="Services/InsightsHistoryProvider.cs" />
+    <Compile Include="../../Services/IPortableBackupService.cs" Link="Services/IPortableBackupService.cs" />
+    <Compile Include="../../Services/PortableBackupService.cs" Link="Services/PortableBackupService.cs" />
+    <Compile Include="../../Services/UpdateCheckService.cs" Link="Services/UpdateCheckService.cs" />
+    <Compile Include="../../Services/DiagnosticsInfoService.cs" Link="Services/DiagnosticsInfoService.cs" />
+    <Compile Include="../../Services/IFilePickerService.cs" Link="Services/IFilePickerService.cs" />
+    <Compile Include="../../Services/IAppStrings.cs" Link="Services/IAppStrings.cs" />
   </ItemGroup>
 </Project>

@@ -24,14 +24,14 @@
         <!-- 1. 页面标题与版本说明 -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
             <StackPanel Spacing="4">
-                <TextBlock Text="ApiMonitor" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock x:Uid="Home.Title" Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock
                     Text="{Binding SubtitleText}"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
             <Button
                 Grid.Column="1"
-                Content="打开紧凑窗口"
+                x:Uid="Home.OpenCompactWindow"
                 Command="{Binding OpenCompactWindowCommand}"
                 VerticalAlignment="Top" />
         </Grid>
@@ -43,11 +43,11 @@
                 Command="{Binding AddAccountCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <SymbolIcon Symbol="Add" />
-                    <TextBlock Text="添加账户" VerticalAlignment="Center" />
+                    <TextBlock x:Uid="Home.AddAccount" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Button
-                Content="刷新全部账户"
+                x:Uid="Home.RefreshAll"
                 Command="{Binding RefreshAllCommand}" />
             <ProgressRing
                 Width="20"
@@ -76,7 +76,7 @@
             <StackPanel Spacing="10">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                     <TextBlock
-                        Text="账户概览"
+                        x:Uid="Home.AccountOverview"
                         FontWeight="SemiBold"
                         VerticalAlignment="Center" />
                     <TextBlock
@@ -88,7 +88,7 @@
                 <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="16">
                     <StackPanel Spacing="3">
                         <TextBlock
-                            Text="Provider"
+                            x:Uid="Home.FilterProvider"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <ComboBox
                             MinWidth="160"
@@ -99,7 +99,7 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="3">
                         <TextBlock
-                            Text="状态"
+                            x:Uid="Home.FilterStatus"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <ComboBox
                             MinWidth="140"
@@ -230,13 +230,14 @@
                                     <!-- 操作区（统一命令栏） -->
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="刷新" Command="{x:Bind RefreshCommand}" />
-                                            <Button Content="编辑" Command="{x:Bind EditCommand}" />
+                                            <Button x:Uid="Home.Refresh" Command="{x:Bind RefreshCommand}" />
+                                            <Button x:Uid="Home.Edit" Command="{x:Bind EditCommand}" />
+                                            <Button x:Uid="Home.ViewTrends" Command="{x:Bind ViewTrendsCommand}" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                            <Button Content="复制密钥" Command="{x:Bind CopyKeyCommand}" />
-                                            <Button Content="历史记录" Command="{x:Bind HistoryCommand}" />
-                                            <Button Content="删除" Command="{x:Bind DeleteCommand}" />
+                                            <Button x:Uid="Home.CopyKey" Command="{x:Bind CopyKeyCommand}" />
+                                            <Button x:Uid="Home.History" Command="{x:Bind HistoryCommand}" />
+                                            <Button x:Uid="Home.Delete" Command="{x:Bind DeleteCommand}" />
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
@@ -261,11 +262,11 @@
                 Spacing="14"
                 Visibility="{Binding HasAccounts, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                 <TextBlock
-                    Text="尚未添加 API 账户"
+                    x:Uid="Home.EmptyTitle"
                     Style="{StaticResource SubtitleTextBlockStyle}"
                     HorizontalAlignment="Center" />
                 <TextBlock
-                    Text="添加 DeepSeek 或 OpenRouter 账户后，即可查询余额、记录历史并设置低余额提醒。"
+                    x:Uid="Home.EmptyMessage"
                     TextAlignment="Center"
                     MaxWidth="420"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -276,14 +277,14 @@
                     Command="{Binding AddAccountCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="Add" />
-                        <TextBlock Text="添加第一个账户" VerticalAlignment="Center" />
+                        <TextBlock x:Uid="Home.AddFirstAccount" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <InfoBar
                     IsOpen="True"
                     Severity="Informational"
-                    Title="隐私说明"
-                    Message="API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。" />
+                    x:Uid="Home.PrivacyTitle"
+                    Message="{Binding HomePrivacyMessage}" />
             </StackPanel>
 
             <StackPanel
@@ -292,7 +293,7 @@
                 Spacing="12"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ProgressRing IsActive="True" Width="48" Height="48" />
-                <TextBlock Text="正在加载本地数据…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="Home.Loading" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </Grid>
     </Grid>

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Reflection;
 using ApiMonitor.Models;
 using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -80,9 +79,25 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>“余额提醒”设置区（由 CompositionRoot 注入）。</summary>
     public NotificationSettingsViewModel? NotificationSettings { get; set; }
 
-    /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
+    /// <summary>“外观与语言”设置区（v0.6.0，由 CompositionRoot 注入）。</summary>
+    public AppearanceSettingsViewModel? AppearanceSettings { get; set; }
+
+    /// <summary>“数据管理”设置区（v0.6.0，由 CompositionRoot 注入）。</summary>
+    public DataManagementViewModel? DataManagement { get; set; }
+
+    /// <summary>数据洞察页 ViewModel（由 CompositionRoot 注入；导航外壳共享）。</summary>
+    public InsightsViewModel? Insights { get; set; }
+
+    /// <summary>关于页 ViewModel（由 CompositionRoot 注入）。</summary>
+    public AboutViewModel? About { get; set; }
+
+    /// <summary>主界面副标题，版本号取自集中元数据服务（AssemblyInformationalVersion）。</summary>
     public string SubtitleText { get; } =
-        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，支持 DeepSeek 与 OpenRouter）。";
+        $"查询并记录你自己的 API 账户余额（v{AppInfo.DisplayVersion}，支持 DeepSeek 与 OpenRouter）。";
+
+    /// <summary>主页空状态隐私说明（v0.6.0 起从资源取，避免硬编码）。</summary>
+    public string HomePrivacyMessage { get; } =
+        "API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
@@ -478,6 +493,16 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>数据洞察页当前目标账户（由账户卡片“查看趋势”入口设置）。</summary>
+    public string? InsightsTargetAccountId { get; set; }
+
+    /// <summary>从账户卡片进入数据洞察页并预选该账户（不依赖账户名称作为主键）。</summary>
+    public void OpenInsightsForAccount(string accountId)
+    {
+        InsightsTargetAccountId = accountId;
+        NavigateTo(AppPageKind.Insights);
+    }
+
     /// <summary>窗口关闭/应用退出时取消在途操作并解除事件订阅。</summary>
     public void Shutdown()
     {
@@ -514,7 +539,12 @@ public sealed partial class MainViewModel : ObservableObject
                 () => EditAccountAsync(account.AccountId),
                 () => DeleteAccountAsync(account.AccountId),
                 () => CopyKeyAsync(account.AccountId),
-                () => ShowHistoryAsync(account.AccountId));
+                () => ShowHistoryAsync(account.AccountId),
+                () =>
+                {
+                    OpenInsightsForAccount(account.AccountId);
+                    return Task.CompletedTask;
+                });
 
             if (_snoozeReader is not null)
             {
@@ -723,14 +753,4 @@ public sealed partial class MainViewModel : ObservableObject
                 })
                 .ToList(),
         };
-
-    private static string GetAppVersion()
-    {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        // 用户可见版本固定为 v0.5.0：MSIX 四段版本（0.5.0.1/0.5.0.2…）
-        // 只是同一 v0.5.0 验收候选的内部修订号，不改变对外版本。
-        return version is null
-            ? "0.5.0"
-            : $"{version.Major}.{version.Minor}.0";
-    }
 }

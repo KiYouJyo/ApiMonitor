@@ -136,6 +136,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public IAsyncRelayCommand HistoryCommand { get; }
 
+    /// <summary>v0.6.0：从账户卡片进入数据洞察并预选该账户。</summary>
+    public IAsyncRelayCommand ViewTrendsCommand { get; }
+
     public AccountListItemViewModel(
         ApiAccount account,
         string providerDisplayName,
@@ -144,7 +147,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         Func<Task> editAsync,
         Func<Task> deleteAsync,
         Func<Task> copyAsync,
-        Func<Task> historyAsync)
+        Func<Task> historyAsync,
+        Func<Task>? viewTrendsAsync = null)
     {
         Account = account;
         ProviderDisplayName = providerDisplayName;
@@ -170,6 +174,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         HistoryCommand = new AsyncRelayCommand(
             () => _historyAsync(),
             () => !IsHistoryOpen);
+        ViewTrendsCommand = new AsyncRelayCommand(() => viewTrendsAsync?.Invoke() ?? Task.CompletedTask);
 
         if (record?.LastSuccessfulSnapshot is { } snapshot)
         {

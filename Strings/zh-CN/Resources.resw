@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- ===================== 导航 ===================== -->
+
+  <!-- ===================== 主页 ===================== -->
+  <data name="Home.Subtitle" xml:space="preserve"><value>查询并记录你自己的 API 账户余额（v{0}，支持 DeepSeek 与 OpenRouter）。</value></data>
+  <data name="Home.AccountSummary" xml:space="preserve"><value>共 {0} 个账户 · 低余额 {1} · 查询失败 {2}</value></data>
+  <data name="Home.FilterAllProviders" xml:space="preserve"><value>全部 Provider</value></data>
+  <data name="Home.FilterAllStatus" xml:space="preserve"><value>全部状态</value></data>
+  <data name="Home.StatusNormal" xml:space="preserve"><value>正常</value></data>
+  <data name="Home.StatusLow" xml:space="preserve"><value>低余额</value></data>
+  <data name="Home.StatusUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Home.StatusFailed" xml:space="preserve"><value>失败</value></data>
+  <data name="Home.AutoRefreshOn" xml:space="preserve"><value>自动刷新：已开启</value></data>
+  <data name="Home.AutoRefreshOff" xml:space="preserve"><value>自动刷新：已关闭</value></data>
+  <data name="Home.RefreshInterval" xml:space="preserve"><value>刷新间隔：{0} 分钟</value></data>
+  <data name="Home.NextRefreshOff" xml:space="preserve"><value>下次刷新：自动刷新已关闭</value></data>
+  <data name="Home.NextRefreshAt" xml:space="preserve"><value>下次刷新：{0}</value></data>
+  <data name="Home.NextRefreshNever" xml:space="preserve"><value>下次刷新：尚未查询</value></data>
+  <data name="Home.LastSuccessLine" xml:space="preserve"><value>最近成功更新：{0}</value></data>
+  <data name="Home.NotAvailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="Home.NoData" xml:space="preserve"><value>尚无余额数据</value></data>
+  <data name="Home.NotificationsOn" xml:space="preserve"><value>通知：开启</value></data>
+  <data name="Home.NotificationsOff" xml:space="preserve"><value>通知：关闭</value></data>
+  <data name="Home.NotificationsInherit" xml:space="preserve"><value>通知：继承全局</value></data>
+  <data name="Home.SnoozeUntil" xml:space="preserve"><value>暂停提醒至 {0}</value></data>
+
+  <!-- ===================== 数据洞察 ===================== -->
+  <data name="Insights.Range7Days" xml:space="preserve"><value>最近 7 天</value></data>
+  <data name="Insights.Range30Days" xml:space="preserve"><value>最近 30 天</value></data>
+  <data name="Insights.Range90Days" xml:space="preserve"><value>最近 90 天</value></data>
+  <data name="Insights.RangeAll" xml:space="preserve"><value>全部可用历史</value></data>
+  <data name="Insights.FirstValue" xml:space="preserve"><value>首个值</value></data>
+  <data name="Insights.LatestValue" xml:space="preserve"><value>最新值</value></data>
+  <data name="Insights.MinimumValue" xml:space="preserve"><value>最低值</value></data>
+  <data name="Insights.MaximumValue" xml:space="preserve"><value>最高值</value></data>
+  <data name="Insights.Estimated" xml:space="preserve"><value>估算值</value></data>
+  <data name="Insights.EstimateDisclaimer" xml:space="preserve"><value>基于本机历史记录计算，实际消耗可能不同。</value></data>
+  <data name="Insights.ExportCsvDone" xml:space="preserve"><value>CSV 已导出</value></data>
+  <data name="Insights.EmptyState" xml:space="preserve"><value>尚无足够的历史数据。余额成功刷新后，趋势将在这里显示。</value></data>
+  <data name="Insights.NoAccount" xml:space="preserve"><value>尚未添加账户。请先在主页添加账户。</value></data>
+  <data name="Insights.NotEnoughData" xml:space="preserve"><value>数据不足</value></data>
+  <data name="Insights.NoConsumption" xml:space="preserve"><value>尚未观察到消耗</value></data>
+  <data name="Insights.RecentTopUp" xml:space="preserve"><value>最近主要为充值或重置</value></data>
+  <data name="Insights.UnsupportedMetric" xml:space="preserve"><value>指标不支持预测</value></data>
+  <data name="Insights.UnknownCurrentValue" xml:space="preserve"><value>当前值未知</value></data>
+  <data name="Insights.TimeSpanTooShort" xml:space="preserve"><value>时间跨度不足</value></data>
+  <data name="Insights.Unlimited" xml:space="preserve"><value>无限额度</value></data>
+  <data name="Insights.NotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Insights.ChartSummary" xml:space="preserve"><value>{0} 的 {1} 趋势图：{2} 个数据点，{3} 至 {4}，最低 {5}，最高 {6}</value></data>
+  <data name="Insights.ChartNotEnoughData" xml:space="preserve"><value>{0} 的 {1} 历史数据不足，无法绘制趋势。</value></data>
+  <data name="Insights.HideHistory" xml:space="preserve"><value>隐藏历史数据表</value></data>
+  <data name="Insights.HistoryTable" xml:space="preserve"><value>历史数据表</value></data>
+  <data name="Insights.SourceManual" xml:space="preserve"><value>手动</value></data>
+  <data name="Insights.SourceAutomatic" xml:space="preserve"><value>自动</value></data>
+  <data name="Insights.UnknownValue" xml:space="preserve"><value>未知</value></data>
+  <data name="Insights.Loading" xml:space="preserve"><value>正在加载历史数据…</value></data>
+  <data name="Insights.LoadError" xml:space="preserve"><value>加载历史数据失败，请稍后重试。</value></data>
+
+  <!-- ===================== 设置页 ===================== -->
+  <data name="Settings.CloseHide" xml:space="preserve"><value>隐藏到通知区域</value></data>
+  <data name="Settings.CloseExit" xml:space="preserve"><value>退出 ApiMonitor</value></data>
+  <data name="Settings.StartWithWindowsDescription" xml:space="preserve"><value>启用后，ApiMonitor 将在登录时驻留通知区域，不自动弹出主窗口。</value></data>
+  <data name="Settings.On" xml:space="preserve"><value>开启</value></data>
+  <data name="Settings.Off" xml:space="preserve"><value>关闭</value></data>
+  <data name="Settings.ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Settings.ThemeLight" xml:space="preserve"><value>浅色</value></data>
+  <data name="Settings.ThemeDark" xml:space="preserve"><value>深色</value></data>
+  <data name="Settings.LanguageSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Settings.LanguageZhCn" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Settings.LanguageEnUs" xml:space="preserve"><value>English</value></data>
+  <data name="Settings.LanguageJaJp" xml:space="preserve"><value>日本語</value></data>
+  <data name="Settings.LanguageRestartRequired" xml:space="preserve"><value>语言更改将在重启应用后生效。是否立即重启？</value></data>
+  <data name="Settings.RestartNow" xml:space="preserve"><value>立即重启</value></data>
+  <data name="Settings.Later" xml:space="preserve"><value>稍后</value></data>
+  <data name="Settings.RestartFailed" xml:space="preserve"><value>无法自动重启，请手动退出后再启动应用。</value></data>
+  <data name="Settings.BackupDescription" xml:space="preserve"><value>便携备份包含账户元数据、Provider 非敏感设置、余额历史、阈值与设置；不包含 API Key 或凭据。</value></data>
+
+  <!-- ===================== 关于页 ===================== -->
+  <data name="About.DisplayVersion" xml:space="preserve"><value>版本：v{0}</value></data>
+  <data name="About.PackageVersion" xml:space="preserve"><value>包版本：{0}</value></data>
+  <data name="About.Architecture" xml:space="preserve"><value>架构：{0}</value></data>
+  <data name="About.PackageIdentity" xml:space="preserve"><value>Package Identity：{0}</value></data>
+  <data name="About.Publisher" xml:space="preserve"><value>发布者：{0}</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API Key 保存在 Windows Credential Locker。</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>余额、历史和设置保存在本机。</value></data>
+  <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>应用没有开发者云端服务器。</value></data>
+  <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>没有遥测和广告。</value></data>
+  <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>通知由本机生成。</value></data>
+  <data name="About.PrivacyItemBackupNoSecrets" xml:space="preserve"><value>便携备份不包含 API Key。</value></data>
+  <data name="About.CheckingUpdates" xml:space="preserve"><value>正在检查更新…</value></data>
+  <data name="About.UpToDate" xml:space="preserve"><value>已是最新版本</value></data>
+  <data name="About.UpdateAvailable" xml:space="preserve"><value>发现新版本 v{0}</value></data>
+  <data name="About.DevVersionNewer" xml:space="preserve"><value>当前为较新的开发版本</value></data>
+  <data name="About.UpdateCheckFailed" xml:space="preserve"><value>检查更新失败：{0}</value></data>
+  <data name="About.DiagnosticsCopied" xml:space="preserve"><value>诊断信息已复制到剪贴板</value></data>
+  <data name="About.LinkLaunchFailed" xml:space="preserve"><value>无法打开链接，请稍后重试。</value></data>
+  <data name="About.CurrentLanguage" xml:space="preserve"><value>当前 UI 语言：{0}</value></data>
+  <data name="About.CurrentTheme" xml:space="preserve"><value>当前主题：{0}</value></data>
+  <data name="About.ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="About.ThemeLight" xml:space="preserve"><value>浅色</value></data>
+  <data name="About.ThemeDark" xml:space="preserve"><value>深色</value></data>
+
+  <!-- ===================== 通用 ===================== -->
+  <data name="Common.OK" xml:space="preserve"><value>确定</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Common.Open" xml:space="preserve"><value>打开</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Common.Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Common.Error" xml:space="preserve"><value>错误</value></data>
+  <data name="Common.Warning" xml:space="preserve"><value>警告</value></data>
+  <data name="Common.Success" xml:space="preserve"><value>成功</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>失败</value></data>
+  <data name="Common.Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Common.No" xml:space="preserve"><value>否</value></data>
+  <data name="Insights.Title.Text" xml:space="preserve"><value>数据洞察</value></data>
+  <data name="Insights.Subtitle.Text" xml:space="preserve"><value>基于本机历史记录计算的趋势与估算，实际消耗可能不同。</value></data>
+  <data name="Insights.Account.Text" xml:space="preserve"><value>账户</value></data>
+  <data name="Insights.Metric.Text" xml:space="preserve"><value>指标</value></data>
+  <data name="Insights.TimeRange.Text" xml:space="preserve"><value>时间范围</value></data>
+  <data name="Insights.ExportCsv.Content" xml:space="preserve"><value>导出当前历史为 CSV</value></data>
+  <data name="Insights.CurrentValue.Text" xml:space="preserve"><value>当前值</value></data>
+  <data name="Insights.ChangeInRange.Text" xml:space="preserve"><value>区间变化</value></data>
+  <data name="Insights.DailyConsumption.Text" xml:space="preserve"><value>每日消耗估算</value></data>
+  <data name="Insights.EstimatedDaysLeft.Text" xml:space="preserve"><value>预计可用天数</value></data>
+  <data name="Insights.ShowHistory.Content" xml:space="preserve"><value>显示历史数据表</value></data>
+  <data name="Insights.ColTime.Text" xml:space="preserve"><value>时间</value></data>
+  <data name="Insights.ColProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Insights.ColAccount.Text" xml:space="preserve"><value>账户</value></data>
+  <data name="Insights.ColMetric.Text" xml:space="preserve"><value>指标</value></data>
+  <data name="Insights.ColValue.Text" xml:space="preserve"><value>数值</value></data>
+  <data name="Insights.ColUnit.Text" xml:space="preserve"><value>单位</value></data>
+  <data name="Insights.ColSource.Text" xml:space="preserve"><value>查询来源</value></data>
+  <data name="About.Title.Text" xml:space="preserve"><value>关于</value></data>
+  <data name="About.CapabilitiesTitle.Text" xml:space="preserve"><value>当前能力</value></data>
+  <data name="About.PrivacyTitle.Text" xml:space="preserve"><value>隐私与安全摘要</value></data>
+  <data name="About.LinksTitle.Text" xml:space="preserve"><value>项目链接</value></data>
+  <data name="About.LinkRepository.Content" xml:space="preserve"><value>GitHub 仓库</value></data>
+  <data name="About.LinkReleases.Content" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkIssues.Content" xml:space="preserve"><value>提交问题</value></data>
+  <data name="About.LinkPrivacy.Content" xml:space="preserve"><value>隐私政策</value></data>
+  <data name="About.LinkSecurity.Content" xml:space="preserve"><value>安全政策</value></data>
+  <data name="About.LinkSupport.Content" xml:space="preserve"><value>支持文档</value></data>
+  <data name="About.LinkLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkThirdParty.Content" xml:space="preserve"><value>第三方声明</value></data>
+  <data name="About.OpenLocalDocuments.Text" xml:space="preserve"><value>本地文档</value></data>
+  <data name="About.DocsPrivacy.Content" xml:space="preserve"><value>隐私政策</value></data>
+  <data name="About.DocsLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.DocsThirdParty.Content" xml:space="preserve"><value>第三方声明</value></data>
+  <data name="About.CheckUpdates.Content" xml:space="preserve"><value>检查更新</value></data>
+  <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>复制诊断信息</value></data>
+  <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>打开本地数据文件夹</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>查询并记录你自己的 API 账户余额</value></data>
+  <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>本地余额历史、自动刷新、通知区域、Windows 余额提醒、数据洞察。</value></data>
+  <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>隐私政策、MIT License 与第三方声明随应用打包，可离线查看。</value></data>
+  <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>更新</value></data>
+  <data name="About.UpdateDescription.Text" xml:space="preserve"><value>检查更新只在点击时访问 GitHub；发现新版本后由你决定是否下载安装，应用不会自动下载或安装。</value></data>
+  <data name="About.OpenReleasePage.Content" xml:space="preserve"><value>打开发布页</value></data>
+  <data name="About.DiagnosticsTitle.Text" xml:space="preserve"><value>诊断信息</value></data>
+  <data name="About.DiagnosticsDescription.Text" xml:space="preserve"><value>复制非敏感诊断信息（版本、架构、Provider 列表、账户数量等），用于排查问题；不包含 API Key、余额、用户名或本地路径。</value></data>
+  <data name="About.LocalDataTitle.Text" xml:space="preserve"><value>本地数据</value></data>
+  <data name="About.LocalDataDescription.Text" xml:space="preserve"><value>只打开当前 Package LocalState（账户、历史与设置所在目录）。</value></data>
+  <data name="Nav.Home.Content" xml:space="preserve"><value>主页</value></data>
+  <data name="Nav.Insights.Content" xml:space="preserve"><value>数据洞察</value></data>
+  <data name="Nav.Settings.Content" xml:space="preserve"><value>设置</value></data>
+  <data name="Nav.About.Content" xml:space="preserve"><value>关于</value></data>
+  <data name="Tray.OpenMainWindow" xml:space="preserve"><value>打开 ApiMonitor</value></data>
+  <data name="Tray.OpenCompactWindow" xml:space="preserve"><value>打开紧凑窗口</value></data>
+  <data name="Tray.RefreshAll" xml:space="preserve"><value>刷新全部账户</value></data>
+  <data name="Tray.StartWithWindows" xml:space="preserve"><value>登录时启动</value></data>
+  <data name="Tray.ExitApplication" xml:space="preserve"><value>退出 ApiMonitor</value></data>
+  <data name="Notification.OpenAccount" xml:space="preserve"><value>打开账户</value></data>
+  <data name="Notification.Dismiss" xml:space="preserve"><value>关闭</value></data>
+  <data name="Notification.LowBalanceTitle" xml:space="preserve"><value>{0} 余额不足</value></data>
+  <data name="Home.Title.Text" xml:space="preserve"><value>ApiMonitor</value></data>
+  <data name="Home.OpenCompactWindow.Content" xml:space="preserve"><value>打开紧凑窗口</value></data>
+  <data name="Home.AddAccount.Content" xml:space="preserve"><value>添加账户</value></data>
+  <data name="Home.RefreshAll.Content" xml:space="preserve"><value>刷新全部账户</value></data>
+  <data name="Home.AccountOverview.Text" xml:space="preserve"><value>账户概览</value></data>
+  <data name="Home.FilterProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Home.FilterStatus.Text" xml:space="preserve"><value>状态</value></data>
+  <data name="Home.Refresh.Content" xml:space="preserve"><value>刷新</value></data>
+  <data name="Home.Edit.Content" xml:space="preserve"><value>编辑</value></data>
+  <data name="Home.ViewTrends.Content" xml:space="preserve"><value>查看趋势</value></data>
+  <data name="Home.CopyKey.Content" xml:space="preserve"><value>复制密钥</value></data>
+  <data name="Home.History.Content" xml:space="preserve"><value>历史记录</value></data>
+  <data name="Home.Delete.Content" xml:space="preserve"><value>删除</value></data>
+  <data name="Home.EmptyTitle.Text" xml:space="preserve"><value>尚未添加 API 账户</value></data>
+  <data name="Home.AddFirstAccount.Content" xml:space="preserve"><value>添加第一个账户</value></data>
+  <data name="Home.Loading.Text" xml:space="preserve"><value>正在加载本地数据…</value></data>
+  <data name="Home.PrivacyTitle.Text" xml:space="preserve"><value>隐私说明</value></data>
+  <data name="Home.EmptyMessage.Text" xml:space="preserve"><value>添加 DeepSeek 或 OpenRouter 账户后，即可查询余额、记录历史并设置低余额提醒。</value></data>
+  <data name="Home.PrivacyMessage.Message" xml:space="preserve"><value>API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。</value></data>
+  <data name="Settings.Title.Text" xml:space="preserve"><value>设置</value></data>
+  <data name="Settings.TraySection.Text" xml:space="preserve"><value>通知区域与启动</value></data>
+  <data name="Settings.TrayDescription.Text" xml:space="preserve"><value>隐藏到通知区域后，余额自动刷新将继续运行。选择“退出 ApiMonitor”才会完全结束程序。</value></data>
+  <data name="Settings.ExitApplication.Content" xml:space="preserve"><value>退出 ApiMonitor</value></data>
+  <data name="Settings.CloseBehavior.Text" xml:space="preserve"><value>关闭主窗口时：</value></data>
+  <data name="Settings.StartWithWindows.Header" xml:space="preserve"><value>登录 Windows 时启动 ApiMonitor</value></data>
+  <data name="Settings.NotificationSection.Text" xml:space="preserve"><value>余额提醒</value></data>
+  <data name="Settings.EnableNotifications.Header" xml:space="preserve"><value>启用余额系统提醒</value></data>
+  <data name="Settings.RepeatInterval.Text" xml:space="preserve"><value>默认重复提醒间隔</value></data>
+  <data name="Settings.RecoveryNotifications.Header" xml:space="preserve"><value>余额恢复提醒</value></data>
+  <data name="Settings.SendTestNotification.Content" xml:space="preserve"><value>发送测试通知</value></data>
+  <data name="Settings.OpenNotificationSettings.Content" xml:space="preserve"><value>打开 Windows 通知设置</value></data>
+  <data name="Settings.AppearanceSection.Text" xml:space="preserve"><value>外观与语言</value></data>
+  <data name="Settings.Theme.Text" xml:space="preserve"><value>主题</value></data>
+  <data name="Settings.Language.Text" xml:space="preserve"><value>语言</value></data>
+  <data name="Settings.AppearanceDescription.Text" xml:space="preserve"><value>主题选择立即生效；语言更改需要重启应用。</value></data>
+  <data name="Settings.DataSection.Text" xml:space="preserve"><value>数据管理</value></data>
+  <data name="Settings.ExportBackup.Content" xml:space="preserve"><value>导出便携备份</value></data>
+  <data name="Settings.ImportBackup.Content" xml:space="preserve"><value>导入便携备份</value></data>
+  <data name="Settings.OpenDataFolder.Content" xml:space="preserve"><value>打开本地数据文件夹</value></data>
+  <data name="Settings.AppInfoSection.Text" xml:space="preserve"><value>应用信息</value></data>
+  <data name="Settings.GitHubLink.Content" xml:space="preserve"><value>GitHub 项目</value></data>
+  <data name="Settings.PrivacyLink.Content" xml:space="preserve"><value>隐私政策</value></data>
+  <data name="Settings.OnContent" xml:space="preserve"><value>开启</value></data>
+  <data name="Settings.OffContent" xml:space="preserve"><value>关闭</value></data>
+  <data name="Notification.RecoveredTitle" xml:space="preserve"><value>ApiMonitor：余额已恢复</value></data>
+  <data name="Notification.TestTitle" xml:space="preserve"><value>ApiMonitor：测试通知</value></data>
+  <data name="Notification.TestBody" xml:space="preserve"><value>这是一条测试通知。点击后打开 ApiMonitor。</value></data>
+  <data name="Notification.Snooze24h" xml:space="preserve"><value>暂停提醒 24 小时</value></data>
+  <data name="Compact.EmptyTitle.Text" xml:space="preserve"><value>尚未添加 API 账户</value></data>
+  <data name="Compact.OpenMainWindow.Content" xml:space="preserve"><value>打开主窗口</value></data>
+  <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>状态：</value></data>
+  <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>最近成功：</value></data>
+  <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>尚未查询余额</value></data>
+</root>

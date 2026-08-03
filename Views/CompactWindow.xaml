@@ -59,7 +59,7 @@
             Grid.Row="1"
             Spacing="6"
             Visibility="{Binding HasAccounts, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-            <TextBlock Text="尚未添加 API 账户" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock x:Uid="Compact.EmptyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
             <Button
                 Content="打开主窗口"
                 Command="{Binding OpenMainWindowCommand}"
@@ -83,11 +83,11 @@
             HorizontalAlignment="Center"
             Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="Compact.StatusPrefix" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="最近成功：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="Compact.LastSuccessPrefix" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Text="{Binding LastSuccessText}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
@@ -99,7 +99,7 @@
         <!-- 无余额记录空状态 -->
         <TextBlock
             Grid.Row="3"
-            Text="尚未查询余额"
+            x:Uid="Compact.NoSnapshot"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             HorizontalAlignment="Center"
             Visibility="{Binding HasSnapshot, Converter={StaticResource InverseBoolToVisibilityConverter}}" />

@@ -16,7 +16,7 @@
             MaxWidth="720"
             HorizontalAlignment="Left">
 
-            <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock x:Uid="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
             <!-- 1. 通知区域与启动 -->
             <Border
@@ -28,20 +28,20 @@
                 <StackPanel Spacing="14">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="通知区域与启动" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock x:Uid="Settings.TraySection" Style="{StaticResource SubtitleTextBlockStyle}" />
                             <TextBlock
-                                Text="隐藏到通知区域后，余额自动刷新将继续运行。选择“退出 ApiMonitor”才会完全结束程序。"
+                                x:Uid="Settings.TrayDescription"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
                         <Button
                             Grid.Column="1"
-                            Content="退出 ApiMonitor"
+                            x:Uid="Settings.ExitApplication"
                             Command="{Binding TraySettings.ExitApplicationCommand}"
                             VerticalAlignment="Top" />
                     </Grid>
 
-                    <TextBlock Text="关闭主窗口时：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Uid="Settings.CloseBehavior" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <RadioButtons
                         MaxColumns="2"
                         SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
@@ -79,19 +79,19 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="余额提醒" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding NotificationSettings.LocalOnlyExplanationText, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <ToggleSwitch
-                        Header="启用余额系统提醒"
+                        x:Uid="Settings.EnableNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <TextBlock
-                            Text="默认重复提醒间隔"
+                            x:Uid="Settings.RepeatInterval"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" />
                         <ComboBox
@@ -104,7 +104,7 @@
                             SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
                     </Grid>
                     <ToggleSwitch
-                        Header="余额恢复提醒"
+                        x:Uid="Settings.RecoveryNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
@@ -124,7 +124,86 @@
                 </StackPanel>
             </Border>
 
-            <!-- 3. 应用信息（简单，不做复杂“关于”页） -->
+            <!-- 3. 外观与语言（v0.6.0） -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock x:Uid="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <TextBlock
+                            x:Uid="Settings.Theme"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            Grid.Column="1"
+                            MinWidth="160"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding AppearanceSettings.ThemeOptions}"
+                            DisplayMemberPath="DisplayName"
+                            SelectedItem="{Binding AppearanceSettings.SelectedTheme, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <TextBlock
+                            x:Uid="Settings.Language"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            Grid.Column="1"
+                            MinWidth="160"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding AppearanceSettings.LanguageOptions}"
+                            DisplayMemberPath="DisplayName"
+                            SelectedItem="{Binding AppearanceSettings.SelectedLanguage, Mode=TwoWay}" />
+                    </Grid>
+                    <TextBlock
+                        x:Uid="Settings.AppearanceDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Text="{Binding AppearanceSettings.StatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding AppearanceSettings.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 4. 数据管理（v0.6.0：便携备份导出/导入） -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock x:Uid="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        Text="{Binding DataManagement.DescriptionText, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button
+                            x:Uid="Settings.ExportBackup"
+                            Command="{Binding DataManagement.ExportBackupCommand}" />
+                        <Button
+                            x:Uid="Settings.ImportBackup"
+                            Command="{Binding DataManagement.ImportBackupCommand}" />
+                        <Button
+                            x:Uid="Settings.OpenDataFolder"
+                            Command="{Binding DataManagement.OpenDataFolderCommand}" />
+                    </StackPanel>
+                    <TextBlock
+                        Text="{Binding DataManagement.StatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding DataManagement.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 5. 应用信息（链接迁移到“关于”页） -->
             <Border
                 Padding="18,14"
                 CornerRadius="8"
@@ -132,7 +211,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="应用信息" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding SubtitleText}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

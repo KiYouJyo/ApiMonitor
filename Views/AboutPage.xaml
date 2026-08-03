@@ -1,0 +1,208 @@
+<UserControl
+    x:Class="ApiMonitor.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:ApiMonitor.ViewModels"
+    xmlns:converters="using:ApiMonitor.Views.Converters">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Padding="28,20,28,24" Spacing="14" MaxWidth="760" HorizontalAlignment="Left">
+
+            <TextBlock x:Uid="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <!-- 1. 产品信息 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Image
+                            Source="/Assets/ApiMonitor.ico"
+                            Width="48"
+                            Height="48"
+                            AutomationProperties.Name="ApiMonitor" />
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ProductName}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock
+                                x:Uid="About.Tagline"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="{Binding DisplayVersionText, Mode=OneWay}" />
+                    <TextBlock Text="{Binding PackageVersionText, Mode=OneWay}" />
+                    <TextBlock Text="{Binding ArchitectureText, Mode=OneWay}" />
+                    <TextBlock Text="{Binding PackageIdentityText, Mode=OneWay}" />
+                    <TextBlock Text="{Binding PublisherText, Mode=OneWay}" />
+                    <TextBlock x:Uid="About.License" />
+                    <TextBlock x:Uid="About.Copyright" />
+                </StackPanel>
+            </Border>
+
+            <!-- 2. 当前能力 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{Binding ProviderCountText, Mode=OneWay}" />
+                    <ItemsControl ItemsSource="{Binding Providers}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:AboutProviderRow">
+                                <TextBlock Text="{x:Bind DisplayName}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        x:Uid="About.CapabilitiesSummary"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CurrentLanguageText, Mode=OneWay}" />
+                    <TextBlock Text="{Binding CurrentThemeText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 3. 隐私与安全摘要 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Uid="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ItemsControl ItemsSource="{Binding PrivacyItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. 项目链接 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ItemsControl ItemsSource="{Binding Links}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:AboutLinkRow">
+                                <Button
+                                    Content="{x:Bind Title}"
+                                    Command="{Binding ElementName=Root, Path=DataContext.OpenLinkCommand}"
+                                    CommandParameter="{x:Bind}"
+                                    Margin="0,2"
+                                    HorizontalAlignment="Left" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- 5. 本地文档 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.OpenLocalDocuments" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="About.LocalDocsDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button x:Uid="About.DocsPrivacy" Tag="privacy" Click="OnLocalDocClicked" />
+                        <Button x:Uid="About.DocsLicense" Tag="license" Click="OnLocalDocClicked" />
+                        <Button x:Uid="About.DocsThirdParty" Tag="third-party" Click="OnLocalDocClicked" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 6. 手动检查更新 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="About.UpdateDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button x:Uid="About.CheckUpdates" Command="{Binding CheckUpdatesCommand}" />
+                        <Button
+                            x:Uid="About.OpenReleasePage"
+                            Command="{Binding OpenReleasePageCommand}"
+                            Visibility="{Binding HasUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                    <ProgressRing
+                        Width="20"
+                        Height="20"
+                        IsActive="{Binding IsCheckingUpdates}"
+                        HorizontalAlignment="Left" />
+                    <TextBlock
+                        Text="{Binding UpdateStatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 7. 诊断信息 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="About.DiagnosticsDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <Button x:Uid="About.CopyDiagnostics" Command="{Binding CopyDiagnosticsCommand}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 8. 本地数据入口 -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="About.LocalDataTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="About.LocalDataDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <Button x:Uid="About.OpenDataFolder" Command="{Binding OpenDataFolderCommand}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

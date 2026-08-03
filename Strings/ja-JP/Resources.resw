@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- ===================== ナビゲーション ===================== -->
+
+  <!-- ===================== ホーム ===================== -->
+  <data name="Home.Subtitle" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します（v{0}、DeepSeek と OpenRouter に対応）。</value></data>
+  <data name="Home.AccountSummary" xml:space="preserve"><value>合計 {0} アカウント · 残高不足 {1} · 照会失敗 {2}</value></data>
+  <data name="Home.FilterAllProviders" xml:space="preserve"><value>すべての Provider</value></data>
+  <data name="Home.FilterAllStatus" xml:space="preserve"><value>すべての状態</value></data>
+  <data name="Home.StatusNormal" xml:space="preserve"><value>正常</value></data>
+  <data name="Home.StatusLow" xml:space="preserve"><value>残高不足</value></data>
+  <data name="Home.StatusUnknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Home.StatusFailed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Home.AutoRefreshOn" xml:space="preserve"><value>自動更新：オン</value></data>
+  <data name="Home.AutoRefreshOff" xml:space="preserve"><value>自動更新：オフ</value></data>
+  <data name="Home.RefreshInterval" xml:space="preserve"><value>更新間隔：{0} 分</value></data>
+  <data name="Home.NextRefreshOff" xml:space="preserve"><value>次回更新：自動更新オフ</value></data>
+  <data name="Home.NextRefreshAt" xml:space="preserve"><value>次回更新：{0}</value></data>
+  <data name="Home.NextRefreshNever" xml:space="preserve"><value>次回更新：未照会</value></data>
+  <data name="Home.LastSuccessLine" xml:space="preserve"><value>最終更新成功：{0}</value></data>
+  <data name="Home.NotAvailable" xml:space="preserve"><value>利用不可</value></data>
+  <data name="Home.NoData" xml:space="preserve"><value>残高データはまだありません</value></data>
+  <data name="Home.NotificationsOn" xml:space="preserve"><value>通知：オン</value></data>
+  <data name="Home.NotificationsOff" xml:space="preserve"><value>通知：オフ</value></data>
+  <data name="Home.NotificationsInherit" xml:space="preserve"><value>通知：グローバルに従う</value></data>
+  <data name="Home.SnoozeUntil" xml:space="preserve"><value>{0} までアラート一時停止</value></data>
+
+  <!-- ===================== データ分析 ===================== -->
+  <data name="Insights.Range7Days" xml:space="preserve"><value>直近 7 日間</value></data>
+  <data name="Insights.Range30Days" xml:space="preserve"><value>直近 30 日間</value></data>
+  <data name="Insights.Range90Days" xml:space="preserve"><value>直近 90 日間</value></data>
+  <data name="Insights.RangeAll" xml:space="preserve"><value>全履歴</value></data>
+  <data name="Insights.FirstValue" xml:space="preserve"><value>最初の値</value></data>
+  <data name="Insights.LatestValue" xml:space="preserve"><value>最新値</value></data>
+  <data name="Insights.MinimumValue" xml:space="preserve"><value>最小値</value></data>
+  <data name="Insights.MaximumValue" xml:space="preserve"><value>最大値</value></data>
+  <data name="Insights.Estimated" xml:space="preserve"><value>推定値</value></data>
+  <data name="Insights.EstimateDisclaimer" xml:space="preserve"><value>ローカルの履歴に基づいて計算された推定値です。実際の消費量とは異なる場合があります。</value></data>
+  <data name="Insights.ExportCsvDone" xml:space="preserve"><value>CSV をエクスポートしました</value></data>
+  <data name="Insights.EmptyState" xml:space="preserve"><value>履歴データがまだ不足しています。残高の更新に成功すると、ここに傾向が表示されます。</value></data>
+  <data name="Insights.NoAccount" xml:space="preserve"><value>アカウントがまだありません。まずホームでアカウントを追加してください。</value></data>
+  <data name="Insights.NotEnoughData" xml:space="preserve"><value>データ不足</value></data>
+  <data name="Insights.NoConsumption" xml:space="preserve"><value>消費がまだ観測されていません</value></data>
+  <data name="Insights.RecentTopUp" xml:space="preserve"><value>最近は主にチャージまたはリセット</value></data>
+  <data name="Insights.UnsupportedMetric" xml:space="preserve"><value>この指標は予測に対応していません</value></data>
+  <data name="Insights.UnknownCurrentValue" xml:space="preserve"><value>現在値が不明</value></data>
+  <data name="Insights.TimeSpanTooShort" xml:space="preserve"><value>期間が短すぎます</value></data>
+  <data name="Insights.Unlimited" xml:space="preserve"><value>無制限</value></data>
+  <data name="Insights.NotApplicable" xml:space="preserve"><value>該当なし</value></data>
+  <data name="Insights.ChartSummary" xml:space="preserve"><value>{0} の {1} 傾向：データ点 {2} 個、{3} から {4}、最小 {5}、最大 {6}</value></data>
+  <data name="Insights.ChartNotEnoughData" xml:space="preserve"><value>{0} の {1} 履歴が不足しているため、傾向を描画できません。</value></data>
+  <data name="Insights.HideHistory" xml:space="preserve"><value>履歴テーブルを非表示</value></data>
+  <data name="Insights.HistoryTable" xml:space="preserve"><value>履歴テーブル</value></data>
+  <data name="Insights.SourceManual" xml:space="preserve"><value>手動</value></data>
+  <data name="Insights.SourceAutomatic" xml:space="preserve"><value>自動</value></data>
+  <data name="Insights.UnknownValue" xml:space="preserve"><value>不明</value></data>
+  <data name="Insights.Loading" xml:space="preserve"><value>履歴を読み込んでいます…</value></data>
+  <data name="Insights.LoadError" xml:space="preserve"><value>履歴の読み込みに失敗しました。後でもう一度お試しください。</value></data>
+
+  <!-- ===================== 設定 ===================== -->
+  <data name="Settings.CloseHide" xml:space="preserve"><value>通知領域に隠す</value></data>
+  <data name="Settings.CloseExit" xml:space="preserve"><value>ApiMonitor を終了</value></data>
+  <data name="Settings.StartWithWindowsDescription" xml:space="preserve"><value>有効にすると、サインイン時に通知領域へ常駐し、メインウィンドウは自動的に開きません。</value></data>
+  <data name="Settings.On" xml:space="preserve"><value>オン</value></data>
+  <data name="Settings.Off" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.ThemeSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="Settings.ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="Settings.ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="Settings.LanguageSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="Settings.LanguageZhCn" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Settings.LanguageEnUs" xml:space="preserve"><value>English</value></data>
+  <data name="Settings.LanguageJaJp" xml:space="preserve"><value>日本語</value></data>
+  <data name="Settings.LanguageRestartRequired" xml:space="preserve"><value>言語の変更はアプリの再起動後に有効になります。今すぐ再起動しますか？</value></data>
+  <data name="Settings.RestartNow" xml:space="preserve"><value>今すぐ再起動</value></data>
+  <data name="Settings.Later" xml:space="preserve"><value>後で</value></data>
+  <data name="Settings.RestartFailed" xml:space="preserve"><value>自動再起動に失敗しました。アプリを手動で終了してから再起動してください。</value></data>
+  <data name="Settings.BackupDescription" xml:space="preserve"><value>ポータブルバックアップには、アカウントメタデータ、Provider の非機密設定、残高履歴、しきい値、設定が含まれます。API キーや資格情報は一切含まれません。</value></data>
+
+  <!-- ===================== このアプリについて ===================== -->
+  <data name="About.DisplayVersion" xml:space="preserve"><value>バージョン：v{0}</value></data>
+  <data name="About.PackageVersion" xml:space="preserve"><value>パッケージバージョン：{0}</value></data>
+  <data name="About.Architecture" xml:space="preserve"><value>アーキテクチャ：{0}</value></data>
+  <data name="About.PackageIdentity" xml:space="preserve"><value>パッケージ ID：{0}</value></data>
+  <data name="About.Publisher" xml:space="preserve"><value>発行元：{0}</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API キーは Windows Credential Locker に保存されます。</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>残高・履歴・設定はローカルに保存されます。</value></data>
+  <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>開発者向けクラウドサーバーはありません。</value></data>
+  <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>テレメトリも広告もありません。</value></data>
+  <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>通知はローカルで生成されます。</value></data>
+  <data name="About.PrivacyItemBackupNoSecrets" xml:space="preserve"><value>ポータブルバックアップに API キーは含まれません。</value></data>
+  <data name="About.CheckingUpdates" xml:space="preserve"><value>更新を確認しています…</value></data>
+  <data name="About.UpToDate" xml:space="preserve"><value>最新バージョンです</value></data>
+  <data name="About.UpdateAvailable" xml:space="preserve"><value>新しいバージョン v{0} があります</value></data>
+  <data name="About.DevVersionNewer" xml:space="preserve"><value>より新しい開発バージョンを実行しています</value></data>
+  <data name="About.UpdateCheckFailed" xml:space="preserve"><value>更新の確認に失敗しました：{0}</value></data>
+  <data name="About.DiagnosticsCopied" xml:space="preserve"><value>診断情報をクリップボードにコピーしました</value></data>
+  <data name="About.LinkLaunchFailed" xml:space="preserve"><value>リンクを開けませんでした。後でもう一度お試しください。</value></data>
+  <data name="About.CurrentLanguage" xml:space="preserve"><value>現在の UI 言語：{0}</value></data>
+  <data name="About.CurrentTheme" xml:space="preserve"><value>現在のテーマ：{0}</value></data>
+  <data name="About.ThemeSystem" xml:space="preserve"><value>システムに従う</value></data>
+  <data name="About.ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="About.ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+
+  <!-- ===================== 共通 ===================== -->
+  <data name="Common.OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Common.Open" xml:space="preserve"><value>開く</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Common.Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Common.Error" xml:space="preserve"><value>エラー</value></data>
+  <data name="Common.Warning" xml:space="preserve"><value>警告</value></data>
+  <data name="Common.Success" xml:space="preserve"><value>成功</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Common.Retry" xml:space="preserve"><value>再試行</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="Common.No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Insights.Title.Text" xml:space="preserve"><value>データ分析</value></data>
+  <data name="Insights.Subtitle.Text" xml:space="preserve"><value>傾向と推定はローカルの履歴に基づいて計算されるため、実際の消費量とは異なる場合があります。</value></data>
+  <data name="Insights.Account.Text" xml:space="preserve"><value>アカウント</value></data>
+  <data name="Insights.Metric.Text" xml:space="preserve"><value>指標</value></data>
+  <data name="Insights.TimeRange.Text" xml:space="preserve"><value>期間</value></data>
+  <data name="Insights.ExportCsv.Content" xml:space="preserve"><value>現在の履歴を CSV としてエクスポート</value></data>
+  <data name="Insights.CurrentValue.Text" xml:space="preserve"><value>現在値</value></data>
+  <data name="Insights.ChangeInRange.Text" xml:space="preserve"><value>期間内の変化</value></data>
+  <data name="Insights.DailyConsumption.Text" xml:space="preserve"><value>1 日あたり消費量（推定）</value></data>
+  <data name="Insights.EstimatedDaysLeft.Text" xml:space="preserve"><value>推定利用可能日数</value></data>
+  <data name="Insights.ShowHistory.Content" xml:space="preserve"><value>履歴テーブルを表示</value></data>
+  <data name="Insights.ColTime.Text" xml:space="preserve"><value>時間</value></data>
+  <data name="Insights.ColProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Insights.ColAccount.Text" xml:space="preserve"><value>アカウント</value></data>
+  <data name="Insights.ColMetric.Text" xml:space="preserve"><value>指標</value></data>
+  <data name="Insights.ColValue.Text" xml:space="preserve"><value>値</value></data>
+  <data name="Insights.ColUnit.Text" xml:space="preserve"><value>単位</value></data>
+  <data name="Insights.ColSource.Text" xml:space="preserve"><value>照会元</value></data>
+  <data name="About.Title.Text" xml:space="preserve"><value>このアプリについて</value></data>
+  <data name="About.CapabilitiesTitle.Text" xml:space="preserve"><value>現在の機能</value></data>
+  <data name="About.PrivacyTitle.Text" xml:space="preserve"><value>プライバシーとセキュリティの概要</value></data>
+  <data name="About.LinksTitle.Text" xml:space="preserve"><value>プロジェクトリンク</value></data>
+  <data name="About.LinkRepository.Content" xml:space="preserve"><value>GitHub リポジトリ</value></data>
+  <data name="About.LinkReleases.Content" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkIssues.Content" xml:space="preserve"><value>問題を報告</value></data>
+  <data name="About.LinkPrivacy.Content" xml:space="preserve"><value>プライバシーポリシー</value></data>
+  <data name="About.LinkSecurity.Content" xml:space="preserve"><value>セキュリティポリシー</value></data>
+  <data name="About.LinkSupport.Content" xml:space="preserve"><value>サポートドキュメント</value></data>
+  <data name="About.LinkLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkThirdParty.Content" xml:space="preserve"><value>サードパーティ製の声明</value></data>
+  <data name="About.OpenLocalDocuments.Text" xml:space="preserve"><value>ローカルドキュメント</value></data>
+  <data name="About.DocsPrivacy.Content" xml:space="preserve"><value>プライバシーポリシー</value></data>
+  <data name="About.DocsLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.DocsThirdParty.Content" xml:space="preserve"><value>サードパーティ製の声明</value></data>
+  <data name="About.CheckUpdates.Content" xml:space="preserve"><value>更新を確認</value></data>
+  <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>診断情報をコピー</value></data>
+  <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>ローカルデータフォルダーを開く</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します</value></data>
+  <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>ローカルの残高履歴、自動更新、通知領域、Windows の残高アラート、データ分析。</value></data>
+  <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>プライバシーポリシー、MIT License、サードパーティ製の声明はアプリに同梱され、オフラインで閲覧できます。</value></data>
+  <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>更新</value></data>
+  <data name="About.UpdateDescription.Text" xml:space="preserve"><value>更新の確認はクリック時のみ GitHub にアクセスします。新しいバージョンが見つかっても、ダウンロード・インストールはユーザーが判断します。</value></data>
+  <data name="About.OpenReleasePage.Content" xml:space="preserve"><value>リリースページを開く</value></data>
+  <data name="About.DiagnosticsTitle.Text" xml:space="preserve"><value>診断情報</value></data>
+  <data name="About.DiagnosticsDescription.Text" xml:space="preserve"><value>非機密の診断情報（バージョン、アーキテクチャ、Provider 一覧、アカウント数など）をコピーしてトラブルシューティングに使用します。API キー、残高、ユーザー名、ローカルパスは含まれません。</value></data>
+  <data name="About.LocalDataTitle.Text" xml:space="preserve"><value>ローカルデータ</value></data>
+  <data name="About.LocalDataDescription.Text" xml:space="preserve"><value>現在の Package LocalState（アカウント、履歴、設定のあるディレクトリ）のみを開きます。</value></data>
+  <data name="Nav.Home.Content" xml:space="preserve"><value>ホーム</value></data>
+  <data name="Nav.Insights.Content" xml:space="preserve"><value>データ分析</value></data>
+  <data name="Nav.Settings.Content" xml:space="preserve"><value>設定</value></data>
+  <data name="Nav.About.Content" xml:space="preserve"><value>このアプリについて</value></data>
+  <data name="Tray.OpenMainWindow" xml:space="preserve"><value>ApiMonitor を開く</value></data>
+  <data name="Tray.OpenCompactWindow" xml:space="preserve"><value>コンパクトウィンドウを開く</value></data>
+  <data name="Tray.RefreshAll" xml:space="preserve"><value>すべてのアカウントを更新</value></data>
+  <data name="Tray.StartWithWindows" xml:space="preserve"><value>サインイン時に起動</value></data>
+  <data name="Tray.ExitApplication" xml:space="preserve"><value>ApiMonitor を終了</value></data>
+  <data name="Notification.OpenAccount" xml:space="preserve"><value>アカウントを開く</value></data>
+  <data name="Notification.Dismiss" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Notification.LowBalanceTitle" xml:space="preserve"><value>{0} の残高が不足しています</value></data>
+  <data name="Home.Title.Text" xml:space="preserve"><value>ApiMonitor</value></data>
+  <data name="Home.OpenCompactWindow.Content" xml:space="preserve"><value>コンパクトウィンドウを開く</value></data>
+  <data name="Home.AddAccount.Content" xml:space="preserve"><value>アカウントを追加</value></data>
+  <data name="Home.RefreshAll.Content" xml:space="preserve"><value>すべてのアカウントを更新</value></data>
+  <data name="Home.AccountOverview.Text" xml:space="preserve"><value>アカウント概要</value></data>
+  <data name="Home.FilterProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Home.FilterStatus.Text" xml:space="preserve"><value>状態</value></data>
+  <data name="Home.Refresh.Content" xml:space="preserve"><value>更新</value></data>
+  <data name="Home.Edit.Content" xml:space="preserve"><value>編集</value></data>
+  <data name="Home.ViewTrends.Content" xml:space="preserve"><value>傾向を見る</value></data>
+  <data name="Home.CopyKey.Content" xml:space="preserve"><value>キーをコピー</value></data>
+  <data name="Home.History.Content" xml:space="preserve"><value>履歴</value></data>
+  <data name="Home.Delete.Content" xml:space="preserve"><value>削除</value></data>
+  <data name="Home.EmptyTitle.Text" xml:space="preserve"><value>API アカウントがまだありません</value></data>
+  <data name="Home.AddFirstAccount.Content" xml:space="preserve"><value>最初のアカウントを追加</value></data>
+  <data name="Home.Loading.Text" xml:space="preserve"><value>ローカルデータを読み込んでいます…</value></data>
+  <data name="Home.PrivacyTitle.Text" xml:space="preserve"><value>プライバシーについて</value></data>
+  <data name="Home.EmptyMessage.Text" xml:space="preserve"><value>DeepSeek または OpenRouter のアカウントを追加すると、残高の照会・履歴の記録・残高不足アラートの設定ができます。</value></data>
+  <data name="Home.PrivacyMessage.Message" xml:space="preserve"><value>API キーは Windows の資格情報ロッカー（Credential Locker）に保存され、対応する Provider の公式 API への要求にのみ使用されます。通常の設定と残高スナップショットはローカルのアプリデータのみに保存されます。</value></data>
+  <data name="Settings.Title.Text" xml:space="preserve"><value>設定</value></data>
+  <data name="Settings.TraySection.Text" xml:space="preserve"><value>通知領域と起動</value></data>
+  <data name="Settings.TrayDescription.Text" xml:space="preserve"><value>通知領域に隠した後も、残高の自動更新は継続します。「ApiMonitor を終了」を選んだ場合のみアプリは完全に終了します。</value></data>
+  <data name="Settings.ExitApplication.Content" xml:space="preserve"><value>ApiMonitor を終了</value></data>
+  <data name="Settings.CloseBehavior.Text" xml:space="preserve"><value>メインウィンドウを閉じるとき：</value></data>
+  <data name="Settings.StartWithWindows.Header" xml:space="preserve"><value>Windows へのサインイン時に ApiMonitor を起動</value></data>
+  <data name="Settings.NotificationSection.Text" xml:space="preserve"><value>残高アラート</value></data>
+  <data name="Settings.EnableNotifications.Header" xml:space="preserve"><value>残高のシステム通知を有効にする</value></data>
+  <data name="Settings.RepeatInterval.Text" xml:space="preserve"><value>既定の繰り返しアラート間隔</value></data>
+  <data name="Settings.RecoveryNotifications.Header" xml:space="preserve"><value>残高回復通知</value></data>
+  <data name="Settings.SendTestNotification.Content" xml:space="preserve"><value>テスト通知を送信</value></data>
+  <data name="Settings.OpenNotificationSettings.Content" xml:space="preserve"><value>Windows の通知設定を開く</value></data>
+  <data name="Settings.AppearanceSection.Text" xml:space="preserve"><value>外観と言語</value></data>
+  <data name="Settings.Theme.Text" xml:space="preserve"><value>テーマ</value></data>
+  <data name="Settings.Language.Text" xml:space="preserve"><value>言語</value></data>
+  <data name="Settings.AppearanceDescription.Text" xml:space="preserve"><value>テーマの変更はすぐに反映されます。言語の変更にはアプリの再起動が必要です。</value></data>
+  <data name="Settings.DataSection.Text" xml:space="preserve"><value>データ管理</value></data>
+  <data name="Settings.ExportBackup.Content" xml:space="preserve"><value>ポータブルバックアップをエクスポート</value></data>
+  <data name="Settings.ImportBackup.Content" xml:space="preserve"><value>ポータブルバックアップをインポート</value></data>
+  <data name="Settings.OpenDataFolder.Content" xml:space="preserve"><value>ローカルデータフォルダーを開く</value></data>
+  <data name="Settings.AppInfoSection.Text" xml:space="preserve"><value>アプリ情報</value></data>
+  <data name="Settings.GitHubLink.Content" xml:space="preserve"><value>GitHub リポジトリ</value></data>
+  <data name="Settings.PrivacyLink.Content" xml:space="preserve"><value>プライバシーポリシー</value></data>
+  <data name="Settings.OnContent" xml:space="preserve"><value>オン</value></data>
+  <data name="Settings.OffContent" xml:space="preserve"><value>オフ</value></data>
+  <data name="Notification.RecoveredTitle" xml:space="preserve"><value>ApiMonitor：残高が回復しました</value></data>
+  <data name="Notification.TestTitle" xml:space="preserve"><value>ApiMonitor：テスト通知</value></data>
+  <data name="Notification.TestBody" xml:space="preserve"><value>これはテスト通知です。クリックすると ApiMonitor を開きます。</value></data>
+  <data name="Notification.Snooze24h" xml:space="preserve"><value>アラートを 24 時間一時停止</value></data>
+  <data name="Compact.EmptyTitle.Text" xml:space="preserve"><value>API アカウントがまだありません</value></data>
+  <data name="Compact.OpenMainWindow.Content" xml:space="preserve"><value>メインウィンドウを開く</value></data>
+  <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>状態：</value></data>
+  <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>最終更新成功：</value></data>
+  <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
+</root>

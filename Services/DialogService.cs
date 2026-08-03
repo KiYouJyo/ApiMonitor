@@ -150,4 +150,37 @@ public sealed class DialogService : IDialogService
             return FirstCloseChoice.Hide;
         }
     }
+
+    /// <summary>v0.6.0：语言切换重启确认对话框（立即重启 / 稍后）。</summary>
+    public async Task<bool> ConfirmRestartAsync(CancellationToken cancellationToken)
+    {
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
+        {
+            // XamlRoot 不可用时默认不重启（提示手动处理）。
+            return false;
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "重启应用",
+            Content = "语言更改将在重启应用后生效。是否立即重启？",
+            PrimaryButtonText = "立即重启",
+            CloseButtonText = "稍后",
+            DefaultButton = ContentDialogButton.Primary,
+        };
+
+        try
+        {
+            dialog.XamlRoot = xamlRoot;
+            using var registration = cancellationToken.Register(dialog.Hide);
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示重启确认对话框失败: {ex.GetType().Name}");
+            return false;
+        }
+    }
 }

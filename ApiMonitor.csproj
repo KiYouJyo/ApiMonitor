@@ -38,10 +38,6 @@
       XAML Application starts, so the generated Main is disabled in favor of Program.cs.
     -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-    <Version>0.5.0.1</Version>
-    <AssemblyVersion>0.5.0.1</AssemblyVersion>
-    <FileVersion>0.5.0.1</FileVersion>
-    <InformationalVersion>0.5.0.1</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -57,7 +53,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      v0.6.0：本地文档随包分发，关于页可离线查看。
+      打包运行时从包内路径读取；未打包调试运行时回退到工作目录。
+    -->
     <Content Include="PRIVACY.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Assets\ApiMonitor.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <!-- 通知区域图标：多尺寸 ICO，随包分发，运行期从包内路径加载。 -->
     <Content Include="Assets\TrayIcon.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

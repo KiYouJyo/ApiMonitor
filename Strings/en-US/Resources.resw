@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- ===================== Navigation ===================== -->
+
+  <!-- ===================== Home ===================== -->
+  <data name="Home.Subtitle" xml:space="preserve"><value>Query and record your own API account balances (v{0}, supports DeepSeek and OpenRouter).</value></data>
+  <data name="Home.AccountSummary" xml:space="preserve"><value>{0} accounts · {1} low balance · {2} query failed</value></data>
+  <data name="Home.FilterAllProviders" xml:space="preserve"><value>All providers</value></data>
+  <data name="Home.FilterAllStatus" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Home.StatusNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Home.StatusLow" xml:space="preserve"><value>Low balance</value></data>
+  <data name="Home.StatusUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Home.StatusFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Home.AutoRefreshOn" xml:space="preserve"><value>Auto refresh: on</value></data>
+  <data name="Home.AutoRefreshOff" xml:space="preserve"><value>Auto refresh: off</value></data>
+  <data name="Home.RefreshInterval" xml:space="preserve"><value>Refresh interval: {0} minutes</value></data>
+  <data name="Home.NextRefreshOff" xml:space="preserve"><value>Next refresh: auto refresh off</value></data>
+  <data name="Home.NextRefreshAt" xml:space="preserve"><value>Next refresh: {0}</value></data>
+  <data name="Home.NextRefreshNever" xml:space="preserve"><value>Next refresh: not queried yet</value></data>
+  <data name="Home.LastSuccessLine" xml:space="preserve"><value>Last successful update: {0}</value></data>
+  <data name="Home.NotAvailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Home.NoData" xml:space="preserve"><value>No balance data yet</value></data>
+  <data name="Home.NotificationsOn" xml:space="preserve"><value>Notifications: on</value></data>
+  <data name="Home.NotificationsOff" xml:space="preserve"><value>Notifications: off</value></data>
+  <data name="Home.NotificationsInherit" xml:space="preserve"><value>Notifications: inherit global</value></data>
+  <data name="Home.SnoozeUntil" xml:space="preserve"><value>Alerts paused until {0}</value></data>
+
+  <!-- ===================== Insights ===================== -->
+  <data name="Insights.Range7Days" xml:space="preserve"><value>Last 7 days</value></data>
+  <data name="Insights.Range30Days" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="Insights.Range90Days" xml:space="preserve"><value>Last 90 days</value></data>
+  <data name="Insights.RangeAll" xml:space="preserve"><value>All available history</value></data>
+  <data name="Insights.FirstValue" xml:space="preserve"><value>First value</value></data>
+  <data name="Insights.LatestValue" xml:space="preserve"><value>Latest value</value></data>
+  <data name="Insights.MinimumValue" xml:space="preserve"><value>Minimum value</value></data>
+  <data name="Insights.MaximumValue" xml:space="preserve"><value>Maximum value</value></data>
+  <data name="Insights.Estimated" xml:space="preserve"><value>Estimated</value></data>
+  <data name="Insights.EstimateDisclaimer" xml:space="preserve"><value>Calculated from local history; actual consumption may differ.</value></data>
+  <data name="Insights.ExportCsvDone" xml:space="preserve"><value>CSV exported</value></data>
+  <data name="Insights.EmptyState" xml:space="preserve"><value>Not enough history yet. Trends will appear here after a balance refresh succeeds.</value></data>
+  <data name="Insights.NoAccount" xml:space="preserve"><value>No accounts yet. Add an account on the Home page first.</value></data>
+  <data name="Insights.NotEnoughData" xml:space="preserve"><value>Not enough data</value></data>
+  <data name="Insights.NoConsumption" xml:space="preserve"><value>No consumption observed yet</value></data>
+  <data name="Insights.RecentTopUp" xml:space="preserve"><value>Mostly top-ups or resets recently</value></data>
+  <data name="Insights.UnsupportedMetric" xml:space="preserve"><value>Metric does not support prediction</value></data>
+  <data name="Insights.UnknownCurrentValue" xml:space="preserve"><value>Current value unknown</value></data>
+  <data name="Insights.TimeSpanTooShort" xml:space="preserve"><value>Time span too short</value></data>
+  <data name="Insights.Unlimited" xml:space="preserve"><value>Unlimited</value></data>
+  <data name="Insights.NotApplicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="Insights.ChartSummary" xml:space="preserve"><value>{0} {1} trend: {2} data points, {3} to {4}, minimum {5}, maximum {6}</value></data>
+  <data name="Insights.ChartNotEnoughData" xml:space="preserve"><value>Not enough {1} history for {0} to draw a trend.</value></data>
+  <data name="Insights.HideHistory" xml:space="preserve"><value>Hide history table</value></data>
+  <data name="Insights.HistoryTable" xml:space="preserve"><value>History table</value></data>
+  <data name="Insights.SourceManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Insights.SourceAutomatic" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Insights.UnknownValue" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Insights.Loading" xml:space="preserve"><value>Loading history…</value></data>
+  <data name="Insights.LoadError" xml:space="preserve"><value>Failed to load history. Please try again later.</value></data>
+
+  <!-- ===================== Settings ===================== -->
+  <data name="Settings.CloseHide" xml:space="preserve"><value>Hide to notification area</value></data>
+  <data name="Settings.CloseExit" xml:space="preserve"><value>Exit ApiMonitor</value></data>
+  <data name="Settings.StartWithWindowsDescription" xml:space="preserve"><value>When enabled, ApiMonitor stays in the notification area at sign-in and does not open the main window automatically.</value></data>
+  <data name="Settings.On" xml:space="preserve"><value>On</value></data>
+  <data name="Settings.Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Settings.ThemeSystem" xml:space="preserve"><value>System</value></data>
+  <data name="Settings.ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="Settings.ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Settings.LanguageSystem" xml:space="preserve"><value>System</value></data>
+  <data name="Settings.LanguageZhCn" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Settings.LanguageEnUs" xml:space="preserve"><value>English</value></data>
+  <data name="Settings.LanguageJaJp" xml:space="preserve"><value>日本語</value></data>
+  <data name="Settings.LanguageRestartRequired" xml:space="preserve"><value>The language change will take effect after the app restarts. Restart now?</value></data>
+  <data name="Settings.RestartNow" xml:space="preserve"><value>Restart now</value></data>
+  <data name="Settings.Later" xml:space="preserve"><value>Later</value></data>
+  <data name="Settings.RestartFailed" xml:space="preserve"><value>Automatic restart failed. Please exit and start the app manually.</value></data>
+  <data name="Settings.BackupDescription" xml:space="preserve"><value>The portable backup contains account metadata, non-sensitive provider settings, balance history, thresholds, and settings. It never contains API keys or credentials.</value></data>
+
+  <!-- ===================== About ===================== -->
+  <data name="About.DisplayVersion" xml:space="preserve"><value>Version: v{0}</value></data>
+  <data name="About.PackageVersion" xml:space="preserve"><value>Package version: {0}</value></data>
+  <data name="About.Architecture" xml:space="preserve"><value>Architecture: {0}</value></data>
+  <data name="About.PackageIdentity" xml:space="preserve"><value>Package Identity: {0}</value></data>
+  <data name="About.Publisher" xml:space="preserve"><value>Publisher: {0}</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker.</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>Balances, history, and settings are stored locally.</value></data>
+  <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>The app has no developer cloud servers.</value></data>
+  <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>No telemetry and no ads.</value></data>
+  <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>Notifications are generated locally.</value></data>
+  <data name="About.PrivacyItemBackupNoSecrets" xml:space="preserve"><value>Portable backups never contain API keys.</value></data>
+  <data name="About.CheckingUpdates" xml:space="preserve"><value>Checking for updates…</value></data>
+  <data name="About.UpToDate" xml:space="preserve"><value>You are up to date</value></data>
+  <data name="About.UpdateAvailable" xml:space="preserve"><value>A new version v{0} is available</value></data>
+  <data name="About.DevVersionNewer" xml:space="preserve"><value>You are running a newer development version</value></data>
+  <data name="About.UpdateCheckFailed" xml:space="preserve"><value>Update check failed: {0}</value></data>
+  <data name="About.DiagnosticsCopied" xml:space="preserve"><value>Diagnostics copied to clipboard</value></data>
+  <data name="About.LinkLaunchFailed" xml:space="preserve"><value>Unable to open the link. Please try again later.</value></data>
+  <data name="About.CurrentLanguage" xml:space="preserve"><value>Current UI language: {0}</value></data>
+  <data name="About.CurrentTheme" xml:space="preserve"><value>Current theme: {0}</value></data>
+  <data name="About.ThemeSystem" xml:space="preserve"><value>System</value></data>
+  <data name="About.ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="About.ThemeDark" xml:space="preserve"><value>Dark</value></data>
+
+  <!-- ===================== Common ===================== -->
+  <data name="Common.OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Common.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Common.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Common.Error" xml:space="preserve"><value>Error</value></data>
+  <data name="Common.Warning" xml:space="preserve"><value>Warning</value></data>
+  <data name="Common.Success" xml:space="preserve"><value>Success</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Common.Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Common.Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Common.No" xml:space="preserve"><value>No</value></data>
+  <data name="Insights.Title.Text" xml:space="preserve"><value>Data Insights</value></data>
+  <data name="Insights.Subtitle.Text" xml:space="preserve"><value>Trends and estimates are calculated from local history and may differ from actual consumption.</value></data>
+  <data name="Insights.Account.Text" xml:space="preserve"><value>Account</value></data>
+  <data name="Insights.Metric.Text" xml:space="preserve"><value>Metric</value></data>
+  <data name="Insights.TimeRange.Text" xml:space="preserve"><value>Time range</value></data>
+  <data name="Insights.ExportCsv.Content" xml:space="preserve"><value>Export current history as CSV</value></data>
+  <data name="Insights.CurrentValue.Text" xml:space="preserve"><value>Current value</value></data>
+  <data name="Insights.ChangeInRange.Text" xml:space="preserve"><value>Change in range</value></data>
+  <data name="Insights.DailyConsumption.Text" xml:space="preserve"><value>Estimated daily consumption</value></data>
+  <data name="Insights.EstimatedDaysLeft.Text" xml:space="preserve"><value>Estimated days left</value></data>
+  <data name="Insights.ShowHistory.Content" xml:space="preserve"><value>Show history table</value></data>
+  <data name="Insights.ColTime.Text" xml:space="preserve"><value>Time</value></data>
+  <data name="Insights.ColProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Insights.ColAccount.Text" xml:space="preserve"><value>Account</value></data>
+  <data name="Insights.ColMetric.Text" xml:space="preserve"><value>Metric</value></data>
+  <data name="Insights.ColValue.Text" xml:space="preserve"><value>Value</value></data>
+  <data name="Insights.ColUnit.Text" xml:space="preserve"><value>Unit</value></data>
+  <data name="Insights.ColSource.Text" xml:space="preserve"><value>Query source</value></data>
+  <data name="About.Title.Text" xml:space="preserve"><value>About</value></data>
+  <data name="About.CapabilitiesTitle.Text" xml:space="preserve"><value>Capabilities</value></data>
+  <data name="About.PrivacyTitle.Text" xml:space="preserve"><value>Privacy and security summary</value></data>
+  <data name="About.LinksTitle.Text" xml:space="preserve"><value>Project links</value></data>
+  <data name="About.LinkRepository.Content" xml:space="preserve"><value>GitHub repository</value></data>
+  <data name="About.LinkReleases.Content" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkIssues.Content" xml:space="preserve"><value>Report an issue</value></data>
+  <data name="About.LinkPrivacy.Content" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="About.LinkSecurity.Content" xml:space="preserve"><value>Security policy</value></data>
+  <data name="About.LinkSupport.Content" xml:space="preserve"><value>Support documentation</value></data>
+  <data name="About.LinkLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkThirdParty.Content" xml:space="preserve"><value>Third-party notices</value></data>
+  <data name="About.OpenLocalDocuments.Text" xml:space="preserve"><value>Local documents</value></data>
+  <data name="About.DocsPrivacy.Content" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="About.DocsLicense.Content" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.DocsThirdParty.Content" xml:space="preserve"><value>Third-party notices</value></data>
+  <data name="About.CheckUpdates.Content" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>Copy diagnostics</value></data>
+  <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>Open local data folder</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>Query and record your own API account balances</value></data>
+  <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>Local balance history, auto refresh, notification area, Windows balance alerts, and data insights.</value></data>
+  <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>Privacy policy, MIT License, and third-party notices are bundled with the app and viewable offline.</value></data>
+  <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>Updates</value></data>
+  <data name="About.UpdateDescription.Text" xml:space="preserve"><value>Update checks access GitHub only when you click; after finding a new version you decide whether to download and install—the app never auto-downloads or installs.</value></data>
+  <data name="About.OpenReleasePage.Content" xml:space="preserve"><value>Open release page</value></data>
+  <data name="About.DiagnosticsTitle.Text" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="About.DiagnosticsDescription.Text" xml:space="preserve"><value>Copies non-sensitive diagnostics (version, architecture, provider list, account count, etc.) for troubleshooting; never contains API keys, balances, usernames, or local paths.</value></data>
+  <data name="About.LocalDataTitle.Text" xml:space="preserve"><value>Local data</value></data>
+  <data name="About.LocalDataDescription.Text" xml:space="preserve"><value>Opens only the current Package LocalState (the directory holding accounts, history, and settings).</value></data>
+  <data name="Nav.Home.Content" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav.Insights.Content" xml:space="preserve"><value>Insights</value></data>
+  <data name="Nav.Settings.Content" xml:space="preserve"><value>Settings</value></data>
+  <data name="Nav.About.Content" xml:space="preserve"><value>About</value></data>
+  <data name="Tray.OpenMainWindow" xml:space="preserve"><value>Open ApiMonitor</value></data>
+  <data name="Tray.OpenCompactWindow" xml:space="preserve"><value>Open compact window</value></data>
+  <data name="Tray.RefreshAll" xml:space="preserve"><value>Refresh all accounts</value></data>
+  <data name="Tray.StartWithWindows" xml:space="preserve"><value>Start when I sign in</value></data>
+  <data name="Tray.ExitApplication" xml:space="preserve"><value>Exit ApiMonitor</value></data>
+  <data name="Notification.OpenAccount" xml:space="preserve"><value>Open account</value></data>
+  <data name="Notification.Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="Notification.LowBalanceTitle" xml:space="preserve"><value>{0} balance is low</value></data>
+  <data name="Home.Title.Text" xml:space="preserve"><value>ApiMonitor</value></data>
+  <data name="Home.OpenCompactWindow.Content" xml:space="preserve"><value>Open compact window</value></data>
+  <data name="Home.AddAccount.Content" xml:space="preserve"><value>Add account</value></data>
+  <data name="Home.RefreshAll.Content" xml:space="preserve"><value>Refresh all accounts</value></data>
+  <data name="Home.AccountOverview.Text" xml:space="preserve"><value>Account overview</value></data>
+  <data name="Home.FilterProvider.Text" xml:space="preserve"><value>Provider</value></data>
+  <data name="Home.FilterStatus.Text" xml:space="preserve"><value>Status</value></data>
+  <data name="Home.Refresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Home.Edit.Content" xml:space="preserve"><value>Edit</value></data>
+  <data name="Home.ViewTrends.Content" xml:space="preserve"><value>View trends</value></data>
+  <data name="Home.CopyKey.Content" xml:space="preserve"><value>Copy key</value></data>
+  <data name="Home.History.Content" xml:space="preserve"><value>History</value></data>
+  <data name="Home.Delete.Content" xml:space="preserve"><value>Delete</value></data>
+  <data name="Home.EmptyTitle.Text" xml:space="preserve"><value>No API accounts yet</value></data>
+  <data name="Home.AddFirstAccount.Content" xml:space="preserve"><value>Add your first account</value></data>
+  <data name="Home.Loading.Text" xml:space="preserve"><value>Loading local data…</value></data>
+  <data name="Home.PrivacyTitle.Text" xml:space="preserve"><value>Privacy note</value></data>
+  <data name="Home.EmptyMessage.Text" xml:space="preserve"><value>Add a DeepSeek or OpenRouter account to query balances, record history, and set low-balance alerts.</value></data>
+  <data name="Home.PrivacyMessage.Message" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker and are only used to call the corresponding provider official API; plain configuration and balance snapshots are stored only in the local app data directory.</value></data>
+  <data name="Settings.Title.Text" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings.TraySection.Text" xml:space="preserve"><value>Notification area and startup</value></data>
+  <data name="Settings.TrayDescription.Text" xml:space="preserve"><value>After hiding to the notification area, automatic balance refresh keeps running. Only "Exit ApiMonitor" fully quits the app.</value></data>
+  <data name="Settings.ExitApplication.Content" xml:space="preserve"><value>Exit ApiMonitor</value></data>
+  <data name="Settings.CloseBehavior.Text" xml:space="preserve"><value>When closing the main window:</value></data>
+  <data name="Settings.StartWithWindows.Header" xml:space="preserve"><value>Start ApiMonitor when I sign in to Windows</value></data>
+  <data name="Settings.NotificationSection.Text" xml:space="preserve"><value>Balance alerts</value></data>
+  <data name="Settings.EnableNotifications.Header" xml:space="preserve"><value>Enable balance system notifications</value></data>
+  <data name="Settings.RepeatInterval.Text" xml:space="preserve"><value>Default repeat alert interval</value></data>
+  <data name="Settings.RecoveryNotifications.Header" xml:space="preserve"><value>Balance recovery notifications</value></data>
+  <data name="Settings.SendTestNotification.Content" xml:space="preserve"><value>Send test notification</value></data>
+  <data name="Settings.OpenNotificationSettings.Content" xml:space="preserve"><value>Open Windows notification settings</value></data>
+  <data name="Settings.AppearanceSection.Text" xml:space="preserve"><value>Appearance and language</value></data>
+  <data name="Settings.Theme.Text" xml:space="preserve"><value>Theme</value></data>
+  <data name="Settings.Language.Text" xml:space="preserve"><value>Language</value></data>
+  <data name="Settings.AppearanceDescription.Text" xml:space="preserve"><value>Theme changes take effect immediately; language changes require an app restart.</value></data>
+  <data name="Settings.DataSection.Text" xml:space="preserve"><value>Data management</value></data>
+  <data name="Settings.ExportBackup.Content" xml:space="preserve"><value>Export portable backup</value></data>
+  <data name="Settings.ImportBackup.Content" xml:space="preserve"><value>Import portable backup</value></data>
+  <data name="Settings.OpenDataFolder.Content" xml:space="preserve"><value>Open local data folder</value></data>
+  <data name="Settings.AppInfoSection.Text" xml:space="preserve"><value>App information</value></data>
+  <data name="Settings.GitHubLink.Content" xml:space="preserve"><value>GitHub repository</value></data>
+  <data name="Settings.PrivacyLink.Content" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="Settings.OnContent" xml:space="preserve"><value>On</value></data>
+  <data name="Settings.OffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="Notification.RecoveredTitle" xml:space="preserve"><value>ApiMonitor: balance recovered</value></data>
+  <data name="Notification.TestTitle" xml:space="preserve"><value>ApiMonitor: test notification</value></data>
+  <data name="Notification.TestBody" xml:space="preserve"><value>This is a test notification. Click to open ApiMonitor.</value></data>
+  <data name="Notification.Snooze24h" xml:space="preserve"><value>Snooze alerts for 24 hours</value></data>
+  <data name="Compact.EmptyTitle.Text" xml:space="preserve"><value>No API accounts yet</value></data>
+  <data name="Compact.OpenMainWindow.Content" xml:space="preserve"><value>Open main window</value></data>
+  <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>Status: </value></data>
+  <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>Last successful: </value></data>
+  <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>No balance queried yet</value></data>
+</root>

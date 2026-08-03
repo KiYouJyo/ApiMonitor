@@ -24,6 +24,18 @@ public sealed class CompositionRoot
 
     public MainViewModel MainViewModel { get; }
 
+    /// <summary>数据洞察页 ViewModel（导航到数据洞察时按需加载，不重复启动调度器）。</summary>
+    public InsightsViewModel InsightsViewModel { get; }
+
+    /// <summary>关于页 ViewModel。</summary>
+    public AboutViewModel AboutViewModel { get; }
+
+    /// <summary>外观与语言设置（设置页“外观与语言”区）。</summary>
+    public AppearanceSettingsViewModel AppearanceSettings { get; }
+
+    /// <summary>数据管理（设置页“数据管理”区：便携备份导出/导入）。</summary>
+    public DataManagementViewModel DataManagement { get; }
+
     public DialogService DialogService { get; }
 
     public MonitoringScheduler MonitoringScheduler { get; }
@@ -56,6 +68,11 @@ public sealed class CompositionRoot
     private Action _showMainWindow = () => { };
 
     private Action _closeMainWindow = () => { };
+
+    private IntPtr _mainWindowHandle = IntPtr.Zero;
+
+    /// <summary>主题服务（v0.6.0；主窗口/紧凑窗口根元素注册处）。</summary>
+    private readonly AppearanceService _appearanceService;
 
     public CompositionRoot(
         DispatcherQueue dispatcherQueue,
@@ -96,6 +113,9 @@ public sealed class CompositionRoot
         WindowManager = new WindowManager();
         CompactWindowSettingsStore = compactWindowSettingsStore;
 
+        // v0.6.0：外观服务在紧凑窗口创建前实例化，主题统一应用到所有窗口根元素。
+        _appearanceService = new AppearanceService();
+
         CompactWindowService = new CompactWindowService(() =>
         {
             var viewModel = new CompactWindowViewModel(
@@ -109,6 +129,9 @@ public sealed class CompositionRoot
                 displayAreas,
                 Log);
             window.OpenMainWindowRequested += (_, _) => _showMainWindow();
+            // 紧凑窗口根元素注册到主题服务：切换主题立即同步。
+            RegisterThemeRoot(window.RootGridElement);
+            window.Closed += (_, _) => UnregisterThemeRoot(window.RootGridElement);
             WindowManager.RegisterCompactWindow(window);
             return new WinUICompactWindowHost(window);
         });
@@ -158,7 +181,14 @@ public sealed class CompositionRoot
 
         var trayHost = new TrayNativeHost(TrayIconPath, TrayIconId, Log);
         var statusProvider = new TrayStatusProvider(accountManager, Log);
-        var menuService = new TrayMenuService();
+        // v0.6.0：统一字符串服务（托盘菜单、通知等代码文本按当前语言取）。
+        var strings = new AppStrings();
+        if (notificationService is AppNotificationService concreteNotification)
+        {
+            concreteNotification.SetStrings(strings);
+        }
+
+        var menuService = new TrayMenuService(strings);
 
         // 循环依赖（托盘命令 → 退出；退出 → 删除托盘图标）用闭包延迟绑定。
         ITrayIconService? trayRef = null;
@@ -203,6 +233,88 @@ public sealed class CompositionRoot
             NotificationCoordinator.ShowTestNotification,
             OpenWindowsNotificationSettings,
             Log);
+
+        // ------------------------------------------------------------------
+        // v0.6.0：数据洞察、便携备份、外观与语言、关于页。
+        // 全部共享同一账户服务与账户状态；不重复启动调度器、不重复订阅事件、
+        // 不重复读取 Credential Locker。appearanceService 已在前方创建
+        // （紧凑窗口创建前），这里复用同一实例。
+        // ------------------------------------------------------------------
+        var appearanceStore = new JsonAppearanceSettingsStore(dataDirectory);
+        var languageService = new LanguageService();
+
+        AppearanceSettings = new AppearanceSettingsViewModel(
+            appearanceStore,
+            _appearanceService,
+            languageService,
+            requestRestart: () =>
+            {
+                try
+                {
+                    Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Empty);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            },
+            confirmRestartAsync: () => DialogService.ConfirmRestartAsync(CancellationToken.None),
+            Log);
+
+        // 主题偏好变化 → 应用到所有已注册窗口根元素。
+        _appearanceService.ThemeChanged += OnThemeChanged;
+
+        var filePicker = new WinUIFilePickerService(() => _mainWindowHandle);
+
+        var backupService = new PortableBackupService(
+            dataDirectory,
+            accountStore,
+            snapshotStore,
+            notificationSettingsStore,
+            TraySettingsStore,
+            compactWindowSettingsStore,
+            appearanceStore,
+            registry.Infos.Select(p => p.ProviderId));
+
+        DataManagement = new DataManagementViewModel(
+            backupService,
+            filePicker,
+            new LocalDataFolderOpener(),
+            Log);
+
+        InsightsViewModel = new InsightsViewModel(
+            accountManager,
+            new InsightsHistoryProvider(snapshotStore),
+            new TrendDataBuilder(),
+            new ConsumptionEstimateService(),
+            new CsvHistoryExporter(),
+            filePicker,
+            Log);
+
+        var updateCheck = new UpdateCheckService(http, AppInfo.DisplayVersion);
+        var diagnostics = new DiagnosticsInfoService(
+            accountManager,
+            notificationStateStore,
+            StartupTaskService,
+            languageService.CurrentLanguageCode,
+            _appearanceService.Theme.ToString());
+
+        AboutViewModel = new AboutViewModel(
+            registry.Infos,
+            updateCheck,
+            diagnostics,
+            clipboard,
+            new DefaultExternalLinkLauncher(),
+            new LocalDataFolderOpener(),
+            filePicker,
+            backupService,
+            Log);
+
+        MainViewModel.AppearanceSettings = AppearanceSettings;
+        MainViewModel.DataManagement = DataManagement;
+        MainViewModel.Insights = InsightsViewModel;
+        MainViewModel.About = AboutViewModel;
     }
 
     private static void OpenWindowsNotificationSettings()
@@ -242,5 +354,69 @@ public sealed class CompositionRoot
             ExitCoordinator,
             window,
             Log);
+
+        // v0.6.0：文件选择器需要主窗口句柄（WinUI 3 picker 初始化）。
+        try
+        {
+            _mainWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        }
+        catch
+        {
+            _mainWindowHandle = IntPtr.Zero;
+        }
+
+        // v0.6.0：主窗口根元素注册到主题服务（切换主题立即生效）。
+        try
+        {
+            if (window.RootPage is { } rootPage)
+            {
+                RegisterThemeRoot(rootPage);
+            }
+        }
+        catch
+        {
+            // 主题注册失败不影响应用。
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // v0.6.0：主题应用到窗口根元素（WinUI ElementTheme）。
+    // 主窗口与紧凑窗口根元素注册到外观服务；切换主题时统一应用，
+    // 新建对话框继承所属窗口主题；高对比度由系统优先（ElementTheme.Default）。
+    // ------------------------------------------------------------------
+    private readonly List<Microsoft.UI.Xaml.FrameworkElement> _themeRoots = new();
+
+    private void RegisterThemeRoot(Microsoft.UI.Xaml.FrameworkElement root)
+    {
+        _themeRoots.Add(root);
+        ApplyThemeToRoot(root);
+    }
+
+    private void UnregisterThemeRoot(Microsoft.UI.Xaml.FrameworkElement root) =>
+        _themeRoots.Remove(root);
+
+    private void ApplyThemeToRoot(Microsoft.UI.Xaml.FrameworkElement root)
+    {
+        try
+        {
+            root.RequestedTheme = _appearanceService.Theme switch
+            {
+                AppThemePreference.Light => Microsoft.UI.Xaml.ElementTheme.Light,
+                AppThemePreference.Dark => Microsoft.UI.Xaml.ElementTheme.Dark,
+                _ => Microsoft.UI.Xaml.ElementTheme.Default,
+            };
+        }
+        catch
+        {
+            // 主题应用失败不影响应用。
+        }
+    }
+
+    private void OnThemeChanged(AppThemePreference theme)
+    {
+        foreach (var root in _themeRoots.ToArray())
+        {
+            ApplyThemeToRoot(root);
+        }
     }
 }
