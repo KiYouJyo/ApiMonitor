@@ -22,8 +22,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Image
@@ -54,8 +54,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock Text="{Binding About.ProviderCountText, Mode=OneWay}" />
@@ -80,8 +80,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="6">
                     <TextBlock loc:Loc.Key="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <ItemsControl ItemsSource="{Binding About.PrivacyItems}">
@@ -99,8 +99,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <ItemsControl ItemsSource="{Binding About.Links}">
@@ -123,8 +123,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.OpenLocalDocuments" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
@@ -144,8 +144,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
@@ -177,8 +177,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
@@ -194,8 +194,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="About.LocalDataTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock

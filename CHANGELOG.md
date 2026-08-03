@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.6.0.1] - 2026-08-03（v0.6.0 主题统一修订包）
+
+### Fixed
+
+- 主题未实际应用：AppearanceSettingsViewModel 构造函数在读取持久化设置前把默认主题 System 写回文件，导致手动选择的 Light/Dark 永远无法恢复；改为构造期直接赋值后备字段
+- 应用外壳背景不统一：标题栏（原生 AppWindowTitleBar 浅青）、NavigationView Pane（Acrylic 深色）、页面内容三处各色；新增统一语义资源（AppShellBackgroundBrush/AppCardBackgroundBrush 等，Light/Dark/HighContrast 三字典），NavigationView Pane 覆盖为外壳背景，页面根继承统一背景
+- 新增 WindowThemeCoordinator：统一管理窗口根元素主题与原生标题栏颜色同步（含紧凑窗口），高对比度回退系统默认标题栏
+- 卡片背景统一为 AppCardBackgroundBrush（设置/账户/关于页卡片），与外壳背景保持层级
+
 ## [0.6.0] - 2026-08-03（开发版本，等待人工验收；未合并、未发布）
 
 ### Added

@@ -74,6 +74,9 @@ public sealed class CompositionRoot
     /// <summary>主题服务（v0.6.0；主窗口/紧凑窗口根元素注册处）。</summary>
     private readonly AppearanceService _appearanceService;
 
+    /// <summary>v0.6.0 主题统一协调器：窗口根元素主题 + 原生标题栏颜色同步。</summary>
+    private readonly WindowThemeCoordinator _themeCoordinator;
+
     public CompositionRoot(
         DispatcherQueue dispatcherQueue,
         ISingleInstanceService singleInstanceService,
@@ -115,6 +118,7 @@ public sealed class CompositionRoot
 
         // v0.6.0：外观服务在紧凑窗口创建前实例化，主题统一应用到所有窗口根元素。
         _appearanceService = new AppearanceService();
+        _themeCoordinator = new WindowThemeCoordinator(_appearanceService);
 
         CompactWindowService = new CompactWindowService(() =>
         {
@@ -129,9 +133,9 @@ public sealed class CompositionRoot
                 displayAreas,
                 Log);
             window.OpenMainWindowRequested += (_, _) => _showMainWindow();
-            // 紧凑窗口根元素注册到主题服务：切换主题立即同步。
-            RegisterThemeRoot(window.RootGridElement);
-            window.Closed += (_, _) => UnregisterThemeRoot(window.RootGridElement);
+            // 紧凑窗口根元素注册到主题协调器：切换主题立即同步（含标题栏）。
+            _themeCoordinator.RegisterWindow(window.AppWindow, window.RootGridElement, isMainWindow: false);
+            window.Closed += (_, _) => _themeCoordinator.UnregisterWindow(window.RootGridElement);
             WindowManager.RegisterCompactWindow(window);
             return new WinUICompactWindowHost(window);
         });
@@ -262,8 +266,8 @@ public sealed class CompositionRoot
             confirmRestartAsync: () => DialogService.ConfirmRestartAsync(CancellationToken.None),
             Log);
 
-        // 主题偏好变化 → 应用到所有已注册窗口根元素。
-        _appearanceService.ThemeChanged += OnThemeChanged;
+        // 主题偏好变化 → 应用到所有已注册窗口（根元素 + 标题栏）。
+        _appearanceService.ThemeChanged += _themeCoordinator.ApplyTheme;
 
         var filePicker = new WinUIFilePickerService(() => _mainWindowHandle);
 
@@ -367,12 +371,12 @@ public sealed class CompositionRoot
             _mainWindowHandle = IntPtr.Zero;
         }
 
-        // v0.6.0：主窗口根元素注册到主题服务（切换主题立即生效）。
+        // v0.6.0：主窗口根元素注册到主题协调器（切换主题立即生效，含标题栏）。
         try
         {
             if (window.RootPage is { } rootPage)
             {
-                RegisterThemeRoot(rootPage);
+                _themeCoordinator.RegisterWindow(window.AppWindow, rootPage, isMainWindow: true);
             }
         }
         catch
@@ -381,44 +385,4 @@ public sealed class CompositionRoot
         }
     }
 
-    // ------------------------------------------------------------------
-    // v0.6.0：主题应用到窗口根元素（WinUI ElementTheme）。
-    // 主窗口与紧凑窗口根元素注册到外观服务；切换主题时统一应用，
-    // 新建对话框继承所属窗口主题；高对比度由系统优先（ElementTheme.Default）。
-    // ------------------------------------------------------------------
-    private readonly List<Microsoft.UI.Xaml.FrameworkElement> _themeRoots = new();
-
-    private void RegisterThemeRoot(Microsoft.UI.Xaml.FrameworkElement root)
-    {
-        _themeRoots.Add(root);
-        ApplyThemeToRoot(root);
-    }
-
-    private void UnregisterThemeRoot(Microsoft.UI.Xaml.FrameworkElement root) =>
-        _themeRoots.Remove(root);
-
-    private void ApplyThemeToRoot(Microsoft.UI.Xaml.FrameworkElement root)
-    {
-        try
-        {
-            root.RequestedTheme = _appearanceService.Theme switch
-            {
-                AppThemePreference.Light => Microsoft.UI.Xaml.ElementTheme.Light,
-                AppThemePreference.Dark => Microsoft.UI.Xaml.ElementTheme.Dark,
-                _ => Microsoft.UI.Xaml.ElementTheme.Default,
-            };
-        }
-        catch
-        {
-            // 主题应用失败不影响应用。
-        }
-    }
-
-    private void OnThemeChanged(AppThemePreference theme)
-    {
-        foreach (var root in _themeRoots.ToArray())
-        {
-            ApplyThemeToRoot(root);
-        }
-    }
 }

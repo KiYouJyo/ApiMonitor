@@ -7,7 +7,30 @@
     xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
-        <converters:PageVisibilityConverter x:Key="PageVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <converters:PageVisibilityConverter x:Key="PageVisibilityConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--
+              v0.6.0 主题统一：覆盖 NavigationView Pane 默认背景
+              （Light 默认 AcrylicInAppFill，Dark 默认 SystemControlBackgroundBaseLow），
+              让左侧导航与标题栏、页面内容共用同一外壳背景。
+            -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!--
@@ -22,7 +45,8 @@
         IsSettingsVisible="False"
         PaneDisplayMode="Left"
         SelectionChanged="OnNavigationSelectionChanged"
-        Loaded="OnRootNavigationLoaded">
+        Loaded="OnRootNavigationLoaded"
+        Background="{ThemeResource AppShellBackgroundBrush}">
         <NavigationView.MenuItems>
             <NavigationViewItem loc:Loc.Key="Nav.Home" Tag="Home">
                 <NavigationViewItem.Icon>
@@ -48,7 +72,7 @@
             </NavigationViewItem>
         </NavigationView.FooterMenuItems>
 
-        <Grid>
+        <Grid Background="{ThemeResource AppShellBackgroundBrush}">
             <views:HomePage
                 x:Name="HomePageControl"
                 Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Home}" />

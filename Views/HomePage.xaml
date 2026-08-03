@@ -71,8 +71,8 @@
             Padding="14,10"
             CornerRadius="8"
             BorderThickness="1"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource AppCardBorderBrush}"
+            Background="{ThemeResource AppCardBackgroundBrush}"
             Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Spacing="10">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
@@ -135,8 +135,8 @@
                             Padding="18,14"
                             CornerRadius="8"
                             BorderThickness="1"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                            BorderBrush="{ThemeResource AppCardBorderBrush}"
+                            Background="{ThemeResource AppCardBackgroundBrush}">
                             <Grid>
                                 <StackPanel Spacing="12">
                                     <!-- 账户标识 -->

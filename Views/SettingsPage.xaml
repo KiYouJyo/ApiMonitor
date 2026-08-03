@@ -24,8 +24,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="4">
@@ -77,8 +77,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
                     <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
@@ -130,8 +130,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
                     <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
@@ -177,8 +177,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
                     <TextBlock loc:Loc.Key="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
@@ -209,8 +209,8 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="6">
                     <TextBlock loc:Loc.Key="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock

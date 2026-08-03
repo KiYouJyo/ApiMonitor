@@ -1,8 +1,8 @@
-# ApiMonitor v0.6.0 安装说明（Install.cmd，候选包版本 0.6.0.0）
+# ApiMonitor v0.6.0 安装说明（Install.cmd，候选包版本 0.6.0.1）
 
-ApiMonitor v0.6.0（候选包版本 `0.6.0.0`）是自签名侧载版本。完整 `Test.zip` 解压后，普通用户只需：
+ApiMonitor v0.6.0（候选包版本 `0.6.0.1`）是自签名侧载版本。完整 `Test.zip` 解压后，普通用户只需：
 
-1. **下载完整 Test.zip**（`ApiMonitor_0.6.0.0_x64_Test.zip`）并解压到任意目录（路径可包含空格和中文）。
+1. **下载完整 Test.zip**（`ApiMonitor_0.6.0.1_x64_Test.zip`）并解压到任意目录（路径可包含空格和中文）。
 2. **双击 `Install.cmd`**。
 3. **确认一次 Windows UAC 提示**（“用户帐户控制”，选择“是”）。
 4. 等待脚本自动完成证书导入、依赖检查与 MSIX 安装。
@@ -26,10 +26,10 @@ ApiMonitor v0.6.0（候选包版本 `0.6.0.0`）是自签名侧载版本。完�
 
 1. 检查 Windows 10 1809（build 17763）+、x64 系统以及所需文件（MSIX、CER、SHA256SUMS.txt）。
 2. 校验 `SHA256SUMS.txt` 中 MSIX 与 CER 的 SHA-256。
-3. 从 MSIX 提取签名证书，与随包 CER 的**完整 Thumbprint** 比对；核对 Subject 为 `CN=ApiMonitorDev`、代码签名 EKU、有效期、Manifest Publisher 与 Identity（`ApiMonitor` / 0.6.0.0）。
+3. 从 MSIX 提取签名证书，与随包 CER 的**完整 Thumbprint** 比对；核对 Subject 为 `CN=ApiMonitorDev`、代码签名 EKU、有效期、Manifest Publisher 与 Identity（`ApiMonitor` / 0.6.0.1）。
 4. 将公开证书导入 **Local Machine > Trusted People**（已存在相同 Thumbprint 时跳过）。
 5. 检查 `Dependencies\x64` 中的 Windows App Runtime 2 依赖，只安装当前 x64 系统需要的包；已安装相同或更高版本时跳过。
-6. 全新安装或**原地升级**（v0.5.0 → v0.6.0.0），保留本地账户、历史、阈值、窗口/托盘/启动设置与 Credential Locker 数据。
+6. 全新安装或**原地升级**（v0.5.0 → v0.6.0.1），保留本地账户、历史、阈值、窗口/托盘/启动设置与 Credential Locker 数据。
 
 ## 同版本保护
 
@@ -79,7 +79,7 @@ Import-Certificate -FilePath .\ApiMonitorDev.cer -CertStoreLocation Cert:\LocalM
 Add-AppxPackage -Path .\Dependencies\x64\Microsoft.WindowsAppRuntime.2.msix
 
 # 3. 安装主包
-Add-AppxPackage -Path .\ApiMonitor_0.6.0.0_x64.msix
+Add-AppxPackage -Path .\ApiMonitor_0.6.0.1_x64.msix
 ```
 
 ## SHA-256 校验方法
@@ -87,8 +87,8 @@ Add-AppxPackage -Path .\ApiMonitor_0.6.0.0_x64.msix
 在解压目录或 Release 资产目录执行：
 
 ```powershell
-Get-FileHash .\ApiMonitor_0.6.0.0_x64.msix -Algorithm SHA256
-Get-FileHash .\ApiMonitor_0.6.0.0_x64_Test.zip -Algorithm SHA256
+Get-FileHash .\ApiMonitor_0.6.0.1_x64.msix -Algorithm SHA256
+Get-FileHash .\ApiMonitor_0.6.0.1_x64_Test.zip -Algorithm SHA256
 ```
 
 将结果与官方 Release 上的 `SHA256SUMS.txt` 逐字符比对。不一致时请勿安装。

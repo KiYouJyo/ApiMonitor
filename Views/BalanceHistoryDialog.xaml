@@ -41,8 +41,8 @@
                         Padding="12,8"
                         CornerRadius="6"
                         BorderThickness="1"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        BorderBrush="{ThemeResource AppCardBorderBrush}"
+                        Background="{ThemeResource AppCardBackgroundBrush}">
                         <StackPanel Spacing="4">
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock Text="{x:Bind TimeText}" FontWeight="SemiBold" />

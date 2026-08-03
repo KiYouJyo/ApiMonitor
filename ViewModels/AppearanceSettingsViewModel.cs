@@ -72,8 +72,19 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         _confirmRestartAsync = confirmRestartAsync;
         _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
-        SelectedTheme = ThemeOptions[0];
-        SelectedLanguage = LanguageOptions[0];
+        // 构造期直接赋值后备字段，不触发 OnSelectedThemeChanged/OnSelectedLanguageChanged
+        // （否则会在 InitializeAsync 读取持久化设置之前把默认值 System 写回文件，
+        // 导致主题/语言选择永远无法恢复——v0.6.0 主题修复）。
+        _isInitializing = true;
+        try
+        {
+            _selectedTheme = ThemeOptions[0];
+            _selectedLanguage = LanguageOptions[0];
+        }
+        finally
+        {
+            _isInitializing = false;
+        }
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
