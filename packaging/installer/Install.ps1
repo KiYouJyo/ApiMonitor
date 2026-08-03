@@ -705,7 +705,7 @@ function Invoke-Install {
         }
     }
 
-    Write-InstallerLog '==== ApiMonitor v0.5.0 自动安装开始 ===='
+    Write-InstallerLog '==== ApiMonitor v0.6.0 自动安装开始 ===='
 
     # 1. Pre-install checks
     $pre = Assert-Prerequisites $scriptDir $Ops
@@ -818,7 +818,7 @@ function Invoke-Install {
         }
         'HigherVersionInstalled' {
             Write-InstallerLog (
-                '已安装更高版本（{0}），v0.5.0 安装程序不会执行降级。' -f $installedPkg.Version) 'ERROR'
+                '已安装更高版本（{0}），v0.6.0 安装程序不会执行降级。' -f $installedPkg.Version) 'ERROR'
             return (Get-InstallerExitCode 'HigherVersionInstalled')
         }
         'SameVersion' {
