@@ -4,6 +4,11 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace ApiMonitor.Views;
 
+/// <summary>
+/// 主窗口导航外壳：负责页面切换与 NavigationView 选中项同步。
+/// 生命周期（初始化、调度、事件订阅）仍留在 CompositionRoot/App 与
+/// 共享的 MainViewModel 中，页面切换不会重建或重复订阅。
+/// </summary>
 public sealed partial class MainPage : UserControl
 {
     public MainPage()
@@ -22,51 +27,53 @@ public sealed partial class MainPage : UserControl
             }
 
             DataContext = value;
+            HomePageControl.ViewModel = value;
+            SettingsPageControl.ViewModel = value;
             if (value is not null)
             {
                 value.PropertyChanged += OnViewModelPropertyChanged;
+                SyncNavigationSelection(value.CurrentPage);
             }
         }
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(MainViewModel.HighlightedAccountId)
-            || ViewModel?.HighlightedAccountId is not { } accountId)
+        if (e.PropertyName == nameof(MainViewModel.CurrentPage) && ViewModel is not null)
         {
-            return;
+            SyncNavigationSelection(ViewModel.CurrentPage);
         }
+    }
 
-        // 定位并短暂高亮通知对应的账户卡片；高亮状态随后由主界面清除。
-        var list = FindName("AccountsList") as ListView;
-        if (list is null)
+    private void SyncNavigationSelection(AppPageKind page)
+    {
+        string target = page == AppPageKind.Home ? "Home" : "Settings";
+        foreach (var item in RootNavigation.MenuItems)
         {
-            return;
-        }
-
-        foreach (var item in ViewModel.FilteredAccounts)
-        {
-            if (string.Equals(item.Account.AccountId, accountId, StringComparison.OrdinalIgnoreCase))
+            if (item is NavigationViewItem nvi
+                && string.Equals(nvi.Tag?.ToString(), target, StringComparison.OrdinalIgnoreCase))
             {
-                list.ScrollIntoView(item);
-                _ = ClearHighlightAfterAsync(item, TimeSpan.FromSeconds(6));
-                break;
+                RootNavigation.SelectedItem = nvi;
+                return;
             }
         }
     }
 
-    private static async System.Threading.Tasks.Task ClearHighlightAfterAsync(
-        AccountListItemViewModel item,
-        TimeSpan delay)
+    private void OnRootNavigationLoaded(object sender, RoutedEventArgs e) =>
+        SyncNavigationSelection(ViewModel?.CurrentPage ?? AppPageKind.Home);
+
+    private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        try
+        if (args.SelectedItem is not NavigationViewItem item
+            || item.Tag is not string tag
+            || ViewModel is null)
         {
-            await System.Threading.Tasks.Task.Delay(delay);
-            item.IsHighlighted = false;
+            return;
         }
-        catch
-        {
-            // 清除高亮失败不影响应用。
-        }
+
+        ViewModel.NavigateTo(
+            string.Equals(tag, "Settings", StringComparison.OrdinalIgnoreCase)
+                ? AppPageKind.Settings
+                : AppPageKind.Home);
     }
 }

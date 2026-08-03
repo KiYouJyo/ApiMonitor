@@ -44,6 +44,11 @@ public sealed class FakeAccountManager : IAccountManager
     public BalanceQueryResult RefreshResult { get; set; } =
         BalanceQueryResult.Failure(BalanceErrorKind.Unknown, "未配置测试结果");
 
+    /// <summary>SaveAccountAsync 抛出的异常（模拟保存失败）。</summary>
+    public Exception? SaveException { get; set; }
+
+    public int GetAllAccountsCalls { get; private set; }
+
     public string? ApiKeyResult { get; set; }
 
     public TaskCompletionSource? RefreshGate { get; set; }
@@ -113,6 +118,7 @@ public sealed class FakeAccountManager : IAccountManager
     public Task<IReadOnlyList<ApiAccount>> GetAllAccountsAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        GetAllAccountsCalls++;
         return Task.FromResult<IReadOnlyList<ApiAccount>>(Accounts.ToList());
     }
 
@@ -152,6 +158,11 @@ public sealed class FakeAccountManager : IAccountManager
         CancellationToken cancellationToken,
         AccountNotificationSettings? notification = null)
     {
+        if (SaveException is not null)
+        {
+            throw SaveException;
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
         SaveCalls++;
         string id = accountId ?? $"acct-{SaveCalls}";

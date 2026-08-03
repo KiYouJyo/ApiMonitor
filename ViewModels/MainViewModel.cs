@@ -25,8 +25,13 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IUiThreadInvoker _ui;
     private readonly AppLog _log;
     private readonly Action _openCompactWindow;
+    private readonly Func<string, CancellationToken, Task<DateTimeOffset?>>? _snoozeReader;
     private readonly CancellationTokenSource _lifetime = new();
     private int _statusGeneration;
+
+    /// <summary>当前导航页面（默认主页；通知激活会强制回到主页）。</summary>
+    [ObservableProperty]
+    private AppPageKind _currentPage = AppPageKind.Home;
 
     public ObservableCollection<AccountListItemViewModel> Accounts { get; } = new();
 
@@ -112,13 +117,17 @@ public sealed partial class MainViewModel : ObservableObject
 
     public AsyncRelayCommand RefreshAllCommand { get; }
 
+    /// <summary>当前支持的 Provider 文本（设置页“应用信息”展示）。</summary>
+    public string SupportedProvidersText { get; private set; } = "DeepSeek、OpenRouter";
+
     public MainViewModel(
         IAccountManager accountManager,
         IDialogService dialogs,
         AppLog log,
         IClipboardService clipboard,
         IUiThreadInvoker ui,
-        Action? openCompactWindow = null)
+        Action? openCompactWindow = null,
+        Func<string, CancellationToken, Task<DateTimeOffset?>>? snoozeReader = null)
     {
         _accountManager = accountManager;
         _dialogs = dialogs;
@@ -126,6 +135,7 @@ public sealed partial class MainViewModel : ObservableObject
         _clipboard = clipboard;
         _ui = ui;
         _openCompactWindow = openCompactWindow ?? (() => { });
+        _snoozeReader = snoozeReader;
 
         StatusSeverity = StatusSeverity.Informational;
         StatusTitle = string.Empty;
@@ -154,6 +164,16 @@ public sealed partial class MainViewModel : ObservableObject
         HasActiveFilters = SelectedStatusFilter != AccountStatusFilter.All
             || !string.IsNullOrEmpty(SelectedProviderFilter);
         ApplyFilters();
+    }
+
+    /// <summary>切换到指定导航页面（不会重建账户状态，不重启调度器）。</summary>
+    public void NavigateTo(AppPageKind page) => CurrentPage = page;
+
+    /// <summary>把筛选恢复为“全部 Provider / 全部状态”（新增账户后与通知定位共用）。</summary>
+    public void ResetFiltersToAll()
+    {
+        SelectedProviderFilter = string.Empty;
+        SelectedStatusFilter = AccountStatusFilter.All;
     }
 
     /// <summary>应用启动时加载本地数据；文件损坏/迁移失败时显示恢复提示而不是崩溃。</summary>
@@ -221,6 +241,9 @@ public sealed partial class MainViewModel : ObservableObject
                 result.Monitoring,
                 _lifetime.Token,
                 result.Notification);
+            await ReloadAccountsAsync(_lifetime.Token);
+            // 新账户可能被当前筛选隐藏：自动恢复为可见筛选，体验更直接。
+            ResetFiltersToAll();
             await ReloadAccountsAsync(_lifetime.Token);
             ShowStatus(StatusSeverity.Success, "账户已保存", $"账户“{result.DisplayName}”已添加。");
         }
@@ -294,7 +317,10 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
 
-        bool confirmed = await _dialogs.ConfirmDeleteAsync(item.DisplayName, _lifetime.Token);
+        bool confirmed = await _dialogs.ConfirmDeleteAsync(
+            item.DisplayName,
+            item.ProviderDisplayName,
+            _lifetime.Token);
         if (!confirmed)
         {
             return;
@@ -480,7 +506,7 @@ public sealed partial class MainViewModel : ObservableObject
                 _accountManager.Providers.FirstOrDefault(p => p.ProviderId == account.ProviderId)?.DisplayName
                 ?? account.ProviderId;
 
-            Accounts.Add(new AccountListItemViewModel(
+            var item = new AccountListItemViewModel(
                 account,
                 providerDisplayName,
                 record,
@@ -488,9 +514,23 @@ public sealed partial class MainViewModel : ObservableObject
                 () => EditAccountAsync(account.AccountId),
                 () => DeleteAccountAsync(account.AccountId),
                 () => CopyKeyAsync(account.AccountId),
-                () => ShowHistoryAsync(account.AccountId)));
+                () => ShowHistoryAsync(account.AccountId));
+
+            if (_snoozeReader is not null)
+            {
+                var snoozedUntil = await _snoozeReader(account.AccountId, cancellationToken);
+                item.SnoozeSummaryText = snoozedUntil is { } until
+                    ? "暂停提醒至 " + until.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    : string.Empty;
+            }
+
+            Accounts.Add(item);
         }
 
+        SupportedProvidersText = string.Join(
+            "、",
+            _accountManager.Providers.Select(p => p.DisplayName));
+        OnPropertyChanged(nameof(SupportedProvidersText));
         OnPropertyChanged(nameof(HasAccounts));
         OnPropertyChanged(nameof(AccountSummaryText));
         RefreshSummary();
@@ -548,11 +588,9 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _ui.Post(() =>
         {
-            if (SelectedProviderFilter != string.Empty || SelectedStatusFilter != AccountStatusFilter.All)
-            {
-                SelectedProviderFilter = string.Empty;
-                SelectedStatusFilter = AccountStatusFilter.All;
-            }
+            // 通知激活必须自动导航到主页，并清除可能隐藏目标账户的筛选。
+            NavigateTo(AppPageKind.Home);
+            ResetFiltersToAll();
 
             foreach (var item in Accounts)
             {

@@ -12,7 +12,7 @@ public sealed class NotificationActivationRouterTests
         public int Count { get; set; }
     }
 
-    private static (NotificationActivationRouter Router, FakeAccountManager Accounts, WindowCounter Window, List<string> Focused,
+    private static (NotificationActivationRouter Router, FakeAccountManager Accounts, WindowCounter Window, WindowCounter NavigateHome, List<string> Focused,
         List<(string Title, string Message)> Messages, FakeNotificationStateStore States) CreateSut()
     {
         var accounts = new FakeAccountManager();
@@ -20,6 +20,7 @@ public sealed class NotificationActivationRouterTests
         var settings = new FakeNotificationSettingsStore();
         var notifications = new FakeAppNotificationService();
         var window = new WindowCounter();
+        var navigateHome = new WindowCounter();
         var focused = new List<string>();
         var messages = new List<(string, string)>();
         var coordinator = new NotificationCoordinator(
@@ -34,15 +35,16 @@ public sealed class NotificationActivationRouterTests
             accounts,
             coordinator,
             () => window.Count++,
+            () => navigateHome.Count++,
             id => focused.Add(id),
             (title, message) => messages.Add((title, message)));
-        return (router, accounts, window, focused, messages, states);
+        return (router, accounts, window, navigateHome, focused, messages, states);
     }
 
     [Fact]
     public async Task OpenAccount_ShowsWindowAndFocusesAccount()
     {
-        var (router, accounts, window, focused, _, _) = CreateSut();
+        var (router, accounts, window, _, focused, _, _) = CreateSut();
         accounts.Accounts.Add(new ApiAccount
         {
             AccountId = "acct-1",
@@ -68,7 +70,7 @@ public sealed class NotificationActivationRouterTests
     [Fact]
     public async Task OpenDeletedAccount_ShowsWindowAndMessage_WithoutCrash()
     {
-        var (router, _, window, focused, messages, _) = CreateSut();
+        var (router, _, window, navigateHome, focused, messages, _) = CreateSut();
 
         await router.HandleAsync(
             new NotificationActivationPayload(
@@ -79,6 +81,7 @@ public sealed class NotificationActivationRouterTests
             CancellationToken.None);
 
         Assert.Equal(1, window.Count);
+        Assert.Equal(1, navigateHome.Count);
         Assert.Empty(focused);
         var message = Assert.Single(messages);
         Assert.Equal("账户不存在", message.Title);
@@ -87,7 +90,7 @@ public sealed class NotificationActivationRouterTests
     [Fact]
     public async Task SnoozeAction_DoesNotShowWindow()
     {
-        var (router, _, window, _, _, states) = CreateSut();
+        var (router, _, window, _, _, _, states) = CreateSut();
         states.States.Add(new NotificationStateEntry
         {
             AccountId = "acct-1",
@@ -111,7 +114,7 @@ public sealed class NotificationActivationRouterTests
     [Fact]
     public async Task TestAction_ShowsWindowOnly()
     {
-        var (router, _, window, focused, _, _) = CreateSut();
+        var (router, _, window, _, focused, _, _) = CreateSut();
 
         await router.HandleAsync(
             new NotificationActivationPayload(NotificationActions.Test, null, null, null),

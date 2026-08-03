@@ -18,7 +18,10 @@ public sealed class FakeDialogService : IDialogService
         CancellationToken cancellationToken) =>
         Task.FromResult(EditorResult);
 
-    public Task<bool> ConfirmDeleteAsync(string accountName, CancellationToken cancellationToken) =>
+    public Task<bool> ConfirmDeleteAsync(
+        string accountName,
+        string providerDisplayName,
+        CancellationToken cancellationToken) =>
         Task.FromResult(ConfirmDeleteResult);
 
     public Task ShowHistoryAsync(string accountId, CancellationToken cancellationToken) =>

@@ -248,4 +248,193 @@ public sealed class AccountListItemViewModelTests
         item.RefreshDisplay();
         Assert.Equal("余额正常", item.ThresholdSummaryText);
     }
+
+    [Fact]
+    public void DeepSeekCard_ShowsFullCurrencyMetrics()
+    {
+        var metric = new BalanceMetric
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 110.00m,
+            TotalAmount = 110.00m,
+            GrantedAmount = 10.00m,
+            ToppedUpAmount = 100.00m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, metric));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Equal("CNY · 总额 110.00 · 赠送 10.00 · 充值 100.00", line.LineText);
+    }
+
+    [Fact]
+    public void OpenRouterApiKeyCard_ShowsQuotaAndUsageMetrics()
+    {
+        var quota = new BalanceMetric
+        {
+            MetricId = "openrouter:key:quota-remaining",
+            DisplayName = "密钥剩余额度",
+            Unit = "credits",
+            Kind = BalanceMetricKind.KeyQuota,
+            AvailableAmount = 4.25m,
+            TotalAmount = 10.00m,
+            IsThresholdSupported = true,
+        };
+        var usage = new BalanceMetric
+        {
+            MetricId = "openrouter:key:usage-total",
+            DisplayName = "累计使用量",
+            Unit = "credits",
+            Kind = BalanceMetricKind.Usage,
+            UsedAmount = 5.75m,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, quota, usage));
+
+        Assert.Equal(2, item.BalanceLines.Count);
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("密钥剩余额度 4.25"));
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("上限 10.00"));
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("累计使用量 5.75"));
+    }
+
+    [Fact]
+    public void OpenRouterManagementCard_ShowsCreditsMetrics()
+    {
+        var credits = new BalanceMetric
+        {
+            MetricId = "openrouter:credits:remaining",
+            DisplayName = "剩余 Credits",
+            Unit = "credits",
+            Kind = BalanceMetricKind.PlatformCredits,
+            AvailableAmount = 4.25m,
+            TotalAmount = 10.00m,
+            UsedAmount = 5.75m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, credits));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Equal("剩余 Credits 4.25 · 累计充值 10.00 · 累计使用 5.75", line.LineText);
+    }
+
+    [Fact]
+    public void NullGrantedAndToppedUp_ShowUnknownNotZero()
+    {
+        var metric = new BalanceMetric
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 88.00m,
+            TotalAmount = 88.00m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, metric));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Contains("赠送 未知", line.LineText);
+        Assert.Contains("充值 未知", line.LineText);
+        Assert.DoesNotContain("赠送 0.00", line.LineText);
+    }
+
+    [Fact]
+    public void CredentialModeText_ReflectsProviderAndMode()
+    {
+        var deepseek = CreateItem();
+        Assert.Equal(string.Empty, deepseek.CredentialModeText);
+        Assert.False(deepseek.HasCredentialModeText);
+
+        var orKey = CreateItem(AccountWithProvider("openrouter", "api-key"));
+        Assert.Equal("普通 API Key", orKey.CredentialModeText);
+        Assert.True(orKey.HasCredentialModeText);
+
+        var orMgmt = CreateItem(AccountWithProvider("openrouter", "management-key"));
+        Assert.Equal("Management Key", orMgmt.CredentialModeText);
+    }
+
+    [Fact]
+    public void NotificationsEnabledText_ReflectsTriState()
+    {
+        var inherited = CreateItem();
+        Assert.Equal("通知：继承全局", inherited.NotificationsEnabledText);
+
+        var enabled = Account();
+        enabled.Notification.NotificationsEnabled = true;
+        Assert.Equal("通知：开启", CreateItem(enabled).NotificationsEnabledText);
+
+        var disabled = Account();
+        disabled.Notification.NotificationsEnabled = false;
+        Assert.Equal("通知：关闭", CreateItem(disabled).NotificationsEnabledText);
+    }
+
+    [Fact]
+    public void SnoozeSummaryText_DrivesHasSnooze()
+    {
+        var item = CreateItem();
+
+        Assert.False(item.HasSnooze);
+
+        item.SnoozeSummaryText = "暂停提醒至 2026-08-04 08:00";
+        Assert.True(item.HasSnooze);
+
+        item.SnoozeSummaryText = string.Empty;
+        Assert.False(item.HasSnooze);
+    }
+
+    [Fact]
+    public void RefreshCommand_IsBoundToAccountId()
+    {
+        var captured = new List<string>();
+        var account = new ApiAccount
+        {
+            AccountId = "acct-bound",
+            ProviderId = "deepseek",
+            DisplayName = "绑定测试",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        };
+        var item = new AccountListItemViewModel(
+            account,
+            "DeepSeek",
+            null,
+            () =>
+            {
+                captured.Add("acct-bound");
+                return Task.CompletedTask;
+            },
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask);
+
+        item.RefreshCommand.Execute(null);
+
+        Assert.Equal("acct-bound", Assert.Single(captured));
+    }
+
+    private static ApiAccount AccountWithProvider(string providerId, string? credentialMode)
+    {
+        return new ApiAccount
+        {
+            AccountId = "acct-" + providerId,
+            ProviderId = providerId,
+            DisplayName = providerId + " 账户",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
+        };
+    }
 }

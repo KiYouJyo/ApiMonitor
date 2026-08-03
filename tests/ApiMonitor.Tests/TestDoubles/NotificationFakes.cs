@@ -34,11 +34,23 @@ public sealed class FakeNotificationSettingsStore : INotificationSettingsStore
 {
     public NotificationGlobalSettings Settings { get; set; } = new();
 
-    public Task<NotificationGlobalSettings> LoadAsync(CancellationToken cancellationToken) =>
-        Task.FromResult(Settings);
+    public int SaveCalls { get; private set; }
+
+    public Task<NotificationGlobalSettings> LoadAsync(CancellationToken cancellationToken)
+    {
+        // 返回独立副本：调用方（设置 VM 的即时保存）可能就地修改返回对象，
+        // 与真实 JSON 存储每次反序列化出新对象的行为保持一致。
+        return Task.FromResult(new NotificationGlobalSettings
+        {
+            BalanceNotificationsEnabled = Settings.BalanceNotificationsEnabled,
+            DefaultRepeatIntervalHours = Settings.DefaultRepeatIntervalHours,
+            RecoveryNotificationsEnabled = Settings.RecoveryNotificationsEnabled,
+        });
+    }
 
     public Task SaveAsync(NotificationGlobalSettings settings, CancellationToken cancellationToken)
     {
+        SaveCalls++;
         Settings = settings;
         return Task.CompletedTask;
     }

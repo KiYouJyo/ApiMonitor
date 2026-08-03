@@ -10,6 +10,7 @@ public sealed class NotificationActivationRouter
     private readonly IAccountManager _accounts;
     private readonly NotificationCoordinator _coordinator;
     private readonly Action _showMainWindow;
+    private readonly Action _navigateHome;
     private readonly Action<string> _focusAccount;
     private readonly Action<string, string> _showMessage;
 
@@ -17,12 +18,14 @@ public sealed class NotificationActivationRouter
         IAccountManager accounts,
         NotificationCoordinator coordinator,
         Action showMainWindow,
+        Action navigateHome,
         Action<string> focusAccount,
         Action<string, string> showMessage)
     {
         _accounts = accounts;
         _coordinator = coordinator;
         _showMainWindow = showMainWindow;
+        _navigateHome = navigateHome;
         _focusAccount = focusAccount;
         _showMessage = showMessage;
     }
@@ -54,6 +57,8 @@ public sealed class NotificationActivationRouter
                 var account = await _accounts.GetAccountAsync(payload.AccountId, cancellationToken);
                 if (account is null)
                 {
+                    // 已删除账户：强制回到主页并显示普通提示，不崩溃。
+                    _navigateHome();
                     _showMessage("账户不存在", "该通知对应的账户已被删除。");
                 }
                 else

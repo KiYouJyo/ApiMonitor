@@ -192,6 +192,32 @@ public sealed class NotificationCoordinator
     /// <summary>发送测试通知：不查询 API、不改变阈值状态、不写入余额历史。</summary>
     public void ShowTestNotification() => _notifications.ShowTestNotification();
 
+    /// <summary>读取账户当前有效的暂停截止时间（供账户卡片显示摘要）。</summary>
+    public Task<DateTimeOffset?> GetSnoozedUntilAsync(
+        string accountId,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var now = _time.GetUtcNow();
+        DateTimeOffset? active = null;
+        foreach (var state in _states)
+        {
+            if (!string.Equals(state.AccountId, accountId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (state.SnoozedUntil is { } until
+                && until > now
+                && (active is null || until > active.Value))
+            {
+                active = until;
+            }
+        }
+
+        return Task.FromResult(active);
+    }
+
     private void MarkNotified(
         IReadOnlyList<NotificationStateEntry> states,
         IEnumerable<string> metricIds,

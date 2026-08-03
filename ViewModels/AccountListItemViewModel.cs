@@ -68,6 +68,31 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isHighlighted;
 
+    /// <summary>OpenRouter 凭据模式文本（DeepSeek 为空）。</summary>
+    public string CredentialModeText =>
+        Account.ProviderId == "openrouter"
+            ? string.Equals(Account.CredentialMode, "management-key", StringComparison.OrdinalIgnoreCase)
+                ? "Management Key"
+                : "普通 API Key"
+            : string.Empty;
+
+    public bool HasCredentialModeText => !string.IsNullOrEmpty(CredentialModeText);
+
+    /// <summary>该账户通知开关摘要（三态：开启/关闭/继承全局）。</summary>
+    public string NotificationsEnabledText => Account.Notification.NotificationsEnabled switch
+    {
+        true => "通知：开启",
+        false => "通知：关闭",
+        _ => "通知：继承全局",
+    };
+
+    /// <summary>暂停提醒摘要（由通知状态读取，非持久化账户字段）。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSnooze))]
+    private string _snoozeSummaryText = string.Empty;
+
+    public bool HasSnooze => !string.IsNullOrEmpty(SnoozeSummaryText);
+
     [ObservableProperty]
     private bool _isRefreshing;
 

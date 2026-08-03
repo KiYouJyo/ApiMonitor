@@ -27,3 +27,10 @@ public enum AccountStatusFilter
     Unknown,
     Failed,
 }
+
+/// <summary>主窗口导航页面（导航外壳只允许这两个页面，不创建第二份账户状态）。</summary>
+public enum AppPageKind
+{
+    Home,
+    Settings,
+}

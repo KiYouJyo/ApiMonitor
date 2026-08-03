@@ -22,7 +22,10 @@ public interface IDialogService
         AccountEditorContext context,
         CancellationToken cancellationToken);
 
-    Task<bool> ConfirmDeleteAsync(string accountName, CancellationToken cancellationToken);
+    Task<bool> ConfirmDeleteAsync(
+        string accountName,
+        string providerDisplayName,
+        CancellationToken cancellationToken);
 
     /// <summary>显示指定账户的余额历史对话框。</summary>
     Task ShowHistoryAsync(string accountId, CancellationToken cancellationToken);

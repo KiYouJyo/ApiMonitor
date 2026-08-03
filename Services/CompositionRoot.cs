@@ -113,18 +113,11 @@ public sealed class CompositionRoot
             return new WinUICompactWindowHost(window);
         });
 
-        MainViewModel = new MainViewModel(
-            accountManager,
-            DialogService,
-            Log,
-            clipboard,
-            uiThreadInvoker,
-            () => CompactWindowService.OpenOrActivate());
-
         // ------------------------------------------------------------------
         // v0.5.0：低余额通知（评估、展示、暂停、删除清理）。
+        // 通知协调器在 MainViewModel 之前创建，供账户卡片读取暂停状态摘要。
         // ------------------------------------------------------------------
-        NotificationCoordinator = new NotificationCoordinator(
+        var notificationCoordinator = new NotificationCoordinator(
             accountManager,
             notificationStateStore,
             notificationSettingsStore,
@@ -132,6 +125,16 @@ public sealed class CompositionRoot
             notificationService,
             Log,
             time);
+        NotificationCoordinator = notificationCoordinator;
+
+        MainViewModel = new MainViewModel(
+            accountManager,
+            DialogService,
+            Log,
+            clipboard,
+            uiThreadInvoker,
+            () => CompactWindowService.OpenOrActivate(),
+            (accountId, ct) => notificationCoordinator.GetSnoozedUntilAsync(accountId, ct));
 
         accountManager.RefreshCompleted += (_, e) =>
             _ = NotificationCoordinator.HandleRefreshCompletedAsync(e, CancellationToken.None);
@@ -142,6 +145,7 @@ public sealed class CompositionRoot
             accountManager,
             NotificationCoordinator,
             () => _showMainWindow(),
+            () => MainViewModel.NavigateTo(AppPageKind.Home),
             accountId => MainViewModel.FocusAccount(accountId),
             (title, message) => MainViewModel.ShowPlainMessage(title, message));
 
