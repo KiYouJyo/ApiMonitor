@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.5.0.1] - 2026-08-03（v0.5.0 验收候选修订包；修复安装/备份安全）
+
+- 禁止同版本破坏性替换：已安装版本与待安装版本相同时默认停止（退出码 15），绝不自动卸载/重置包/删除 LocalState/操作 Credential Locker
+- 新增统一 LocalState 备份/校验/恢复工具（packaging/tools/SafeLocalStateBackup.ps1）：动态解析 Package Family、逐项 -LiteralPath 复制、数量/字节/哈希/JSON/非零/清单全量校验
+- 破坏性重装仅在显式参数 -ForceDestructiveReinstall + 人工确认后执行，且必须先行通过备份校验（备份失败停止，退出码 16）
+- 升级前尽力备份 LocalState；备份失败不阻塞安全的标准 MSIX 原地升级
+- 候选包版本策略：MSIX 使用 0.5.0.1（后续 0.5.0.2/0.5.0.3…），应用界面与 GitHub 版本仍为 v0.5.0
+- Install.ps1/Uninstall.ps1 退出码表补充 15/16；Installer 测试新增 39 项断言
+
 ## [0.5.0-UI] - 2026-08-03（验收前主界面信息架构修正，仍在 0.5.0.0）
 
 - 主窗口改为 NavigationView 导航外壳：主页（账户仪表盘）与独立设置页

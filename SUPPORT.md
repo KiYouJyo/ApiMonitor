@@ -14,6 +14,18 @@ v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds,
 
 v0.5.0 upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, compact-window settings, tray settings, and sign-in startup preferences are preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the generic metric model. The installer never enables notifications or sign-in startup automatically; global system alerts are **off by default** until you turn them on.
 
+### Candidate package revisions (0.5.0.1, 0.5.0.2, …)
+
+- The user-visible version stays **v0.5.0**; only the MSIX four-part version advances for each acceptance candidate.
+- **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
+- If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
+
+### Backups and Credential Locker
+
+- Installer upgrades create a best-effort LocalState backup under `%TEMP%\ApiMonitor-LocalState-Backups`; the backup manifest contains only relative file names, sizes, SHA-256 hashes, backup time, Package Family, and app version — never API keys.
+- The restore function (`Restore-SafeLocalState`) validates the manifest and hashes, checks the Package Family, creates a second backup of current data, refuses to overwrite unrecognized new files, and re-verifies JSON afterwards.
+- **Credential Locker 密钥无法通过 LocalState 文件备份恢复，因此保护数据的首选方式是原地升级，而不是卸载重装。**
+
 ### Upgrading v0.3.0 to v0.3.1
 
 v0.3.1 upgraded in place over v0.3.0 (historical release line).
@@ -73,6 +85,10 @@ The button snoozes that account/metric for 24 hours without opening the app wind
 - If saving a new account fails (for example the system reaches a Credential Locker limit), the app rolls back the new credential write so existing accounts are never damaged; a clear message is shown.
 - If deleting an account fails partway, the app never silently leaves inconsistent state; retry and check the log for the exact failure.
 - The UI shows how many accounts are configured but does not claim a fixed credential-count limit that applies to every Windows configuration.
+
+## Recovering after an accidental uninstall/reinstall
+
+- If a candidate package was replaced by uninstall/reinstall and LocalState was lost, restore the latest validated backup with `Restore-SafeLocalState` (see `packaging\tools\SafeLocalStateBackup.ps1`). Credential Locker keys are **not** stored in LocalState and cannot be restored from these files.
 
 ## Balance query issues
 

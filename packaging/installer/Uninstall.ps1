@@ -124,6 +124,8 @@ function Get-InstallerExitCode {
         'AbortedByUser'          { return 12 }
         'CertCleanupBlocked'     { return 13 }
         'CertCleanupFailed'      { return 14 }
+        'SameVersionBlocked'     { return 15 }
+        'DestructiveBackupFailed' { return 16 }
         default                  { return 1 }
     }
 }

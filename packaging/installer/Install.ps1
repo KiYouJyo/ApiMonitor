@@ -1,6 +1,6 @@
 ﻿#requires -Version 5.1
 <#
-  ApiMonitor v0.5.0 sideload installer
+  ApiMonitor v0.5.0 sideload installer (candidate package revision 0.5.0.1)
   ====================================
   Double-click entry: Install.cmd -> this script (Windows PowerShell 5.1).
 
@@ -12,23 +12,33 @@
      - full signer thumbprint extracted from the MSIX compared with the CER;
      - certificate Subject = CN=ApiMonitorDev, Code Signing EKU, validity;
      - manifest Publisher matches the certificate Subject;
-     - manifest Identity = ApiMonitor and version = 0.5.0.0.
+      - manifest Identity = ApiMonitor and version = 0.5.0.1.
   4. Import the public certificate into LocalMachine\TrustedPeople only.
   5. Install x64 Windows App Runtime dependencies bundled under Dependencies\x64.
   6. Fresh install / in-place upgrade of the ApiMonitor MSIX for the current user,
      preserving accounts, history, thresholds, window settings and Credential Locker data.
+
+  Same-version safety (v0.5.0 candidate package policy):
+  - Detecting an installed version identical to the incoming package stops by default.
+    The installer never auto-uninstalls, never removes LocalState, never resets the
+    package, and never touches Credential Locker.
+  - A destructive reinstall is only possible with the explicit
+    -ForceDestructiveReinstall parameter, which performs a validated LocalState backup
+    first and warns that Credential Locker keys cannot be restored from files. This
+    parameter is NOT part of the formal release flow.
 
   Exit codes are documented in INSTALL.md.
 #>
 
 [CmdletBinding()]
 param(
-    [string]$PackageVersion = '0.5.0.0',
+    [string]$PackageVersion = '0.5.0.1',
     [string]$PackageIdentity = 'ApiMonitor',
     [string]$PublisherSubject = 'CN=ApiMonitorDev',
     [string]$RuntimePackageName = 'Microsoft.WindowsAppRuntime.2',
     [switch]$NoLaunch,
-    [switch]$Quiet
+    [switch]$Quiet,
+    [switch]$ForceDestructiveReinstall
 )
 
 Set-StrictMode -Version 2.0
@@ -36,6 +46,15 @@ $ErrorActionPreference = 'Stop'
 
 $script:InstallLogPath = $null
 $script:QuietMode = $false
+
+# 统一的 LocalState 备份/校验/恢复函数库（同仓库 packaging/tools）。
+$script:BackupToolPath = Join-Path $PSScriptRoot 'SafeLocalStateBackup.ps1'
+if (-not (Test-Path -LiteralPath $script:BackupToolPath)) {
+    $script:BackupToolPath = Join-Path $PSScriptRoot '..\tools\SafeLocalStateBackup.ps1'
+}
+if (Test-Path -LiteralPath $script:BackupToolPath) {
+    . $script:BackupToolPath
+}
 
 function Get-DefaultOps {
     <#
@@ -80,6 +99,12 @@ function Get-DefaultOps {
             } else {
                 Add-AppxPackage -Path $MainPath -ForceApplicationShutdown
             }
+        }
+        RemoveAppxPackageForUser = {
+            param($PackageFullName)
+            Get-AppxPackage -ErrorAction SilentlyContinue |
+                Where-Object { $_.PackageFullName -eq $PackageFullName } |
+                Remove-AppxPackage
         }
         GetOsBuild = {
             [int](Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name CurrentBuildNumber -ErrorAction SilentlyContinue).CurrentBuildNumber
@@ -131,6 +156,8 @@ function Get-InstallerExitCode {
         'AbortedByUser'          { return 12 }
         'CertCleanupBlocked'     { return 13 }
         'CertCleanupFailed'      { return 14 }
+        'SameVersionBlocked'     { return 15 }
+        'DestructiveBackupFailed' { return 16 }
         default                  { return 1 }
     }
 }
@@ -450,7 +477,7 @@ function Assert-ManifestIdentity {
         [Parameter(Mandatory = $true)][hashtable]$Manifest,
         [string]$ExpectedName = 'ApiMonitor',
         [string]$ExpectedPublisher = 'CN=ApiMonitorDev',
-        [string]$ExpectedVersion = '0.5.0.0'
+        [string]$ExpectedVersion = '0.5.0.1'
     )
     if ($Manifest.Name -ne $ExpectedName) {
         return @{ Ok = $false; Reason = ('包 Identity Name 不符："{0}"（期望 {1}）。' -f $Manifest.Name, $ExpectedName) }
@@ -604,12 +631,66 @@ function Install-ApiMonitorPackage {
     }
 }
 
+function Confirm-DestructiveReinstall {
+    <#
+      破坏性重装的显式人工确认。静默模式一律拒绝；
+      正式发布流程不得使用该参数。
+    #>
+    param([switch]$Quiet)
+    if ($Quiet) {
+        return $false
+    }
+
+    $answer = Read-Host '确实要卸载当前 ApiMonitor 并重新安装吗？本地数据会先备份，但此操作具有破坏性。[y/N]'
+    return ($answer -match '^(y|Y|是)$')
+}
+
+function New-DestructiveReinstallBackup {
+    <#
+      破坏性重装前的 LocalState 强制备份（失败必须停止后续卸载）。
+      返回 Ok / BackupDir / FileCount / Errors。
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$LocalState,
+        [Parameter(Mandatory = $true)][string]$PackageFamilyName,
+        [Parameter(Mandatory = $true)][string]$AppVersion,
+        [hashtable]$Ops
+    )
+    $result = Backup-SafeLocalState `
+        -Source $LocalState `
+        -BackupRoot (Join-Path $env:TEMP 'ApiMonitor-LocalState-Backups') `
+        -PackageFamilyName $PackageFamilyName `
+        -AppVersion $AppVersion `
+        -Ops $Ops
+    return @{
+        Ok         = $result.Ok
+        BackupDir  = $result.BackupDir
+        FileCount  = $result.FileCount
+        Errors     = $result.Errors
+    }
+}
+
+function Resolve-InstalledLocalState {
+    <# 解析已安装包的 LocalState；测试可注入 Ops.ResolveLocalState。 #>
+    param($InstalledPkg, [hashtable]$Ops)
+    if ($Ops.ContainsKey('ResolveLocalState')) {
+        return (& $Ops.ResolveLocalState $InstalledPkg.PackageFamilyName)
+    }
+    return (Join-Path (Join-Path $env:LOCALAPPDATA 'Packages') (Join-Path $InstalledPkg.PackageFamilyName 'LocalState'))
+}
+
 function Invoke-Install {
     param([hashtable]$Ops)
     if ($null -eq $Ops) { $Ops = Get-DefaultOps }
 
-    $scriptDir = $PSScriptRoot
-    if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+    # 脚本目录默认取 $PSScriptRoot；测试可注入 Ops.ResolveScriptDir 指向隔离临时目录。
+    if ($Ops.ContainsKey('ResolveScriptDir')) {
+        $scriptDir = & $Ops.ResolveScriptDir
+    }
+    else {
+        $scriptDir = $PSScriptRoot
+        if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+    }
 
     if (-not (& $Ops.TestIsAdministrator)) {
         Write-InstallerLog '需要管理员权限以导入证书并安装 MSIX，正在请求 UAC 提升……'
@@ -741,11 +822,60 @@ function Invoke-Install {
             return (Get-InstallerExitCode 'HigherVersionInstalled')
         }
         'SameVersion' {
-            Write-InstallerLog '已安装当前版本 v0.5.0.0，无需重新安装。' 'OK'
-            return 0
+            if (-not $ForceDestructiveReinstall) {
+                Write-InstallerLog '已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。' 'WARN'
+                return (Get-InstallerExitCode 'SameVersionBlocked')
+            }
+
+            Write-InstallerLog '检测到相同版本且指定了 -ForceDestructiveReinstall（破坏性重装，非正式发布流程）。' 'WARN'
+            Write-InstallerLog '将先备份 LocalState 再卸载重装；Credential Locker 密钥无法通过文件备份恢复，重装后仍由凭据管理器保留。' 'WARN'
+            if (-not (Confirm-DestructiveReinstall -Quiet:$Quiet)) {
+                Write-InstallerLog '用户取消破坏性重装。' 'WARN'
+                return (Get-InstallerExitCode 'Canceled')
+            }
+
+            $localState = Resolve-InstalledLocalState -InstalledPkg $installedPkg -Ops $Ops
+            $backupResult = New-DestructiveReinstallBackup `
+                -LocalState $localState `
+                -PackageFamilyName $installedPkg.PackageFamilyName `
+                -AppVersion ([string]$installedPkg.Version) `
+                -Ops $Ops
+            if (-not $backupResult.Ok) {
+                Write-InstallerLog (
+                    '破坏性重装前的 LocalState 备份失败，已停止后续操作：{0}' -f (($backupResult.Errors | Out-String).Trim())) 'ERROR'
+                return (Get-InstallerExitCode 'DestructiveBackupFailed')
+            }
+
+            Write-InstallerLog (
+                "LocalState 已备份：{0}（{1} 个文件）" -f $backupResult.BackupDir, $backupResult.FileCount) 'OK'
+            Write-InstallerLog '正在卸载当前包（显式人工确认后执行）。' 'WARN'
+            $null = & $Ops.RemoveAppxPackageForUser $installedPkg.PackageFullName
+            $installedPkg = $null
         }
         'Upgrade' {
             Write-InstallerLog ('检测到已安装版本 {0}，执行原地升级（保留本地数据与凭据）。' -f $installedPkg.Version) 'OK'
+            # 升级前尽力备份 LocalState；备份失败不阻塞安全的标准 MSIX 原地升级。
+            try {
+                $upgradeLocalState = Resolve-InstalledLocalState -InstalledPkg $installedPkg -Ops $Ops
+                if (Test-Path -LiteralPath $upgradeLocalState) {
+                    $upgradeBackup = Backup-SafeLocalState `
+                        -Source $upgradeLocalState `
+                        -BackupRoot (Join-Path $env:TEMP 'ApiMonitor-LocalState-Backups') `
+                        -PackageFamilyName $installedPkg.PackageFamilyName `
+                        -AppVersion ([string]$installedPkg.Version) `
+                        -Ops $Ops
+                    if ($upgradeBackup.Ok) {
+                        Write-InstallerLog ("升级前 LocalState 已备份：{0}" -f $upgradeBackup.BackupDir) 'OK'
+                    }
+                    else {
+                        Write-InstallerLog (
+                            '升级前 LocalState 备份失败（不影响标准原地升级）：{0}' -f ($upgradeBackup.Errors -join '；')) 'WARN'
+                    }
+                }
+            }
+            catch {
+                Write-InstallerLog '升级前 LocalState 备份失败（不影响标准原地升级）。' 'WARN'
+            }
         }
         default {
             Write-InstallerLog '未检测到已安装的 ApiMonitor，执行全新安装。' 'OK'

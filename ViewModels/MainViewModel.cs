@@ -727,8 +727,10 @@ public sealed partial class MainViewModel : ObservableObject
     private static string GetAppVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
+        // 用户可见版本固定为 v0.5.0：MSIX 四段版本（0.5.0.1/0.5.0.2…）
+        // 只是同一 v0.5.0 验收候选的内部修订号，不改变对外版本。
         return version is null
-            ? "?"
-            : $"{version.Major}.{version.Minor}.{version.Build}";
+            ? "0.5.0"
+            : $"{version.Major}.{version.Minor}.0";
     }
 }

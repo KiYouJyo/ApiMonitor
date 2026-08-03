@@ -179,6 +179,11 @@ try {
     # Dot-source only the function definitions (main execution is guarded).
     . $script:InstallPs1
     . $script:UninstallPs1
+    $script:BackupToolPath = Join-Path (Join-Path $PSScriptRoot '..\..\packaging') 'tools\SafeLocalStateBackup.ps1'
+    if (-not (Test-Path -LiteralPath $script:BackupToolPath)) {
+        throw '找不到 packaging/tools/SafeLocalStateBackup.ps1。'
+    }
+    . $script:BackupToolPath
     # The scripts set StrictMode and ErrorActionPreference in this scope; relax them
     # for the harness so it can use loose comparison conventions.
     Set-StrictMode -Off
@@ -195,11 +200,11 @@ try {
     $certExpired = New-TestCert -Subject 'CN=ApiMonitorDev' -WithCodeSigningEku -NotBefore (Get-Date).AddDays(-800) -NotAfter (Get-Date).AddDays(-400)
     Assert-True ($certA.Thumbprint -ne $certB.Thumbprint) '两个测试证书的 Thumbprint 不同'
 
-    $msixName = 'ApiMonitor_0.5.0.0_x64.msix'
+    $msixName = 'ApiMonitor_0.5.0.1_x64.msix'
     $goodManifest = @'
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
-  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.5.0.0" ProcessorArchitecture="x64" />
+  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.5.0.1" ProcessorArchitecture="x64" />
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="12.0.0.0" />
   </Dependencies>
@@ -227,6 +232,7 @@ try {
     $script:AllUsersPackages = @()
     $script:CertImportCalls = @()
     $script:RemoveCalls = @()
+    $script:AddAppxCalls = 0
     $script:DummyCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($cerPath)
     $fakeOps = @{
         GetFileHash = { param($Path) (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash }
@@ -240,7 +246,11 @@ try {
             $script:DummyCert
         }
         GetTrustedPeopleCert = { param($Thumbprint) $null }
-        AddAppxPackage = { param($MainPath, [string[]]$DependencyPaths) $true }
+        AddAppxPackage = {
+            param($MainPath, [string[]]$DependencyPaths)
+            $script:AddAppxCalls++
+            $true
+        }
         GetOsBuild = { 19045 }
         Is64BitOs = { $true }
         RemoveAppxPackageForUser = {
@@ -259,15 +269,15 @@ try {
     Write-TestSection 'Manifest：版本与 Identity'
     $info = Get-MsixManifestInfo $msixPath
     Assert-Equal 'ApiMonitor' $info.Name 'Identity Name = ApiMonitor'
-    Assert-Equal '0.5.0.0' $info.Version '包版本 = 0.5.0.0'
+    Assert-Equal '0.5.0.1' $info.Version '包版本 = 0.5.0.1'
     Assert-Equal 'CN=ApiMonitorDev' $info.Publisher 'Publisher = CN=ApiMonitorDev'
     Assert-True (Assert-ManifestIdentity $info).Ok 'Assert-ManifestIdentity 通过'
 
-    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.5.0.0'; Publisher = 'CN=WrongPublisher' }
+    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.5.0.1'; Publisher = 'CN=WrongPublisher' }
     Assert-False (Assert-ManifestIdentity $wrongPublisher).Ok '错误 Publisher 被拒绝'
-    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.5.0.0'; Publisher = 'CN=ApiMonitorDev' }
+    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.5.0.1'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongName).Ok '错误 Identity Name 被拒绝'
-    $wrongVersion = @{ Name = 'ApiMonitor'; Version = '0.5.0.1'; Publisher = 'CN=ApiMonitorDev' }
+    $wrongVersion = @{ Name = 'ApiMonitor'; Version = '0.5.0.2'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongVersion).Ok '错误版本被拒绝'
 
     # -----------------------------------------------------------------------
@@ -332,11 +342,12 @@ try {
             Status            = 'Ok'
         }
     }
-    Assert-Equal 'Install' (Resolve-PackageAction $null '0.5.0.0' 'CN=ApiMonitorDev') '未安装 -> Install'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.5.0.0' 'CN=ApiMonitorDev') '低版本允许原地升级'
-    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.5.0.0') '0.5.0.0' 'CN=ApiMonitorDev') '相同版本不重复安装'
-    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.5.0.1') '0.5.0.0' 'CN=ApiMonitorDev') '更高版本拒绝降级'
-    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.5.0.0' 'CN=SomeoneElse') '0.5.0.0' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
+    Assert-Equal 'Install' (Resolve-PackageAction $null '0.5.0.1' 'CN=ApiMonitorDev') '未安装 -> Install'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.5.0.1' 'CN=ApiMonitorDev') '低版本允许原地升级'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.5.0.0') '0.5.0.1' 'CN=ApiMonitorDev') 'v0.5.0.0 允许原地升级到 0.5.0.1'
+    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.5.0.1') '0.5.0.1' 'CN=ApiMonitorDev') '相同版本不重复安装'
+    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.5.0.2') '0.5.0.1' 'CN=ApiMonitorDev') '更高版本拒绝降级'
+    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.5.0.1' 'CN=SomeoneElse') '0.5.0.1' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.1.0') -eq 0) '版本比较：相等'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.0.0') -gt 0) '版本比较：更高'
     Assert-True ((Compare-PackageVersion '2.3.0.0' '2.3.1.0') -lt 0) '版本比较：更低'
@@ -484,8 +495,208 @@ try {
         (Get-InstallerExitCode 'IdentityConflict'), (Get-InstallerExitCode 'SecurityVerificationFailed'), (Get-InstallerExitCode 'PreconditionFailed'),
         (Get-InstallerExitCode 'DependencyMissing'), (Get-InstallerExitCode 'InstallFailed'), (Get-InstallerExitCode 'NotInstalled'),
         (Get-InstallerExitCode 'UninstallFailed'), (Get-InstallerExitCode 'AbortedByUser'), (Get-InstallerExitCode 'CertCleanupBlocked'),
-        (Get-InstallerExitCode 'CertCleanupFailed')
-    Assert-Equal '0,2,4,5,6,7,8,9,10,11,12,13,14' ($installerCode -join ',') '退出码表正确'
+        (Get-InstallerExitCode 'CertCleanupFailed'), (Get-InstallerExitCode 'SameVersionBlocked'),
+        (Get-InstallerExitCode 'DestructiveBackupFailed')
+    Assert-Equal '0,2,4,5,6,7,8,9,10,11,12,13,14,15,16' ($installerCode -join ',') '退出码表正确'
+
+    # -----------------------------------------------------------------------
+    Write-TestSection 'SafeLocalStateBackup：备份与校验'
+    $backupRoot = Join-Path $script:TempRoot ('备份 根' + [guid]::NewGuid().ToString('N'))
+    $backupSource = Join-Path $script:TempRoot ('源 LocalState ' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $backupSource | Out-Null
+    $hiddenDir = Join-Path $backupSource '子目录 中文'
+    New-Item -ItemType Directory -Path $hiddenDir | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $backupSource 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $backupSource 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $backupSource 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $backupSource 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $hiddenDir 'notification-settings.json'), '{ "schemaVersion": 1, "settings": {} }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $hiddenDir 'app.log'), 'info line', (New-Object System.Text.UTF8Encoding($false)))
+    $hiddenFile = Join-Path $backupSource '.hidden-config'
+    [System.IO.File]::WriteAllText($hiddenFile, 'hidden', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::SetAttributes($hiddenFile, [System.IO.FileAttributes]::Hidden)
+
+    $backupResult = Backup-SafeLocalState `
+        -Source $backupSource `
+        -BackupRoot $backupRoot `
+        -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' `
+        -AppVersion '0.5.0.1'
+    Assert-True $backupResult.Ok '备份成功（空格+中文路径、多层子目录、隐藏文件）'
+    Assert-Equal 7 $backupResult.FileCount '备份文件数量正确（含隐藏文件与子目录文件）'
+    $backupDir = $backupResult.BackupDir
+    Assert-True (Test-Path -LiteralPath $backupDir) '备份目录存在'
+    Assert-True (Test-Path -LiteralPath (Join-Path $backupDir '子目录 中文\app.log')) '子目录文件已备份'
+    Assert-True (Test-Path -LiteralPath (Join-Path $backupDir '.hidden-config')) '隐藏文件已备份'
+    $manifest = Get-Content (Join-Path $backupDir 'LocalState-backup-manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    Assert-Equal 'ApiMonitor_cx0n152q1hsh2' $manifest.packageFamilyName '清单 Package Family 正确'
+    Assert-Equal '0.5.0.1' $manifest.appVersion '清单应用版本正确'
+    Assert-True ($manifest.files.Count -eq 7) '清单文件条目数量正确'
+    Assert-True ($manifest.files[0].PSObject.Properties.Name -notcontains 'apiKey') '清单不含 apiKey'
+    Assert-True ($manifest.files[0].PSObject.Properties.Name -notcontains 'credential') '清单不含凭据字段'
+
+    $backupValidation = Test-SafeLocalStateBackup -Source $backupSource -BackupDir $backupDir
+    Assert-True $backupValidation.Ok '备份校验通过（数量/字节/哈希/JSON）'
+
+    # 空源目录被识别（不崩溃），且空备份不能通过验证。
+    $emptySource = Join-Path $script:TempRoot 'empty-source'
+    New-Item -ItemType Directory -Path $emptySource | Out-Null
+    $emptyBackup = Backup-SafeLocalState -Source $emptySource -BackupRoot (Join-Path $script:TempRoot 'empty-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.5.0.1'
+    Assert-False $emptyBackup.Ok '空源目录被识别且验证失败（缺少核心 JSON）'
+
+    $emptyDirValidation = Test-SafeLocalStateBackup -BackupDir (Join-Path $script:TempRoot 'not-a-backup')
+    Assert-False $emptyDirValidation.Ok '空备份目录不能通过验证'
+
+    # 数量不一致。
+    $countBroken = Join-Path $script:TempRoot 'count-broken'
+    New-Item -ItemType Directory -Path $countBroken | Out-Null
+    Copy-Item -LiteralPath (Join-Path $backupDir 'accounts.json') -Destination $countBroken
+    $countValidation = Test-SafeLocalStateBackup -BackupDir $countBroken
+    Assert-False $countValidation.Ok '备份数量不一致时失败'
+
+    # 大小/哈希不一致。
+    $tamperedDir = Join-Path $script:TempRoot 'tampered'
+    Copy-Item -LiteralPath $backupDir -Destination $tamperedDir -Recurse -Force
+    $tamperedFile = Join-Path $tamperedDir 'accounts.json'
+    [System.IO.File]::AppendAllText($tamperedFile, 'tampered', (New-Object System.Text.UTF8Encoding($false)))
+    $tamperedValidation = Test-SafeLocalStateBackup -BackupDir $tamperedDir
+    Assert-False $tamperedValidation.Ok '文件大小/哈希不一致时失败'
+
+    # 损坏 JSON。
+    $corruptSource = Join-Path $script:TempRoot ('corrupt ' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $corruptSource | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $corruptSource 'accounts.json'), '{ broken !!!', (New-Object System.Text.UTF8Encoding($false)))
+    $corruptBackup = Backup-SafeLocalState -Source $corruptSource -BackupRoot (Join-Path $script:TempRoot 'corrupt-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.5.0.1'
+    Assert-False $corruptBackup.Ok 'JSON 损坏时备份验证失败'
+
+    # 0 字节文件。
+    $zeroSource = Join-Path $script:TempRoot ('zero ' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $zeroSource | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $zeroSource 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $zeroSource 'tray-settings.json'), '', (New-Object System.Text.UTF8Encoding($false)))
+    $zeroBackup = Backup-SafeLocalState -Source $zeroSource -BackupRoot (Join-Path $script:TempRoot 'zero-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.5.0.1'
+    Assert-False $zeroBackup.Ok '0 字节文件导致备份验证失败'
+
+    # -----------------------------------------------------------------------
+    Write-TestSection 'Restore-SafeLocalState：二次备份与保护'
+    $restoreTarget = Join-Path $script:TempRoot 'restore-target'
+    New-Item -ItemType Directory -Path $restoreTarget | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'new-unknown.json'), '{}', (New-Object System.Text.UTF8Encoding($false)))
+
+    $restoreBlocked = Restore-SafeLocalState `
+        -BackupDir $backupDir `
+        -Target $restoreTarget `
+        -TargetPackageFamilyName 'ApiMonitor_cx0n152q1hsh2' `
+        -RestoreBackupRoot (Join-Path $script:TempRoot 'restore-bak')
+    Assert-False $restoreBlocked.Ok '目标存在备份之外的新文件时拒绝覆盖'
+
+    Remove-Item -LiteralPath (Join-Path $restoreTarget 'new-unknown.json') -Force
+    $restoreOk = Restore-SafeLocalState `
+        -BackupDir $backupDir `
+        -Target $restoreTarget `
+        -TargetPackageFamilyName 'ApiMonitor_cx0n152q1hsh2' `
+        -RestoreBackupRoot (Join-Path $script:TempRoot 'restore-bak-ok')
+    Assert-True $restoreOk.Ok '恢复成功（先二次备份、逐文件写入、JSON 复验）'
+    Assert-True ($restoreOk.SecondBackupDir -and (Test-Path -LiteralPath $restoreOk.SecondBackupDir)) '恢复前创建当前数据二次备份'
+    Assert-True (Test-Path -LiteralPath (Join-Path $restoreTarget '.hidden-config')) '恢复包含隐藏文件'
+
+    $pfmBlocked = Restore-SafeLocalState `
+        -BackupDir $backupDir `
+        -Target $restoreTarget `
+        -TargetPackageFamilyName 'ApiMonitor_OTHER' `
+        -RestoreBackupRoot (Join-Path $script:TempRoot 'restore-bak-pfm')
+    Assert-False $pfmBlocked.Ok 'Package Family 不一致时拒绝恢复'
+
+    # -----------------------------------------------------------------------
+    Write-TestSection '同版本安装保护与破坏性重装'
+    $fakeLocalState = Join-Path $script:TempRoot 'flow-localstate'
+    New-Item -ItemType Directory -Path $fakeLocalState | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+
+    $flowOps = @{ }
+    foreach ($key in $fakeOps.Keys) { $flowOps[$key] = $fakeOps[$key] }
+    $flowOps['ResolveScriptDir'] = { $script:TempRoot }
+    $flowOps['ResolveLocalState'] = { param($PackageFamilyName) $fakeLocalState }
+    $flowOps['AddAppxPackage'] = {
+        param($MainPath, [string[]]$DependencyPaths)
+        $script:AddAppxCalls++
+        $script:InstalledPackages = @($script:InstalledPackages | Where-Object { $_.Name -ne 'ApiMonitor' })
+        $script:InstalledPackages += New-InstalledPkg '0.5.0.1'
+        $true
+    }
+    $flowOps['RemoveAppxPackageForUser'] = {
+        param($PackageFullName)
+        $script:RemoveCalls += $PackageFullName
+        $script:InstalledPackages = @($script:InstalledPackages | Where-Object { $_.PackageFullName -ne $PackageFullName })
+        $true
+    }
+
+    $script:InstalledPackages = @(
+        [pscustomobject]@{ Name = 'Microsoft.WindowsAppRuntime.2'; Version = '2.3.1.0'; PackageFullName = 'Microsoft.WindowsAppRuntime.2_2.3.1.0_x64__8wekyb3d8bbwe'; Publisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US' },
+        (New-InstalledPkg '0.5.0.1')
+    )
+    $script:AddAppxCalls = 0
+    $script:RemoveCalls = @()
+    $sameCode = Invoke-Install $flowOps
+    Assert-Equal 15 $sameCode '相同版本默认停止（SameVersionBlocked=15）'
+    Assert-Equal 0 $script:AddAppxCalls '相同版本不会调用 Add-AppxPackage'
+    Assert-Equal 0 $script:RemoveCalls.Count '相同版本不会调用卸载'
+
+    # 静默模式禁止破坏性重装。
+    $ForceDestructiveReinstall = $true
+    $script:AddAppxCalls = 0
+    $script:RemoveCalls = @()
+    $quietFlowOps = @{ }
+    foreach ($key in $flowOps.Keys) { $quietFlowOps[$key] = $flowOps[$key] }
+    $Quiet = $true
+    $quietCode = Invoke-Install $quietFlowOps
+    Assert-Equal 2 $quietCode '静默模式破坏性重装被拒绝（Canceled=2）'
+    Assert-Equal 0 $script:RemoveCalls.Count '静默模式不会调用卸载'
+    $Quiet = $false
+
+    # 备份失败时破坏性重装停止，不卸载。
+    function Confirm-DestructiveReinstall { return $true }
+    $script:AddAppxCalls = 0
+    $script:RemoveCalls = @()
+    $brokenFlowOps = @{ }
+    foreach ($key in $flowOps.Keys) { $brokenFlowOps[$key] = $flowOps[$key] }
+    $brokenFlowOps['ResolveLocalState'] = { param($PackageFamilyName) (Join-Path $script:TempRoot 'missing-localstate') }
+    $brokenCode = Invoke-Install $brokenFlowOps
+    Assert-Equal 16 $brokenCode '破坏性重装备份失败时停止（DestructiveBackupFailed=16）'
+    Assert-Equal 0 $script:RemoveCalls.Count '备份失败后不会继续卸载'
+
+    # 破坏性重装（显式确认 + 备份成功）才允许卸载重装。
+    $script:AddAppxCalls = 0
+    $script:RemoveCalls = @()
+    $destructiveCode = Invoke-Install $flowOps
+    Assert-Equal 0 $destructiveCode '显式确认 + 备份成功时破坏性重装完成'
+    Assert-Equal 1 $script:RemoveCalls.Count '破坏性重装显式确认后执行卸载'
+    Assert-Equal 1 $script:AddAppxCalls '破坏性重装后重新安装'
+    $savedBackups = @(Get-ChildItem (Join-Path $env:TEMP 'ApiMonitor-LocalState-Backups') -Directory -ErrorAction SilentlyContinue)
+    Assert-True ($savedBackups.Count -ge 1) '破坏性重装前 LocalState 已备份到临时目录'
+
+    # 原地升级：保留 LocalState、不卸载、不操作 Credential Locker。
+    $script:InstalledPackages = @(
+        [pscustomobject]@{ Name = 'Microsoft.WindowsAppRuntime.2'; Version = '2.3.1.0'; PackageFullName = 'Microsoft.WindowsAppRuntime.2_2.3.1.0_x64__8wekyb3d8bbwe'; Publisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US' },
+        (New-InstalledPkg '0.5.0.0')
+    )
+    $script:AddAppxCalls = 0
+    $script:RemoveCalls = @()
+    $beforeUpgradeHash = (Get-FileHash -LiteralPath (Join-Path $fakeLocalState 'accounts.json') -Algorithm SHA256).Hash
+    $upgradeCode = Invoke-Install $flowOps
+    Assert-Equal 0 $upgradeCode 'v0.5.0.0 -> v0.5.0.1 原地升级成功'
+    Assert-Equal 0 $script:RemoveCalls.Count '原地升级不会调用卸载'
+    Assert-Equal 1 $script:AddAppxCalls '原地升级只调用一次 Add-AppxPackage'
+    Assert-True (Test-Path -LiteralPath (Join-Path $fakeLocalState 'accounts.json')) '原地升级保留 LocalState'
+    $afterUpgradeHash = (Get-FileHash -LiteralPath (Join-Path $fakeLocalState 'accounts.json') -Algorithm SHA256).Hash
+    Assert-Equal $beforeUpgradeHash $afterUpgradeHash '原地升级不修改 LocalState 文件内容'
+    $ForceDestructiveReinstall = $false
 
     # -----------------------------------------------------------------------
     Write-TestSection '完整安装器脚本可解析'
@@ -495,6 +706,9 @@ try {
     $tokens2 = $null; $parseErrors2 = $null
     [System.Management.Automation.Language.Parser]::ParseFile($script:UninstallPs1, [ref]$tokens2, [ref]$parseErrors2) | Out-Null
     Assert-Equal 0 $parseErrors2.Count 'Uninstall.ps1 语法解析无错误'
+    $tokens3 = $null; $parseErrors3 = $null
+    [System.Management.Automation.Language.Parser]::ParseFile($script:BackupToolPath, [ref]$tokens3, [ref]$parseErrors3) | Out-Null
+    Assert-Equal 0 $parseErrors3.Count 'SafeLocalStateBackup.ps1 语法解析无错误'
 
 } finally {
     if ($script:TempRoot -and (Test-Path -LiteralPath $script:TempRoot)) {

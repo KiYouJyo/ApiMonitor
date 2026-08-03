@@ -16,7 +16,7 @@ public sealed class MainViewModelTests
         var version = Assembly.GetExecutingAssembly().GetName().Version;
 
         Assert.NotNull(version);
-        Assert.Contains($"v{version!.Major}.{version.Minor}.{version.Build}", vm.SubtitleText);
+        Assert.Contains($"v{version!.Major}.{version.Minor}.0", vm.SubtitleText);
         Assert.DoesNotContain("v0.1.0", vm.SubtitleText);
     }
 
