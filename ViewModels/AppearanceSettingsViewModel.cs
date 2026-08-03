@@ -173,7 +173,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
             await _store.SaveAsync(settings, CancellationToken.None);
             // 重启前安全保存：语言偏好由 LanguageService 写 PrimaryLanguageOverride，
             // 这里同时落盘以便重启后读取。
-            _language.ApplyLanguage(SelectedLanguage.Language);
+            if (SelectedLanguage is not null)
+            {
+                _language.ApplyLanguage(SelectedLanguage.Language);
+            }
         }
         catch (Exception ex)
         {
