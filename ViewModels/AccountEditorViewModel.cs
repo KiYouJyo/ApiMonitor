@@ -18,6 +18,45 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public IReadOnlyList<int> RefreshIntervals => MonitoringIntervals.Options;
 
+    /// <summary>通知开关选项（0=继承全局，1=开启，2=关闭）。</summary>
+    public sealed record NotificationPreferenceOption(string Label, int Value);
+
+    /// <summary>重复提醒间隔选项（-1=继承全局，其余为小时数）。</summary>
+    public sealed record NotificationRepeatOption(string Label, int Value);
+
+    public IReadOnlyList<NotificationPreferenceOption> NotificationEnabledOptions { get; } = new[]
+    {
+        new NotificationPreferenceOption("继承全局", 0),
+        new NotificationPreferenceOption("开启", 1),
+        new NotificationPreferenceOption("关闭", 2),
+    };
+
+    public IReadOnlyList<NotificationRepeatOption> NotificationRepeatOptions { get; } = new[]
+    {
+        new NotificationRepeatOption("继承全局", -1),
+        new NotificationRepeatOption("不重复", 0),
+        new NotificationRepeatOption("6 小时", 6),
+        new NotificationRepeatOption("12 小时", 12),
+        new NotificationRepeatOption("24 小时", 24),
+        new NotificationRepeatOption("3 天", 72),
+    };
+
+    public IReadOnlyList<NotificationPreferenceOption> RecoveryOptions { get; } = new[]
+    {
+        new NotificationPreferenceOption("继承全局", 0),
+        new NotificationPreferenceOption("开启", 1),
+        new NotificationPreferenceOption("关闭", 2),
+    };
+
+    [ObservableProperty]
+    private int _notificationEnabledIndex;
+
+    [ObservableProperty]
+    private int _repeatIntervalIndex;
+
+    [ObservableProperty]
+    private int _recoveryEnabledIndex;
+
     /// <summary>当前选中 Provider 的凭据选项（来自注册表，不写死在 XAML）。</summary>
     public IReadOnlyList<ProviderCredentialOption> CredentialOptions { get; private set; } =
         Array.Empty<ProviderCredentialOption>();
@@ -148,6 +187,9 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
         AutoRefreshEnabled = context.InitialMonitoring.AutoRefreshEnabled;
         RefreshIntervalMinutes = context.InitialMonitoring.RefreshIntervalMinutes;
+        NotificationEnabledIndex = EnabledIndex(context.InitialNotification.NotificationsEnabled);
+        RepeatIntervalIndex = RepeatIndex(context.InitialNotification.RepeatIntervalHours);
+        RecoveryEnabledIndex = EnabledIndex(context.InitialNotification.RecoveryNotificationsEnabled);
 
         ApplyProviderCapabilities(context.InitialProviderId);
         SelectedCredentialMode = context.CredentialMode ?? ProviderInfoFor(context.InitialProviderId)?.DefaultCredentialOption.CredentialTypeId ?? string.Empty;
@@ -320,9 +362,50 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                     .Cast<BalanceThresholdRule>()
                     .ToList(),
             },
+            Notification = new AccountNotificationSettings
+            {
+                NotificationsEnabled = EnabledFromIndex(NotificationEnabledIndex),
+                RepeatIntervalHours = RepeatFromIndex(RepeatIntervalIndex),
+                RecoveryNotificationsEnabled = EnabledFromIndex(RecoveryEnabledIndex),
+            },
         };
         return true;
     }
+
+    private static int EnabledIndex(bool? value) => value switch
+    {
+        null => 0,
+        true => 1,
+        false => 2,
+    };
+
+    private static bool? EnabledFromIndex(int index) => index switch
+    {
+        1 => true,
+        2 => false,
+        _ => null,
+    };
+
+    private static int RepeatIndex(int? hours) => hours switch
+    {
+        null => 0,
+        0 => 1,
+        6 => 2,
+        12 => 3,
+        24 => 4,
+        72 => 5,
+        _ => 0,
+    };
+
+    private static int? RepeatFromIndex(int index) => index switch
+    {
+        1 => 0,
+        2 => 6,
+        3 => 12,
+        4 => 24,
+        5 => 72,
+        _ => null,
+    };
 
     private void ApplyTestMetrics(IReadOnlyList<BalanceMetric> metrics)
     {

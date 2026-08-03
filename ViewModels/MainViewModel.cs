@@ -72,6 +72,9 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>“通知区域与启动”设置区（由 CompositionRoot 注入；独立 ViewModel 便于测试）。</summary>
     public TraySettingsViewModel? TraySettings { get; set; }
 
+    /// <summary>“余额提醒”设置区（由 CompositionRoot 注入）。</summary>
+    public NotificationSettingsViewModel? NotificationSettings { get; set; }
+
     /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
     public string SubtitleText { get; } =
         $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，当前支持 DeepSeek）。";
@@ -216,7 +219,8 @@ public sealed partial class MainViewModel : ObservableObject
                 result.ApiKey,
                 result.CredentialMode,
                 result.Monitoring,
-                _lifetime.Token);
+                _lifetime.Token,
+                result.Notification);
             await ReloadAccountsAsync(_lifetime.Token);
             ShowStatus(StatusSeverity.Success, "账户已保存", $"账户“{result.DisplayName}”已添加。");
         }
@@ -248,6 +252,7 @@ public sealed partial class MainViewModel : ObservableObject
             HasStoredCredential = account.HasCredential,
             CredentialMode = account.CredentialMode,
             InitialMonitoring = CloneMonitoring(account.Monitoring),
+            InitialNotification = account.Notification,
             CurrentMetrics = item is { HasSnapshot: true } ? item.LatestMetricsForEditor : Array.Empty<BalanceMetric>(),
         };
 
@@ -266,7 +271,8 @@ public sealed partial class MainViewModel : ObservableObject
                 string.IsNullOrWhiteSpace(result.ApiKey) ? null : result.ApiKey,
                 result.CredentialMode,
                 result.Monitoring,
-                _lifetime.Token);
+                _lifetime.Token,
+                result.Notification);
             await ReloadAccountsAsync(_lifetime.Token);
             ShowStatus(StatusSeverity.Success, "账户已保存", $"账户“{result.DisplayName}”已更新。");
         }
@@ -557,6 +563,10 @@ public sealed partial class MainViewModel : ObservableObject
             HighlightedAccountId = accountId;
         });
     }
+
+    /// <summary>显示普通信息提示（如通知点击的账户已被删除）。</summary>
+    public void ShowPlainMessage(string title, string message) =>
+        ShowStatus(StatusSeverity.Informational, title, message);
 
     private void ApplyFilters()
     {

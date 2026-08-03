@@ -15,3 +15,8 @@ public sealed class AccountRefreshCompletedEventArgs : EventArgs
 
     public required BalanceQuerySource Source { get; init; }
 }
+
+public sealed class AccountDeletedEventArgs : EventArgs
+{
+    public required string AccountId { get; init; }
+}

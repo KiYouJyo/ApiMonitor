@@ -19,6 +19,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
@@ -269,6 +270,60 @@
                     Foreground="{ThemeResource SystemFillColorCautionBrush}"
                     TextWrapping="Wrap"
                     Visibility="{Binding TraySettings.HasStartupTaskStatusText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+        </Border>
+
+        <!-- 余额提醒设置（v0.5.0） -->
+        <Border
+            Grid.Row="5"
+            Padding="16,14"
+            CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="余额提醒" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock
+                    Text="{Binding NotificationSettings.LocalOnlyExplanationText, Mode=OneWay}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
+                <ToggleSwitch
+                    Header="启用余额系统提醒"
+                    OnContent="开启"
+                    OffContent="关闭"
+                    IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <TextBlock
+                        Text="默认重复提醒间隔"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        VerticalAlignment="Center" />
+                    <ComboBox
+                        Grid.Column="1"
+                        MinWidth="160"
+                        HorizontalAlignment="Left"
+                        ItemsSource="{Binding NotificationSettings.RepeatOptions}"
+                        DisplayMemberPath="Label"
+                        SelectedValuePath="Hours"
+                        SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
+                </Grid>
+                <ToggleSwitch
+                    Header="余额恢复提醒"
+                    OnContent="开启"
+                    OffContent="关闭"
+                    IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button
+                        Content="发送测试通知"
+                        Command="{Binding NotificationSettings.SendTestCommand}" />
+                    <Button
+                        Content="打开 Windows 通知设置"
+                        Command="{Binding NotificationSettings.OpenWindowsNotificationSettingsCommand}" />
+                </StackPanel>
+                <TextBlock
+                    Text="{Binding NotificationSettings.StatusText, Mode=OneWay}"
+                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding NotificationSettings.HasStatusText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
         </Border>
     </Grid>

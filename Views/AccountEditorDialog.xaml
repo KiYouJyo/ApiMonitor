@@ -475,6 +475,30 @@
                 TextWrapping="Wrap"
                 Visibility="{Binding ShowThresholdEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}" />
 
+            <TextBlock Text="通知设置" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ComboBox
+                Header="该账户通知"
+                ItemsSource="{Binding NotificationEnabledOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding NotificationEnabledIndex, Mode=TwoWay}" />
+            <ComboBox
+                Header="重复提醒间隔"
+                ItemsSource="{Binding NotificationRepeatOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding RepeatIntervalIndex, Mode=TwoWay}" />
+            <ComboBox
+                Header="余额恢复提醒"
+                ItemsSource="{Binding RecoveryOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding RecoveryEnabledIndex, Mode=TwoWay}" />
+            <TextBlock
+                Text="余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+
             <TextBlock
                 Text="{Binding ValidationMessage}"
                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"

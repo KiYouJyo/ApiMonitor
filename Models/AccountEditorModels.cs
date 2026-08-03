@@ -24,6 +24,9 @@ public sealed class AccountEditorContext
     /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
     public required MonitoringSettings InitialMonitoring { get; init; }
 
+    /// <summary>当前每账户通知设置（编辑时带入，新增时为默认值）。</summary>
+    public AccountNotificationSettings InitialNotification { get; init; } = new();
+
     /// <summary>当前快照的各指标余额，用于阈值设置与状态展示。</summary>
     public required IReadOnlyList<BalanceMetric> CurrentMetrics { get; init; }
 }
@@ -45,4 +48,7 @@ public sealed class AccountEditorResult
     public string? CredentialMode { get; set; }
 
     public MonitoringSettings Monitoring { get; set; } = new();
+
+    /// <summary>每账户通知设置（null 字段表示继承全局）。</summary>
+    public AccountNotificationSettings Notification { get; set; } = new();
 }

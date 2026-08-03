@@ -12,6 +12,8 @@ public sealed class FakeAccountManager : IAccountManager
 
     public event EventHandler? AccountsChanged;
 
+    public event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
+
     public List<ProviderInfo> ProviderList { get; } = new()
     {
         new ProviderInfo(
@@ -144,7 +146,8 @@ public sealed class FakeAccountManager : IAccountManager
         string? newApiKey,
         string? credentialMode,
         MonitoringSettings monitoring,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AccountNotificationSettings? notification = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         SaveCalls++;

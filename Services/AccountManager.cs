@@ -29,6 +29,8 @@ public sealed class AccountManager : IAccountManager
 
     public event EventHandler? AccountsChanged;
 
+    public event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
+
     public AccountManager(
         IAccountStore accountStore,
         IBalanceSnapshotStore snapshotStore,
@@ -190,7 +192,8 @@ public sealed class AccountManager : IAccountManager
         string? newApiKey,
         string? credentialMode,
         MonitoringSettings monitoring,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AccountNotificationSettings? notification = null)
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
@@ -247,7 +250,7 @@ public sealed class AccountManager : IAccountManager
                 NextRefreshAtUtc = next,
                 Thresholds = thresholds,
             },
-            Notification = existing?.Notification ?? new AccountNotificationSettings(),
+            Notification = notification ?? existing?.Notification ?? new AccountNotificationSettings(),
         };
 
         if (existing is null)
@@ -286,6 +289,7 @@ public sealed class AccountManager : IAccountManager
 
         await PersistAsync(cancellationToken);
         _log.Info($"已删除账户 {accountId} 及其凭据、余额快照与历史记录。");
+        AccountDeleted?.Invoke(this, new AccountDeletedEventArgs { AccountId = accountId });
         AccountsChanged?.Invoke(this, EventArgs.Empty);
     }
 

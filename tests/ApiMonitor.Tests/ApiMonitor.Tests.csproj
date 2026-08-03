@@ -26,6 +26,8 @@
     <Compile Include="../../Models/ApiAccount.cs" Link="Models/ApiAccount.cs" />
     <Compile Include="../../Models/BalanceMetric.cs" Link="Models/BalanceMetric.cs" />
     <Compile Include="../../Models/AccountNotificationSettings.cs" Link="Models/AccountNotificationSettings.cs" />
+    <Compile Include="../../Models/NotificationSettings.cs" Link="Models/NotificationSettings.cs" />
+    <Compile Include="../../Models/NotificationState.cs" Link="Models/NotificationState.cs" />
     <Compile Include="../../Models/BalanceSnapshot.cs" Link="Models/BalanceSnapshot.cs" />
     <Compile Include="../../Models/BalanceQueryResult.cs" Link="Models/BalanceQueryResult.cs" />
     <Compile Include="../../Models/AccountBalanceRecord.cs" Link="Models/AccountBalanceRecord.cs" />
@@ -75,6 +77,13 @@
     <Compile Include="../../Services/IUiThreadInvoker.cs" Link="Services/IUiThreadInvoker.cs" />
     <Compile Include="../../Services/ITraySettingsStore.cs" Link="Services/ITraySettingsStore.cs" />
     <Compile Include="../../Services/JsonTraySettingsStore.cs" Link="Services/JsonTraySettingsStore.cs" />
+    <Compile Include="../../Services/INotificationStateStore.cs" Link="Services/INotificationStateStore.cs" />
+    <Compile Include="../../Services/JsonNotificationSettingsStore.cs" Link="Services/JsonNotificationSettingsStore.cs" />
+    <Compile Include="../../Services/JsonNotificationStateStore.cs" Link="Services/JsonNotificationStateStore.cs" />
+    <Compile Include="../../Services/NotificationPolicyEvaluator.cs" Link="Services/NotificationPolicyEvaluator.cs" />
+    <Compile Include="../../Services/IAppNotificationService.cs" Link="Services/IAppNotificationService.cs" />
+    <Compile Include="../../Services/NotificationCoordinator.cs" Link="Services/NotificationCoordinator.cs" />
+    <Compile Include="../../Services/NotificationActivationRouter.cs" Link="Services/NotificationActivationRouter.cs" />
     <Compile Include="../../Services/ITrayIconService.cs" Link="Services/ITrayIconService.cs" />
     <Compile Include="../../Services/TrayIconService.cs" Link="Services/TrayIconService.cs" />
     <Compile Include="../../Services/ITrayNativeHost.cs" Link="Services/ITrayNativeHost.cs" />
@@ -100,5 +109,6 @@
     <Compile Include="../../ViewModels/MainViewModel.cs" Link="ViewModels/MainViewModel.cs" />
     <Compile Include="../../ViewModels/CompactWindowViewModel.cs" Link="ViewModels/CompactWindowViewModel.cs" />
     <Compile Include="../../ViewModels/TraySettingsViewModel.cs" Link="ViewModels/TraySettingsViewModel.cs" />
+    <Compile Include="../../ViewModels/NotificationSettingsViewModel.cs" Link="ViewModels/NotificationSettingsViewModel.cs" />
   </ItemGroup>
 </Project>
