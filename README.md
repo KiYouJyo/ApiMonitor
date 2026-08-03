@@ -2,6 +2,8 @@
 
 [简体中文](README.zh-CN.md)
 
+![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
+
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
 - Current version: **v0.2.0**
