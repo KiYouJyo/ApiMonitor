@@ -28,7 +28,7 @@ public sealed partial class AboutViewModel : ObservableObject
     private readonly ILocalDataFolderOpener _dataFolderOpener;
     private readonly IFilePickerService _filePicker;
     private readonly IPortableBackupService _backup;
-    private readonly AppLog _log;
+    private readonly AppLog? _log;
     private readonly CancellationTokenSource _lifetime = new();
 
     // ---- 产品信息（来自统一元数据服务） ----
@@ -139,7 +139,7 @@ public sealed partial class AboutViewModel : ObservableObject
         _dataFolderOpener = dataFolderOpener;
         _filePicker = filePicker;
         _backup = backup;
-        _log = log;
+        _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
         foreach (var provider in providers.OrderBy(p => p.ProviderId, StringComparer.OrdinalIgnoreCase))
         {

@@ -22,7 +22,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     private readonly ILanguageService _language;
     private readonly Func<bool> _requestRestart;
     private readonly Func<Task<bool>>? _confirmRestartAsync;
-    private readonly AppLog _log;
+    private readonly AppLog? _log;
 
     public IReadOnlyList<ThemeOption> ThemeOptions { get; } = new[]
     {
@@ -67,7 +67,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         _language = language;
         _requestRestart = requestRestart ?? (() => false);
         _confirmRestartAsync = confirmRestartAsync;
-        _log = log;
+        _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
         SelectedTheme = ThemeOptions[0];
         SelectedLanguage = LanguageOptions[0];
@@ -163,5 +163,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         {
             _log?.Error($"保存外观设置失败: {ex.GetType().Name}");
         }
+    }
+
+    /// <summary>应用退出时调用（无在途异步操作需要取消）。</summary>
+    public void Shutdown()
+    {
     }
 }

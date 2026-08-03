@@ -509,6 +509,11 @@ public sealed partial class MainViewModel : ObservableObject
         _accountManager.RefreshStarted -= OnRefreshStarted;
         _accountManager.RefreshCompleted -= OnRefreshCompleted;
         _accountManager.AccountsChanged -= OnAccountsChanged;
+        // v0.6.0：退出时取消分析/导出/更新检查等在途操作。
+        Insights?.Shutdown();
+        About?.Shutdown();
+        DataManagement?.Shutdown();
+        AppearanceSettings?.Shutdown();
         _lifetime.Cancel();
     }
 

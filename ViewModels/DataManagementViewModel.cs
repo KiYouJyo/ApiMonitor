@@ -14,7 +14,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
     private readonly IPortableBackupService _backup;
     private readonly IFilePickerService _filePicker;
     private readonly ILocalDataFolderOpener _dataFolderOpener;
-    private readonly AppLog _log;
+    private readonly AppLog? _log;
     private readonly CancellationTokenSource _lifetime = new();
 
     [ObservableProperty]
@@ -44,7 +44,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
         _backup = backup;
         _filePicker = filePicker;
         _dataFolderOpener = dataFolderOpener;
-        _log = log;
+        _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
         ExportBackupCommand = new AsyncRelayCommand(ExportBackupAsync, () => !IsBusy);
         ImportBackupCommand = new AsyncRelayCommand(ImportBackupAsync, () => !IsBusy);
