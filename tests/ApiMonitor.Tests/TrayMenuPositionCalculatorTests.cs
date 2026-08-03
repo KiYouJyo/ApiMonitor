@@ -27,8 +27,8 @@ public sealed class TrayMenuPositionCalculatorTests
         var placement = Resolve(Pt(500, 600), null, null);
 
         Assert.NotNull(placement);
-        Assert.Equal(500, placement.Value.X);
-        Assert.Equal(600, placement.Value.Y);
+        Assert.Equal(500, placement!.Value.X);
+        Assert.Equal(600, placement!.Value.Y);
     }
 
     [Fact]
@@ -38,8 +38,8 @@ public sealed class TrayMenuPositionCalculatorTests
         foreach (int scale in new[] { 100, 125, 150, 200 })
         {
             var placement = Resolve(Pt(960, 540), null, null);
-            Assert.Equal(960, placement.Value.X);
-            Assert.Equal(540, placement.Value.Y);
+            Assert.Equal(960, placement!.Value.X);
+            Assert.Equal(540, placement!.Value.Y);
         }
     }
 
@@ -50,7 +50,7 @@ public sealed class TrayMenuPositionCalculatorTests
         var placement = Resolve(Pt(960, 900), null, null);
 
         Assert.NotNull(placement);
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // TOPALIGN=0x0：断言“不含 BOTTOMALIGN”即向下展开。
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) == 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) == 0);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class TrayMenuPositionCalculatorTests
         var placement = Resolve(Pt(1800, 500), null, null);
 
         Assert.NotNull(placement);
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // LEFTALIGN=0x0：断言“不含 RIGHTALIGN”即向左对齐。
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) == 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) == 0);
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public sealed class TrayMenuPositionCalculatorTests
                 p == Pt(10, 10) ? null : PrimaryWorkArea); // cursor 所在坐标无效
 
         Assert.NotNull(placement);
-        Assert.Equal(800, placement.Value.X);
-        Assert.Equal(700, placement.Value.Y);
+        Assert.Equal(800, placement!.Value.X);
+        Assert.Equal(700, placement!.Value.Y);
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // 底部任务栏：向上展开，锚点 y = 图标顶部
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
-        Assert.Equal(iconRect.Top, placement.Value.Y);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
+        Assert.Equal(iconRect.Top, placement!.Value.Y);
     }
 
     [Fact]
@@ -117,8 +117,8 @@ public sealed class TrayMenuPositionCalculatorTests
         var placement = Resolve(null, null, iconRect);
 
         Assert.NotNull(placement);
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
-        Assert.Equal(iconRect.Top, placement.Value.Y);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
+        Assert.Equal(iconRect.Top, placement!.Value.Y);
     }
 
     [Fact]
@@ -129,8 +129,8 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // TOPALIGN=0x0：断言“不含 BOTTOMALIGN”。
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) == 0);
-        Assert.Equal(iconRect.Bottom, placement.Value.Y);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) == 0);
+        Assert.Equal(iconRect.Bottom, placement!.Value.Y);
     }
 
     [Fact]
@@ -140,8 +140,8 @@ public sealed class TrayMenuPositionCalculatorTests
         var placement = Resolve(null, null, iconRect);
 
         Assert.NotNull(placement);
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
-        Assert.Equal(iconRect.Left, placement.Value.X);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
+        Assert.Equal(iconRect.Left, placement!.Value.X);
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // LEFTALIGN=0x0：断言“不含 RIGHTALIGN”。
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) == 0);
-        Assert.Equal(iconRect.Right, placement.Value.X);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) == 0);
+        Assert.Equal(iconRect.Right, placement!.Value.X);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public sealed class TrayMenuPositionCalculatorTests
 
         Assert.NotNull(placement);
         // 在第二显示器工作区下半部 → 向上展开
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
     }
 
     [Fact]
@@ -188,9 +188,9 @@ public sealed class TrayMenuPositionCalculatorTests
             _ => negativeWorkArea);
 
         Assert.NotNull(placement);
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_BOTTOMALIGN) != 0);
         // 右半区（相对负工作区）→ 向左展开
-        Assert.True((placement.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
+        Assert.True((placement!.Value.AlignFlags & NativeMethods.TPM_RIGHTALIGN) != 0);
     }
 
     [Fact]
