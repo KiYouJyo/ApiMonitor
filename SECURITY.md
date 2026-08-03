@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-The latest release (currently v0.2.0) is the only supported version for security fixes.
+The latest formal release (currently v0.2.0) is the supported version for security fixes. `main` is in development for v0.3.0 and receives fixes through the normal review process.
 
 ## Reporting a vulnerability
 

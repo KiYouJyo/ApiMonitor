@@ -39,8 +39,13 @@ This document is a drafting aid only. It does not modify the Microsoft Partner C
 
 ## v0.2.0 update notes
 
-- EN: Product renamed to ApiMonitor; automatic refresh, balance history, low-balance thresholds, secure key copy, UI fixes, and v0.1.0 data migration.
-- 中文：产品更名为 ApiMonitor；新增自动刷新、余额历史、低余额阈值、安全复制密钥、界面修复与 v0.1.0 数据迁移。
+- EN: Product renamed to ApiMonitor; automatic refresh, balance history, low-balance thresholds, secure key copy, and UI fixes.
+- 中文：产品更名为 ApiMonitor；新增自动刷新、余额历史、低余额阈值、安全复制密钥与界面修复。
+
+## v0.3.0 planned notes
+
+- EN: Planned release uses the complete ApiMonitor package identity; v0.2.0 sideload packages will not upgrade in place, and local data from v0.2.0 is not migrated.
+- 中文：计划中的 v0.3.0 使用完整 ApiMonitor 包身份；v0.2.0 侧载包不会原地升级，且不迁移 v0.2.0 本机数据。
 
 ## Recommended keywords
 

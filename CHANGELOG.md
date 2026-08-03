@@ -1,18 +1,27 @@
 # Changelog
 
+## Unreleased
+
+- Completed the internal rename to ApiMonitor
+- Replaced the legacy package identity
+- Replaced the development signing identity
+- Removed legacy local-data and credential migration
+- Added the MIT License
+- Improved repository maintenance and security configuration
+
 ## v0.2.0
 
 发布日期：2026-08-03
 
 ### 新增
 
-- 产品更名为 **ApiMonitor**（原 ApiBalanceMonitor）
+- 产品更名为 **ApiMonitor**
 - 应用运行期间自动刷新余额
 - 本地余额历史记录
 - 按币种设置低余额阈值规则
 - 自动刷新状态显示（开启/关闭、间隔、下次刷新时间）
 - API Key 一键安全复制（写入剪贴板，约 30 秒后尝试清理）
-- 未打包数据目录与 Credential Locker 资源从旧标识到新标识的安全迁移
+- 未打包数据目录与 Credential Locker 资源统一使用 ApiMonitor 标识
 
 ### 修复
 
@@ -37,4 +46,3 @@
 - 账户添加、编辑与删除
 - 本地余额快照
 
-> 注：早期版本的“ApiBalanceMonitor”是同一产品的历史名称，本版本起统一为 ApiMonitor。

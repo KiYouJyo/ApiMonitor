@@ -4,9 +4,20 @@
 
 **ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。当前支持 DeepSeek 余额查询。
 
-- 当前版本：**v0.2.0**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+- 当前正式版本：**v0.2.0**
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store
+- 许可证：[MIT](LICENSE)
+
+## 开发状态
+
+- **v0.2.0** 是当前正式 Release。
+- `main` 正在准备 **v0.3.0**，将新增紧凑置顶余额窗口。
+- **v0.3.0 将使用全新的完整 ApiMonitor 包身份**（包名与发布者）。v0.2.0 侧载包**不会原地升级**到 v0.3.0。
+- 安装 v0.3.0 构建前，请先卸载旧的 v0.2.0 测试包。
+- 不迁移 v0.2.0 本机数据；v0.3.0 将以全新本地数据与凭据启动。
 
 ## 主要功能
 
@@ -20,7 +31,7 @@
 
 ## 安全与隐私设计
 
-- API Key 保存在 **Windows 凭据管理器（Credential Locker）**，绝不写入 JSON、日志或诊断信息。
+- API Key 保存在 **Windows 凭据管理器（Credential Locker）** 的 ApiMonitor 资源中，绝不写入 JSON、日志或诊断信息。
 - API Key 只发送给对应 Provider 的官方接口（当前为 DeepSeek 官方余额接口）。
 - 账户元数据、余额快照、历史记录和设置仅保存在本机应用数据目录。
 - 自动刷新只在应用运行期间执行；本版本没有托盘驻留和系统通知。
@@ -64,7 +75,9 @@ dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug
 dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 ```
 
-项目使用单项目 MSIX 工具链；包标识与发布者保持不变，以保证兼容更新。
+项目使用单项目 MSIX 工具链。自 v0.3.0 起使用完整 ApiMonitor 身份（`ApiMonitor` / `CN=ApiMonitorDev`）。
+
+第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、Microsoft 无隶属关系，两者均非本项目许可证签发方或背书方。
 
 ## 项目结构
 
