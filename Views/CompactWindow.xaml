@@ -46,9 +46,9 @@
                 HorizontalAlignment="Stretch" />
             <ComboBox
                 Grid.Column="1"
-                Header="币种"
-                ItemsSource="{Binding CurrencyOptions}"
-                SelectedItem="{Binding SelectedCurrency, Mode=TwoWay}"
+                Header="指标"
+                ItemsSource="{Binding MetricOptions}"
+                SelectedItem="{Binding SelectedMetric, Mode=TwoWay}"
                 MinWidth="80"
                 MaxWidth="100"
                 HorizontalAlignment="Stretch" />

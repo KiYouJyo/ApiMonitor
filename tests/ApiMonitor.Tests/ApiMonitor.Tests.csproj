@@ -24,6 +24,8 @@
 
   <ItemGroup>
     <Compile Include="../../Models/ApiAccount.cs" Link="Models/ApiAccount.cs" />
+    <Compile Include="../../Models/BalanceMetric.cs" Link="Models/BalanceMetric.cs" />
+    <Compile Include="../../Models/AccountNotificationSettings.cs" Link="Models/AccountNotificationSettings.cs" />
     <Compile Include="../../Models/BalanceSnapshot.cs" Link="Models/BalanceSnapshot.cs" />
     <Compile Include="../../Models/BalanceQueryResult.cs" Link="Models/BalanceQueryResult.cs" />
     <Compile Include="../../Models/AccountBalanceRecord.cs" Link="Models/AccountBalanceRecord.cs" />
@@ -86,6 +88,7 @@
     <Compile Include="../../Services/IMainWindowController.cs" Link="Services/IMainWindowController.cs" />
     <Compile Include="../../Services/WindowCloseBehaviorController.cs" Link="Services/WindowCloseBehaviorController.cs" />
     <Compile Include="../../Helpers/BalanceFormatter.cs" Link="Helpers/BalanceFormatter.cs" />
+    <Compile Include="../../Helpers/BalanceMetricText.cs" Link="Helpers/BalanceMetricText.cs" />
     <Compile Include="../../ViewModels/StatusSeverity.cs" Link="ViewModels/StatusSeverity.cs" />
     <Compile Include="../../ViewModels/BalanceLine.cs" Link="ViewModels/BalanceLine.cs" />
     <Compile Include="../../ViewModels/AccountListItemViewModel.cs" Link="ViewModels/AccountListItemViewModel.cs" />

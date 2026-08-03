@@ -153,13 +153,13 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
 
     private static BalanceSnapshot MapSnapshot(ApiAccount account, DeepSeekBalanceResponse dto)
     {
-        var balances = new List<BalanceAmount>();
+        var metrics = new List<BalanceMetric>();
 
         foreach (var info in dto.BalanceInfos ?? new List<DeepSeekBalanceInfo>())
         {
             // 币种缺失或总余额无法解析的条目无法展示，跳过；
             // 未知币种代码原样保留（不做白名单校验），
-            // 赠送/充值余额缺失时按 0 处理，保持兼容。
+            // 赠送/充值余额缺失时映射为 null（未知），而不是 0。
             if (string.IsNullOrWhiteSpace(info.Currency))
             {
                 continue;
@@ -170,22 +170,32 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
                 continue;
             }
 
-            balances.Add(new BalanceAmount
+            string currency = info.Currency.Trim();
+            decimal? granted = TryParseBalance(info.GrantedBalance, out var grantedValue) ? grantedValue : null;
+            decimal? toppedUp = TryParseBalance(info.ToppedUpBalance, out var toppedUpValue) ? toppedUpValue : null;
+
+            metrics.Add(new BalanceMetric
             {
-                Currency = info.Currency.Trim(),
-                TotalBalance = total,
-                GrantedBalance = TryParseBalance(info.GrantedBalance, out var granted) ? granted : 0m,
-                ToppedUpBalance = TryParseBalance(info.ToppedUpBalance, out var toppedUp) ? toppedUp : 0m,
+                MetricId = $"deepseek:{currency}:total",
+                DisplayName = $"{currency} 总余额",
+                Unit = currency,
+                Kind = BalanceMetricKind.MonetaryBalance,
+                AvailableAmount = total,
+                TotalAmount = total,
+                GrantedAmount = granted,
+                ToppedUpAmount = toppedUp,
+                IsThresholdSupported = true,
             });
         }
 
         return new BalanceSnapshot
         {
+            SnapshotId = Guid.NewGuid().ToString("N"),
             AccountId = account.AccountId,
             ProviderId = account.ProviderId,
             IsAvailable = dto.IsAvailable,
             RetrievedAt = DateTimeOffset.UtcNow,
-            Balances = balances,
+            Metrics = metrics,
         };
     }
 

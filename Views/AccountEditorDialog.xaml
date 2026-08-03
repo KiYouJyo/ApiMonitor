@@ -415,10 +415,14 @@
                             Margin="0,4"
                             ColumnDefinitions="Auto,*,Auto,Auto"
                             ColumnSpacing="12">
-                            <TextBlock
-                                Text="{x:Bind Currency}"
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    Text="{x:Bind DisplayName}"
+                                    FontWeight="SemiBold" />
+                                <TextBlock
+                                    Text="{x:Bind Unit}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
                             <ToggleSwitch
                                 Grid.Column="1"
                                 IsOn="{x:Bind IsEnabled, Mode=TwoWay}"

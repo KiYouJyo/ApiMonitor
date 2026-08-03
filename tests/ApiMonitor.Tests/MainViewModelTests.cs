@@ -34,18 +34,24 @@ public sealed class MainViewModelTests
     private static BalanceSnapshot Snapshot() =>
         new()
         {
+            SnapshotId = "snap-main",
             AccountId = "acct-1",
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = DateTimeOffset.UtcNow,
-            Balances = new[]
+            Metrics = new[]
             {
-                new BalanceAmount
+                new BalanceMetric
                 {
-                    Currency = "CNY",
-                    TotalBalance = 42.00m,
-                    GrantedBalance = 2.00m,
-                    ToppedUpBalance = 40.00m,
+                    MetricId = "deepseek:CNY:total",
+                    DisplayName = "CNY 总余额",
+                    Unit = "CNY",
+                    Kind = BalanceMetricKind.MonetaryBalance,
+                    AvailableAmount = 42.00m,
+                    TotalAmount = 42.00m,
+                    GrantedAmount = 2.00m,
+                    ToppedUpAmount = 40.00m,
+                    IsThresholdSupported = true,
                 },
             },
         };

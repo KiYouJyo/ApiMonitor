@@ -43,13 +43,18 @@ public sealed class DeepSeekBalanceProviderTests
         var snapshot = Assert.IsType<BalanceSnapshot>(result.Snapshot);
         Assert.True(snapshot.IsAvailable);
         Assert.Equal("acct-test-1", snapshot.AccountId);
-        Assert.Single(snapshot.Balances);
+        Assert.Single(snapshot.Metrics);
+        Assert.False(string.IsNullOrWhiteSpace(snapshot.SnapshotId));
 
-        var balance = snapshot.Balances[0];
-        Assert.Equal("CNY", balance.Currency);
-        Assert.Equal(110.00m, balance.TotalBalance);
-        Assert.Equal(10.00m, balance.GrantedBalance);
-        Assert.Equal(100.00m, balance.ToppedUpBalance);
+        var metric = snapshot.Metrics[0];
+        Assert.Equal("deepseek:CNY:total", metric.MetricId);
+        Assert.Equal("CNY 总余额", metric.DisplayName);
+        Assert.Equal("CNY", metric.Unit);
+        Assert.Equal(BalanceMetricKind.MonetaryBalance, metric.Kind);
+        Assert.Equal(110.00m, metric.AvailableAmount);
+        Assert.Equal(10.00m, metric.GrantedAmount);
+        Assert.Equal(100.00m, metric.ToppedUpAmount);
+        Assert.True(metric.IsThresholdSupported);
     }
 
     [Fact]
@@ -69,9 +74,9 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Snapshot!.Balances.Count);
-        Assert.Contains(result.Snapshot.Balances, b => b.Currency == "USD" && b.TotalBalance == 50.50m);
-        Assert.Contains(result.Snapshot.Balances, b => b.Currency == "CNY" && b.TotalBalance == 110.00m);
+        Assert.Equal(2, result.Snapshot!.Metrics.Count);
+        Assert.Contains(result.Snapshot.Metrics, b => b.MetricId == "deepseek:USD:total" && b.AvailableAmount == 50.50m);
+        Assert.Contains(result.Snapshot.Metrics, b => b.MetricId == "deepseek:CNY:total" && b.AvailableAmount == 110.00m);
     }
 
     [Fact]
@@ -91,8 +96,8 @@ public sealed class DeepSeekBalanceProviderTests
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Snapshot!.IsAvailable);
-        Assert.Single(result.Snapshot.Balances);
-        Assert.Equal(1.50m, result.Snapshot.Balances[0].TotalBalance);
+        Assert.Single(result.Snapshot.Metrics);
+        Assert.Equal(1.50m, result.Snapshot.Metrics[0].AvailableAmount);
     }
 
     [Theory]
@@ -116,11 +121,11 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(expected, result.Snapshot!.Balances[0].TotalBalance);
+        Assert.Equal(expected, result.Snapshot!.Metrics[0].AvailableAmount);
     }
 
     [Fact]
-    public async Task MissingOptionalBalanceFields_DefaultsToZero()
+    public async Task MissingOptionalBalanceFields_AreUnknownNotZero()
     {
         const string json = """
             {
@@ -135,10 +140,10 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var balance = result.Snapshot!.Balances[0];
-        Assert.Equal(88.00m, balance.TotalBalance);
-        Assert.Equal(0m, balance.GrantedBalance);
-        Assert.Equal(0m, balance.ToppedUpBalance);
+        var metric = result.Snapshot!.Metrics[0];
+        Assert.Equal(88.00m, metric.AvailableAmount);
+        Assert.Null(metric.GrantedAmount);
+        Assert.Null(metric.ToppedUpAmount);
     }
 
     [Fact]
@@ -150,7 +155,7 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Snapshot!.Balances);
+        Assert.Empty(result.Snapshot!.Metrics);
     }
 
     [Fact]
@@ -189,8 +194,8 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Single(result.Snapshot!.Balances);
-        Assert.Equal("CNY", result.Snapshot.Balances[0].Currency);
+        Assert.Single(result.Snapshot!.Metrics);
+        Assert.Equal("deepseek:CNY:total", result.Snapshot.Metrics[0].MetricId);
     }
 
     [Fact]
@@ -209,7 +214,8 @@ public sealed class DeepSeekBalanceProviderTests
             .QueryBalanceAsync(TestAccount(), ApiKey, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("XYZ", result.Snapshot!.Balances[0].Currency);
+        Assert.Equal("deepseek:XYZ:total", result.Snapshot!.Metrics[0].MetricId);
+        Assert.Equal("XYZ", result.Snapshot.Metrics[0].Unit);
     }
 
     [Fact]

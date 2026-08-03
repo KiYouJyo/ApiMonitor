@@ -13,6 +13,12 @@ public sealed record CompactAccountOption(string AccountId, string DisplayName, 
     public override string ToString() => DisplayName;
 }
 
+/// <summary>紧凑窗口指标选择项（使用 MetricId 作为稳定标识）。</summary>
+public sealed record CompactMetricOption(string MetricId, string DisplayName)
+{
+    public override string ToString() => DisplayName;
+}
+
 /// <summary>
 /// 紧凑余额窗口 ViewModel：复用 IAccountManager 的查询与并发保护，
 /// 不创建第二套 HttpClient，不单独保存另一份余额。
@@ -33,13 +39,13 @@ public sealed partial class CompactWindowViewModel : ObservableObject
 
     public ObservableCollection<CompactAccountOption> AccountOptions { get; } = new();
 
-    public ObservableCollection<string> CurrencyOptions { get; } = new();
+    public ObservableCollection<CompactMetricOption> MetricOptions { get; } = new();
 
     [ObservableProperty]
     private CompactAccountOption? _selectedAccount;
 
     [ObservableProperty]
-    private string? _selectedCurrency;
+    private CompactMetricOption? _selectedMetric;
 
     [ObservableProperty]
     private bool _isAlwaysOnTop = true;
@@ -115,7 +121,14 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         _isInitialized = true;
         var settings = await _settingsStore.LoadAsync(cancellationToken);
         IsAlwaysOnTop = settings.IsAlwaysOnTop;
-        await ReloadAccountsCoreAsync(settings.SelectedAccountId, settings.SelectedCurrency, cancellationToken);
+        // v0.4.0 遗留币种选择 → 迁移为 DeepSeek 货币总余额指标 ID。
+        string? preferredMetricId = settings.SelectedMetricId;
+        if (string.IsNullOrEmpty(preferredMetricId) && !string.IsNullOrEmpty(settings.SelectedCurrency))
+        {
+            preferredMetricId = $"deepseek:{settings.SelectedCurrency}:total";
+        }
+
+        await ReloadAccountsCoreAsync(settings.SelectedAccountId, preferredMetricId, cancellationToken);
     }
 
     partial void OnIsAlwaysOnTopChanged(bool value)
@@ -136,7 +149,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         }
     }
 
-    partial void OnSelectedCurrencyChanged(string? value)
+    partial void OnSelectedMetricChanged(CompactMetricOption? value)
     {
         UpdateDisplay();
         _ = PersistSettingsAsync();
@@ -202,7 +215,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
 
     private async Task ReloadAccountsCoreAsync(
         string? preferredAccountId,
-        string? preferredCurrency,
+        string? preferredMetricId,
         CancellationToken cancellationToken)
     {
         var accounts = await _accountManager.GetAllAccountsAsync(cancellationToken);
@@ -229,8 +242,8 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         if (!HasAccounts)
         {
             SelectedAccount = null;
-            SelectedCurrency = null;
-            CurrencyOptions.Clear();
+            SelectedMetric = null;
+            MetricOptions.Clear();
             HasSnapshot = false;
             BalanceText = "—";
             StatusText = "尚未添加 API 账户";
@@ -250,7 +263,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             var target = AccountOptions.FirstOrDefault(o => o.AccountId == preferredAccountId)
                 ?? AccountOptions[0];
             SelectedAccount = target;
-            await RebuildCurrencyOptionsAsync(target, preferredCurrency, cancellationToken);
+            await RebuildMetricOptionsAsync(target, preferredMetricId, cancellationToken);
         }
         finally
         {
@@ -258,38 +271,37 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         }
     }
 
-    private async Task RebuildCurrencyOptionsAsync(
+    private async Task RebuildMetricOptionsAsync(
         CompactAccountOption account,
-        string? preferredCurrency,
+        string? preferredMetricId,
         CancellationToken cancellationToken)
     {
         _currentRecord = await _accountManager.GetRecordAsync(account.AccountId, cancellationToken);
         _currentAccount = await _accountManager.GetAccountAsync(account.AccountId, cancellationToken);
-        var currencies = _currentRecord?.LastSuccessfulSnapshot?.Balances
-            .Select(b => b.Currency)
-            .Where(c => !string.IsNullOrWhiteSpace(c))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList() ?? new List<string>();
+        var metrics = _currentRecord?.LastSuccessfulSnapshot?.Metrics
+            .Where(m => !string.IsNullOrWhiteSpace(m.MetricId))
+            .DistinctBy(m => m.MetricId, StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? new List<BalanceMetric>();
 
-        CurrencyOptions.Clear();
-        foreach (var currency in currencies)
+        MetricOptions.Clear();
+        foreach (var metric in metrics)
         {
-            CurrencyOptions.Add(currency);
+            MetricOptions.Add(new CompactMetricOption(metric.MetricId, metric.DisplayName));
         }
 
-        if (currencies.Count == 0)
+        if (metrics.Count == 0)
         {
-            SelectedCurrency = null;
+            SelectedMetric = null;
             HasSnapshot = false;
             UpdateDisplayFromRecord(_currentRecord);
             return;
         }
 
-        // 上次币种已消失时自动选择当前快照的第一个币种。
-        var targetCurrency = currencies.FirstOrDefault(c =>
-            string.Equals(c, preferredCurrency, StringComparison.OrdinalIgnoreCase))
-            ?? currencies[0];
-        SelectedCurrency = targetCurrency;
+        // 上次指标已消失时自动选择当前快照的第一个指标。
+        var targetMetric = metrics.FirstOrDefault(m =>
+            string.Equals(m.MetricId, preferredMetricId, StringComparison.OrdinalIgnoreCase))
+            ?? metrics[0];
+        SelectedMetric = new CompactMetricOption(targetMetric.MetricId, targetMetric.DisplayName);
         HasSnapshot = true;
         UpdateDisplayFromRecord(_currentRecord);
     }
@@ -329,7 +341,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         }
 
         var snapshot = _currentRecord?.LastSuccessfulSnapshot;
-        if (snapshot is null || snapshot.Balances.Count == 0)
+        if (snapshot is null || snapshot.Metrics.Count == 0)
         {
             HasSnapshot = false;
             BalanceText = "—";
@@ -339,24 +351,24 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             return;
         }
 
-        var balance = snapshot.Balances.FirstOrDefault(b =>
-            string.Equals(b.Currency, SelectedCurrency, StringComparison.OrdinalIgnoreCase))
-            ?? snapshot.Balances[0];
+        var metric = snapshot.Metrics.FirstOrDefault(m =>
+            string.Equals(m.MetricId, SelectedMetric?.MetricId, StringComparison.OrdinalIgnoreCase))
+            ?? snapshot.Metrics[0];
 
-        if (SelectedCurrency is null || !snapshot.Balances.Any(b =>
-            string.Equals(b.Currency, SelectedCurrency, StringComparison.OrdinalIgnoreCase)))
+        if (SelectedMetric is null || !snapshot.Metrics.Any(m =>
+            string.Equals(m.MetricId, SelectedMetric.MetricId, StringComparison.OrdinalIgnoreCase)))
         {
-            SelectedCurrency = balance.Currency;
+            SelectedMetric = new CompactMetricOption(metric.MetricId, metric.DisplayName);
             return;
         }
 
         HasSnapshot = true;
-        BalanceText = BalanceFormatter.Format(balance.TotalBalance);
+        BalanceText = BalanceMetricText.FormatAmount(BalanceMetricText.MainAmount(metric));
         LastSuccessText = FormatTime(snapshot.RetrievedAt);
 
         var rule = _currentAccount?.Monitoring.Thresholds.FirstOrDefault(r =>
-            string.Equals(r.Currency, balance.Currency, StringComparison.OrdinalIgnoreCase));
-        StatusText = ThresholdEvaluator.Evaluate(balance, rule) switch
+            string.Equals(r.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase));
+        StatusText = ThresholdEvaluator.Evaluate(metric, rule) switch
         {
             ThresholdStatus.BelowThreshold => "低余额",
             ThresholdStatus.Normal => "正常",
@@ -389,14 +401,14 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         await PersistSettingsAsync();
         if (account is null)
         {
-            CurrencyOptions.Clear();
+            MetricOptions.Clear();
             HasSnapshot = false;
             BalanceText = "—";
             StatusText = "尚未添加 API 账户";
             return;
         }
 
-        await RebuildCurrencyOptionsAsync(account, SelectedCurrency, _lifetime.Token);
+        await RebuildMetricOptionsAsync(account, SelectedMetric?.MetricId, _lifetime.Token);
     }
 
     private async Task ApplyResultAsync(string accountId, BalanceQueryResult result)
@@ -414,7 +426,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             // 新币种出现后列表立即更新。
             ErrorText = string.Empty;
             HasError = false;
-            await RebuildCurrencyOptionsAsync(SelectedAccount, SelectedCurrency, _lifetime.Token);
+            await RebuildMetricOptionsAsync(SelectedAccount, SelectedMetric?.MetricId, _lifetime.Token);
             return;
         }
 
@@ -467,7 +479,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         }
 
         var settings = await _settingsStore.LoadAsync(_lifetime.Token);
-        await ReloadAccountsCoreAsync(settings.SelectedAccountId, settings.SelectedCurrency, _lifetime.Token);
+        await ReloadAccountsCoreAsync(settings.SelectedAccountId, settings.SelectedMetricId, _lifetime.Token);
     }
 
     private async Task PersistSettingsAsync()
@@ -482,7 +494,8 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             var settings = await _settingsStore.LoadAsync(_lifetime.Token);
             settings.IsAlwaysOnTop = IsAlwaysOnTop;
             settings.SelectedAccountId = SelectedAccount?.AccountId;
-            settings.SelectedCurrency = SelectedCurrency;
+            settings.SelectedMetricId = SelectedMetric?.MetricId;
+            settings.SelectedCurrency = null;
             await _settingsStore.SaveAsync(settings, _lifetime.Token);
         }
         catch (OperationCanceledException)

@@ -15,7 +15,7 @@ public sealed class HistoryRetentionTests
             SucceededAtUtc = at,
             Source = BalanceQuerySource.Manual,
             IsAvailable = true,
-            Balances = Array.Empty<BalanceAmount>(),
+            Metrics = Array.Empty<BalanceMetric>(),
         };
 
     [Fact]

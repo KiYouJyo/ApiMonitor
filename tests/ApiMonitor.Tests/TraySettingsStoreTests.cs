@@ -7,7 +7,7 @@ using Xunit;
 namespace ApiMonitor.Tests;
 
 /// <summary>
-/// 托盘设置存储测试（需求：schemaVersion 3 迁移到 4、缺失字段默认值、
+/// 托盘设置存储测试（需求：schemaVersion 3/4 迁移到 5、缺失字段默认值、
 /// 损坏恢复默认、设置文件不含密钥、迁移幂等）。
 /// </summary>
 public sealed class TraySettingsStoreTests
@@ -30,7 +30,7 @@ public sealed class TraySettingsStoreTests
     }
 
     [Fact]
-    public async Task SchemaVersion3_MigratesTo4KeepingKnownFields()
+    public async Task SchemaVersion4_MigratesTo5KeepingKnownFields()
     {
         using var dir = new TempDirectory();
         var path = System.IO.Path.Combine(dir.Path, JsonTraySettingsStore.FileName);
@@ -39,7 +39,7 @@ public sealed class TraySettingsStoreTests
             path,
             """
             {
-              "schemaVersion": 3,
+              "schemaVersion": 4,
               "mainWindowCloseBehavior": 1,
               "showFirstCloseExplanation": false,
               "startWithWindows": true
@@ -49,7 +49,7 @@ public sealed class TraySettingsStoreTests
         var store = CreateStore(dir);
         var settings = await store.LoadAsync(CancellationToken.None);
 
-        Assert.Equal(4, settings.SchemaVersion);
+        Assert.Equal(5, settings.SchemaVersion);
         Assert.Equal(MainWindowCloseBehavior.ExitApplication, settings.MainWindowCloseBehavior);
         Assert.False(settings.ShowFirstCloseExplanation);
         Assert.True(settings.StartWithWindows);
@@ -109,7 +109,7 @@ public sealed class TraySettingsStoreTests
         var store = CreateStore(dir);
         var settings = await store.LoadAsync(CancellationToken.None);
 
-        Assert.Equal(4, settings.SchemaVersion);
+        Assert.Equal(5, settings.SchemaVersion);
         Assert.Equal(MainWindowCloseBehavior.HideToTray, settings.MainWindowCloseBehavior);
     }
 

@@ -74,10 +74,10 @@ public sealed class AccountManagerTests
         Assert.NotNull(loaded.LastQueryAttemptAt);
         Assert.NotNull(loaded.LastQuerySuccessAt);
         Assert.NotNull(loaded.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, loaded.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, loaded.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
         var history = Assert.Single(loaded.History);
         Assert.Equal(BalanceQuerySource.Manual, history.Source);
-        Assert.Equal("CNY", history.Balances[0].Currency);
+        Assert.Equal("deepseek:CNY:total", history.Metrics[0].MetricId);
 
         string json = await File.ReadAllTextAsync(Path.Combine(temp.Path, "balance-records.json"));
         Assert.Contains("lastSuccessfulSnapshot", json);

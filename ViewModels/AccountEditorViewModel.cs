@@ -108,10 +108,10 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         RefreshIntervalMinutes = context.InitialMonitoring.RefreshIntervalMinutes;
 
         var rules = context.InitialMonitoring.Thresholds;
-        foreach (var balance in context.CurrentBalances)
+        foreach (var metric in context.CurrentMetrics)
         {
-            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
-            var item = new ThresholdEditorItem(balance.Currency, balance.TotalBalance, rule);
+            var rule = rules.FirstOrDefault(r => r.MetricId == metric.MetricId);
+            var item = new ThresholdEditorItem(metric, rule);
             item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
             ThresholdItems.Add(item);
         }
@@ -152,16 +152,16 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             {
                 TestSeverity = StatusSeverity.Success;
                 TestTitle = "连接成功";
-                TestResultText = snapshot.Balances.Count == 0
+                TestResultText = snapshot.Metrics.Count == 0
                     ? "连接成功，但接口未返回余额明细。点击保存后才会写入账户与凭据。"
                     : string.Join(
                         "；",
-                        snapshot.Balances.Select(b =>
-                            $"{b.Currency} 总余额 {BalanceFormatter.Format(b.TotalBalance)}"))
+                        snapshot.Metrics.Select(b =>
+                            $"{BalanceMetricText.ValueText(b)}"))
                         + "。点击保存后才会写入账户与凭据。";
 
-                // 把接口返回的币种余额同步到阈值区，让添加流程也能直接配置阈值。
-                ApplyTestBalances(snapshot.Balances);
+                // 把接口返回的指标余额同步到阈值区，让添加流程也能直接配置阈值。
+                ApplyTestMetrics(snapshot.Metrics);
             }
             else
             {
@@ -241,20 +241,25 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         return true;
     }
 
-    private void ApplyTestBalances(IReadOnlyList<BalanceAmount> balances)
+    private void ApplyTestMetrics(IReadOnlyList<BalanceMetric> metrics)
     {
         var rules = _context.InitialMonitoring.Thresholds;
-        foreach (var balance in balances)
+        foreach (var metric in metrics)
         {
-            var existing = ThresholdItems.FirstOrDefault(i => i.Currency == balance.Currency);
-            if (existing is not null)
+            if (!metric.IsThresholdSupported)
             {
-                existing.CurrentTotal = balance.TotalBalance;
                 continue;
             }
 
-            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
-            var item = new ThresholdEditorItem(balance.Currency, balance.TotalBalance, rule);
+            var existing = ThresholdItems.FirstOrDefault(i => i.MetricId == metric.MetricId);
+            if (existing is not null)
+            {
+                existing.CurrentAmount = BalanceMetricText.MainAmount(metric);
+                continue;
+            }
+
+            var rule = rules.FirstOrDefault(r => r.MetricId == metric.MetricId);
+            var item = new ThresholdEditorItem(metric, rule);
             item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
             ThresholdItems.Add(item);
         }

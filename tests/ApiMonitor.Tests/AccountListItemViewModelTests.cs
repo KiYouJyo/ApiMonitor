@@ -17,14 +17,39 @@ public sealed class AccountListItemViewModelTests
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         };
 
-    private static BalanceSnapshot Snapshot(DateTimeOffset retrievedAt, params BalanceAmount[] balances) =>
+    private static BalanceMetric CnyMetric(decimal total) =>
         new()
         {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = total,
+            TotalAmount = total,
+            IsThresholdSupported = true,
+        };
+
+    private static BalanceMetric UsdMetric(decimal total) =>
+        new()
+        {
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = total,
+            TotalAmount = total,
+            IsThresholdSupported = true,
+        };
+
+    private static BalanceSnapshot Snapshot(DateTimeOffset retrievedAt, params BalanceMetric[] metrics) =>
+        new()
+        {
+            SnapshotId = Guid.NewGuid().ToString("N"),
             AccountId = "acct-1",
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = retrievedAt,
-            Balances = balances,
+            Metrics = metrics,
         };
 
     private static AccountListItemViewModel CreateItem(
@@ -134,7 +159,7 @@ public sealed class AccountListItemViewModelTests
     [Fact]
     public void ThresholdSummary_BelowEqualDisabledAndUnknown()
     {
-        var cny = new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m };
+        var cny = CnyMetric(10m);
         var item = CreateItem();
 
         // 无数据
@@ -148,24 +173,20 @@ public sealed class AccountListItemViewModelTests
         // 低于阈值
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 20m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         });
         item.RefreshDisplay();
-        Assert.Equal("CNY 余额低于阈值 20.00", item.ThresholdSummaryText);
+        Assert.Equal("CNY 总余额 低于阈值 20.00", item.ThresholdSummaryText);
         Assert.True(item.IsLowBalance);
 
         // 等于阈值 → 正常
-        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, new BalanceAmount
-        {
-            Currency = "CNY",
-            TotalBalance = 20m,
-            GrantedBalance = 0m,
-            ToppedUpBalance = 20m,
-        }));
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, CnyMetric(20m)));
         Assert.Equal("余额正常", item.ThresholdSummaryText);
         Assert.False(item.IsLowBalance);
     }
@@ -176,11 +197,13 @@ public sealed class AccountListItemViewModelTests
         var item = CreateItem();
         item.ApplySnapshot(Snapshot(
             DateTimeOffset.UtcNow,
-            new BalanceAmount { Currency = "CNY", TotalBalance = 5m, GrantedBalance = 0m, ToppedUpBalance = 5m },
-            new BalanceAmount { Currency = "USD", TotalBalance = 1m, GrantedBalance = 0m, ToppedUpBalance = 1m }));
+            CnyMetric(5m),
+            UsdMetric(1m)));
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 20m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -188,7 +211,9 @@ public sealed class AccountListItemViewModelTests
         });
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "USD",
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
             IsEnabled = true,
             ThresholdAmount = 10m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -197,7 +222,7 @@ public sealed class AccountListItemViewModelTests
 
         item.RefreshDisplay();
 
-        Assert.Equal("2 个币种低于阈值", item.ThresholdSummaryText);
+        Assert.Equal("2 个指标低于阈值", item.ThresholdSummaryText);
         Assert.True(item.IsLowBalance);
     }
 
@@ -205,23 +230,19 @@ public sealed class AccountListItemViewModelTests
     public void ThresholdRuleChange_RecomputesWithoutQuery()
     {
         var item = CreateItem();
-        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, new BalanceAmount
-        {
-            Currency = "CNY",
-            TotalBalance = 30m,
-            GrantedBalance = 0m,
-            ToppedUpBalance = 30m,
-        }));
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, CnyMetric(30m)));
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 50m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         });
         item.RefreshDisplay();
-        Assert.Equal("CNY 余额低于阈值 50.00", item.ThresholdSummaryText);
+        Assert.Equal("CNY 总余额 低于阈值 50.00", item.ThresholdSummaryText);
 
         item.Account.Monitoring.Thresholds[0].ThresholdAmount = 10m;
         item.RefreshDisplay();

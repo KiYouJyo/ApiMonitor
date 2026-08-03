@@ -118,11 +118,9 @@ public sealed class BalanceHistoryDisplayItem
         TimeText = entry.SucceededAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         SourceText = entry.Source == BalanceQuerySource.Automatic ? "自动" : "手动";
         AvailabilityText = entry.IsAvailable ? "可用" : "不可用";
-        BalanceLines = entry.Balances
+        BalanceLines = entry.Metrics
             .Select(b =>
-                $"{b.Currency} 总额 {BalanceFormatter.Format(b.TotalBalance)} · " +
-                $"赠送 {BalanceFormatter.Format(b.GrantedBalance)} · " +
-                $"充值 {BalanceFormatter.Format(b.ToppedUpBalance)}")
+                $"{BalanceMetricText.BuildLineText(b)}")
             .ToList();
     }
 }

@@ -214,10 +214,12 @@ public sealed class AccountManager : IAccountManager
         }
 
         var thresholds = monitoring.Thresholds
-            .Where(t => !string.IsNullOrWhiteSpace(t.Currency))
+            .Where(t => !string.IsNullOrWhiteSpace(t.MetricId))
             .Select(t => new BalanceThresholdRule
             {
-                Currency = t.Currency,
+                MetricId = t.MetricId,
+                DisplayName = t.DisplayName,
+                Unit = t.Unit,
                 IsEnabled = t.IsEnabled,
                 ThresholdAmount = t.ThresholdAmount,
                 CreatedAtUtc = t.CreatedAtUtc,
@@ -366,7 +368,7 @@ public sealed class AccountManager : IAccountManager
                             SucceededAtUtc = snapshot.RetrievedAt,
                             Source = source,
                             IsAvailable = snapshot.IsAvailable,
-                            Balances = snapshot.Balances,
+                            Metrics = snapshot.Metrics,
                         });
                         record.History = HistoryRetention.Apply(record.History, NowUtc).ToList();
                     }

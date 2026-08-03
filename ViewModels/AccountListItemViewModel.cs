@@ -15,7 +15,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     private readonly Func<Task> _copyAsync;
     private readonly Func<Task> _historyAsync;
 
-    private IReadOnlyList<BalanceAmount> _latestBalances = Array.Empty<BalanceAmount>();
+    private IReadOnlyList<BalanceMetric> _latestMetrics = Array.Empty<BalanceMetric>();
 
     public ApiAccount Account { get; }
 
@@ -25,8 +25,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public bool HasStoredCredential => Account.HasCredential;
 
-    /// <summary>当前最新余额（供编辑对话框设置阈值）。</summary>
-    public IReadOnlyList<BalanceAmount> LatestBalancesForEditor => _latestBalances;
+    /// <summary>当前最新指标（供编辑对话框设置阈值）。</summary>
+    public IReadOnlyList<BalanceMetric> LatestMetricsForEditor => _latestMetrics;
 
     public bool AutoRefreshEnabled => Account.Monitoring.AutoRefreshEnabled;
 
@@ -168,14 +168,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         AvailabilityText = snapshot.IsAvailable ? "可用" : "不可用";
         LastSuccessText = FormatTime(snapshot.RetrievedAt);
         LastErrorText = string.Empty;
-        _latestBalances = snapshot.Balances;
-        BalanceLines = snapshot.Balances
-            .Select(b => new BalanceLine(
-                b.Currency,
-                b.TotalBalance,
-                BalanceFormatter.Format(b.TotalBalance),
-                BalanceFormatter.Format(b.GrantedBalance),
-                BalanceFormatter.Format(b.ToppedUpBalance)))
+        _latestMetrics = snapshot.Metrics;
+        BalanceLines = snapshot.Metrics
+            .Select(b => new BalanceLine(b))
             .ToList();
         RecomputeThresholdSummary();
     }
@@ -202,7 +197,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     private void RecomputeThresholdSummary()
     {
-        if (!HasSnapshot || _latestBalances.Count == 0)
+        if (!HasSnapshot || _latestMetrics.Count == 0)
         {
             ThresholdSummaryText = "尚无余额数据";
             IsLowBalance = false;
@@ -212,33 +207,33 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         }
 
         var rules = Account.Monitoring.Thresholds;
-        var below = new List<(string Currency, decimal Threshold)>();
+        var below = new List<(string DisplayName, decimal Threshold)>();
 
-        foreach (var balance in _latestBalances)
+        foreach (var metric in _latestMetrics)
         {
-            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
-            if (ThresholdEvaluator.Evaluate(balance, rule) == ThresholdStatus.BelowThreshold)
+            var rule = rules.FirstOrDefault(r => r.MetricId == metric.MetricId);
+            if (ThresholdEvaluator.Evaluate(metric, rule) == ThresholdStatus.BelowThreshold)
             {
-                below.Add((balance.Currency, rule!.ThresholdAmount));
+                below.Add((metric.DisplayName, rule!.ThresholdAmount));
             }
         }
 
         if (below.Count == 0)
         {
             bool anyEnabledRule = rules.Any(r =>
-                r.IsEnabled && _latestBalances.Any(b => b.Currency == r.Currency));
+                r.IsEnabled && _latestMetrics.Any(b => b.MetricId == r.MetricId));
             ThresholdSummaryText = anyEnabledRule ? "余额正常" : "未启用提醒";
             IsLowBalance = false;
         }
         else if (below.Count == 1)
         {
             ThresholdSummaryText =
-                $"{below[0].Currency} 余额低于阈值 {BalanceFormatter.Format(below[0].Threshold)}";
+                $"{below[0].DisplayName} 低于阈值 {BalanceFormatter.Format(below[0].Threshold)}";
             IsLowBalance = true;
         }
         else
         {
-            ThresholdSummaryText = $"{below.Count} 个币种低于阈值";
+            ThresholdSummaryText = $"{below.Count} 个指标低于阈值";
             IsLowBalance = true;
         }
 

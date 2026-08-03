@@ -42,7 +42,7 @@ public sealed class DataMigrationTests
         Assert.Empty(account.Monitoring.Thresholds);
 
         string json = await File.ReadAllTextAsync(path);
-        Assert.Contains("\"schemaVersion\": 2", json);
+        Assert.Contains("\"schemaVersion\": 3", json);
         Assert.DoesNotContain("sk-", json, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -81,8 +81,9 @@ public sealed class DataMigrationTests
         Assert.NotNull(record.LastSuccessfulSnapshot);
         var migrated = Assert.Single(record.History);
         Assert.Equal(BalanceQuerySource.Manual, migrated.Source);
-        Assert.Equal("CNY", migrated.Balances[0].Currency);
-        Assert.Equal(110.00m, migrated.Balances[0].TotalBalance);
+        Assert.Equal("deepseek:CNY:total", migrated.Metrics[0].MetricId);
+        Assert.Equal("CNY", migrated.Metrics[0].Unit);
+        Assert.Equal(110.00m, migrated.Metrics[0].AvailableAmount);
         Assert.Equal(new DateTimeOffset(2026, 8, 2, 8, 0, 5, TimeSpan.Zero), migrated.SucceededAtUtc);
 
         // 重复加载（已升级为 v2）不会重复生成历史记录。
@@ -91,7 +92,7 @@ public sealed class DataMigrationTests
         Assert.Single(recordAgain.History);
 
         string json = await File.ReadAllTextAsync(path);
-        Assert.Contains("\"schemaVersion\": 2", json);
+        Assert.Contains("\"schemaVersion\": 3", json);
         Assert.DoesNotContain("sk-", json, StringComparison.OrdinalIgnoreCase);
     }
 

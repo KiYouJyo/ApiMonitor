@@ -21,8 +21,8 @@ public sealed class AccountEditorContext
     /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
     public required MonitoringSettings InitialMonitoring { get; init; }
 
-    /// <summary>当前快照的各币种余额，用于阈值设置与状态展示。</summary>
-    public required IReadOnlyList<BalanceAmount> CurrentBalances { get; init; }
+    /// <summary>当前快照的各指标余额，用于阈值设置与状态展示。</summary>
+    public required IReadOnlyList<BalanceMetric> CurrentMetrics { get; init; }
 }
 
 /// <summary>

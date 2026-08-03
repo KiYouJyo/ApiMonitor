@@ -139,7 +139,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = string.Empty,
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = Array.Empty<BalanceAmount>(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
         };
 
         var result = await _dialogs.ShowAccountEditorAsync(context, _lifetime.Token);
@@ -187,7 +187,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = account.DisplayName,
             HasStoredCredential = account.HasCredential,
             InitialMonitoring = CloneMonitoring(account.Monitoring),
-            CurrentBalances = item is { HasSnapshot: true } ? item.LatestBalancesForEditor : Array.Empty<BalanceAmount>(),
+            CurrentMetrics = item is { HasSnapshot: true } ? item.LatestMetricsForEditor : Array.Empty<BalanceMetric>(),
         };
 
         var result = await _dialogs.ShowAccountEditorAsync(context, _lifetime.Token);
@@ -526,7 +526,9 @@ public sealed partial class MainViewModel : ObservableObject
             Thresholds = monitoring.Thresholds
                 .Select(t => new BalanceThresholdRule
                 {
-                    Currency = t.Currency,
+                    MetricId = t.MetricId,
+                    DisplayName = t.DisplayName,
+                    Unit = t.Unit,
                     IsEnabled = t.IsEnabled,
                     ThresholdAmount = t.ThresholdAmount,
                     CreatedAtUtc = t.CreatedAtUtc,

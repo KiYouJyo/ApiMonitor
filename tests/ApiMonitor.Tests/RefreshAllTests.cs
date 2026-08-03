@@ -84,7 +84,7 @@ public sealed class RefreshAllTests
         var r2 = await manager.GetRecordAsync("a2", CancellationToken.None);
         Assert.Null(r1!.LastSuccessfulSnapshot);
         Assert.NotNull(r2!.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, r2.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, r2.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class RefreshAllTests
 
         var record = await manager.GetRecordAsync("a1", CancellationToken.None);
         Assert.NotNull(record!.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, record.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, record.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
     }
 
     [Fact]

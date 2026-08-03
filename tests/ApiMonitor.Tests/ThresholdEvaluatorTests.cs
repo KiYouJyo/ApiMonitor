@@ -6,13 +6,25 @@ namespace ApiMonitor.Tests;
 
 public sealed class ThresholdEvaluatorTests
 {
-    private static BalanceAmount Balance(decimal total) =>
-        new() { Currency = "CNY", TotalBalance = total, GrantedBalance = 0m, ToppedUpBalance = 0m };
+    private static BalanceMetric Metric(decimal? amount, bool thresholdSupported = true, bool isUnlimited = false) =>
+        new()
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = amount,
+            TotalAmount = amount,
+            IsThresholdSupported = thresholdSupported,
+            IsUnlimited = isUnlimited,
+        };
 
     private static BalanceThresholdRule Rule(decimal amount, bool enabled = true) =>
         new()
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = enabled,
             ThresholdAmount = amount,
             CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -21,35 +33,87 @@ public sealed class ThresholdEvaluatorTests
 
     [Fact]
     public void BelowThreshold_IsLowBalance() =>
-        Assert.Equal(ThresholdStatus.BelowThreshold, ThresholdEvaluator.Evaluate(Balance(10m), Rule(20m)));
+        Assert.Equal(ThresholdStatus.BelowThreshold, ThresholdEvaluator.Evaluate(Metric(10m), Rule(20m)));
 
     [Fact]
     public void EqualThreshold_IsNormal() =>
-        Assert.Equal(ThresholdStatus.Normal, ThresholdEvaluator.Evaluate(Balance(20m), Rule(20m)));
+        Assert.Equal(ThresholdStatus.Normal, ThresholdEvaluator.Evaluate(Metric(20m), Rule(20m)));
 
     [Fact]
     public void AboveThreshold_IsNormal() =>
-        Assert.Equal(ThresholdStatus.Normal, ThresholdEvaluator.Evaluate(Balance(30m), Rule(20m)));
+        Assert.Equal(ThresholdStatus.Normal, ThresholdEvaluator.Evaluate(Metric(30m), Rule(20m)));
 
     [Fact]
     public void DisabledRule_IsNotAlerted() =>
-        Assert.Equal(ThresholdStatus.Disabled, ThresholdEvaluator.Evaluate(Balance(10m), Rule(20m, enabled: false)));
+        Assert.Equal(ThresholdStatus.Disabled, ThresholdEvaluator.Evaluate(Metric(10m), Rule(20m, enabled: false)));
 
     [Fact]
     public void MissingRule_IsNotAlerted() =>
-        Assert.Equal(ThresholdStatus.Disabled, ThresholdEvaluator.Evaluate(Balance(10m), null));
+        Assert.Equal(ThresholdStatus.Disabled, ThresholdEvaluator.Evaluate(Metric(10m), null));
 
     [Fact]
     public void NoBalanceData_IsUnknown() =>
         Assert.Equal(ThresholdStatus.Unknown, ThresholdEvaluator.Evaluate(null, Rule(20m)));
 
     [Fact]
-    public void MultiCurrency_JudgedIndependently()
+    public void UnknownAmount_IsUnknownEvenWithEnabledRule() =>
+        Assert.Equal(ThresholdStatus.Unknown, ThresholdEvaluator.Evaluate(Metric(null), Rule(20m)));
+
+    [Fact]
+    public void UnlimitedMetric_NeverAlerts() =>
+        Assert.Equal(
+            ThresholdStatus.Normal,
+            ThresholdEvaluator.Evaluate(Metric(null, isUnlimited: true), Rule(20m)));
+
+    [Fact]
+    public void NonThresholdMetric_IsDisabled() =>
+        Assert.Equal(
+            ThresholdStatus.Disabled,
+            ThresholdEvaluator.Evaluate(Metric(10m, thresholdSupported: false), Rule(20m)));
+
+    [Fact]
+    public void MultiMetric_JudgedIndependently()
     {
-        var cny = new BalanceAmount { Currency = "CNY", TotalBalance = 5m, GrantedBalance = 0m, ToppedUpBalance = 5m };
-        var usd = new BalanceAmount { Currency = "USD", TotalBalance = 150m, GrantedBalance = 0m, ToppedUpBalance = 150m };
-        var cnyRule = new BalanceThresholdRule { Currency = "CNY", IsEnabled = true, ThresholdAmount = 10m, CreatedAtUtc = DateTimeOffset.UtcNow, UpdatedAtUtc = DateTimeOffset.UtcNow };
-        var usdRule = new BalanceThresholdRule { Currency = "USD", IsEnabled = true, ThresholdAmount = 100m, CreatedAtUtc = DateTimeOffset.UtcNow, UpdatedAtUtc = DateTimeOffset.UtcNow };
+        var cny = new BalanceMetric
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 5m,
+            TotalAmount = 5m,
+            IsThresholdSupported = true,
+        };
+        var usd = new BalanceMetric
+        {
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 150m,
+            TotalAmount = 150m,
+            IsThresholdSupported = true,
+        };
+        var cnyRule = new BalanceThresholdRule
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            IsEnabled = true,
+            ThresholdAmount = 10m,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        };
+        var usdRule = new BalanceThresholdRule
+        {
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
+            IsEnabled = true,
+            ThresholdAmount = 100m,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        };
 
         Assert.Equal(ThresholdStatus.BelowThreshold, ThresholdEvaluator.Evaluate(cny, cnyRule));
         Assert.Equal(ThresholdStatus.Normal, ThresholdEvaluator.Evaluate(usd, usdRule));

@@ -6,15 +6,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ApiMonitor.ViewModels;
 
-/// <summary>编辑对话框中单个币种的阈值编辑项（含当前余额与实时状态）。</summary>
+/// <summary>编辑对话框中单个指标的阈值编辑项（含当前余额与实时状态）。</summary>
 public sealed partial class ThresholdEditorItem : ObservableObject
 {
-    public string Currency { get; }
+    public string MetricId { get; }
+
+    public string DisplayName { get; }
+
+    public string Unit { get; }
 
     [ObservableProperty]
-    private decimal _currentTotal;
+    private decimal? _currentAmount;
 
-    public string CurrentBalanceText => BalanceFormatter.Format(CurrentTotal);
+    public string CurrentBalanceText => BalanceMetricText.FormatAmount(CurrentAmount);
 
     public string CurrentBalanceLine => $"当前余额：{CurrentBalanceText}";
 
@@ -31,10 +35,12 @@ public sealed partial class ThresholdEditorItem : ObservableObject
 
     public string StatusLine => $"状态：{StatusText}";
 
-    public ThresholdEditorItem(string currency, decimal currentTotal, BalanceThresholdRule? rule)
+    public ThresholdEditorItem(BalanceMetric metric, BalanceThresholdRule? rule)
     {
-        Currency = currency;
-        _currentTotal = currentTotal;
+        MetricId = metric.MetricId;
+        DisplayName = metric.DisplayName;
+        Unit = metric.Unit;
+        _currentAmount = BalanceMetricText.MainAmount(metric);
         OriginalRule = rule;
         _isEnabled = rule?.IsEnabled ?? false;
         _thresholdText = rule is not null
@@ -43,7 +49,7 @@ public sealed partial class ThresholdEditorItem : ObservableObject
         Recompute();
     }
 
-    partial void OnCurrentTotalChanged(decimal value)
+    partial void OnCurrentAmountChanged(decimal? value)
     {
         OnPropertyChanged(nameof(CurrentBalanceText));
         OnPropertyChanged(nameof(CurrentBalanceLine));
@@ -81,7 +87,9 @@ public sealed partial class ThresholdEditorItem : ObservableObject
         {
             return new BalanceThresholdRule
             {
-                Currency = Currency,
+                MetricId = MetricId,
+                DisplayName = DisplayName,
+                Unit = Unit,
                 IsEnabled = IsEnabled,
                 ThresholdAmount = amount,
                 CreatedAtUtc = OriginalRule?.CreatedAtUtc ?? nowUtc,
@@ -94,7 +102,9 @@ public sealed partial class ThresholdEditorItem : ObservableObject
             // 保留原有配置但关闭提醒，避免编辑时误删。
             return new BalanceThresholdRule
             {
-                Currency = Currency,
+                MetricId = MetricId,
+                DisplayName = DisplayName,
+                Unit = Unit,
                 IsEnabled = false,
                 ThresholdAmount = OriginalRule.ThresholdAmount,
                 CreatedAtUtc = OriginalRule.CreatedAtUtc,
@@ -119,23 +129,28 @@ public sealed partial class ThresholdEditorItem : ObservableObject
             return;
         }
 
-        var balance = new BalanceAmount
+        var metric = new BalanceMetric
         {
-            Currency = Currency,
-            TotalBalance = CurrentTotal,
-            GrantedBalance = 0m,
-            ToppedUpBalance = 0m,
+            MetricId = MetricId,
+            DisplayName = DisplayName,
+            Unit = Unit,
+            Kind = BalanceMetricKind.Other,
+            AvailableAmount = CurrentAmount,
+            TotalAmount = CurrentAmount,
+            IsThresholdSupported = true,
         };
         var rule = new BalanceThresholdRule
         {
-            Currency = Currency,
+            MetricId = MetricId,
+            DisplayName = DisplayName,
+            Unit = Unit,
             IsEnabled = true,
             ThresholdAmount = amount,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         };
 
-        StatusText = ThresholdEvaluator.Evaluate(balance, rule) switch
+        StatusText = ThresholdEvaluator.Evaluate(metric, rule) switch
         {
             ThresholdStatus.BelowThreshold => $"低于阈值 {BalanceFormatter.Format(amount)}",
             ThresholdStatus.Normal => "正常",
