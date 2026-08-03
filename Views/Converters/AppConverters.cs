@@ -52,10 +52,11 @@ public sealed class StatusSeverityConverter : IValueConverter
 /// <summary>按当前导航页面（AppPageKind）与 ConverterParameter 控制页面可见性。</summary>
 public sealed class PageVisibilityConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, string language) =>
-        string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.OrdinalIgnoreCase)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool visible = string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.OrdinalIgnoreCase);
+        return visible ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>
         throw new NotSupportedException();

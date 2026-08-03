@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services"
     Title="ApiMonitor">
 
     <Grid x:Name="RootGrid" Padding="16,12" RowSpacing="8">
@@ -59,7 +60,7 @@
             Grid.Row="1"
             Spacing="6"
             Visibility="{Binding HasAccounts, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-            <TextBlock Text="尚未添加 API 账户" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Compact.EmptyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
             <Button
                 Content="打开主窗口"
                 Command="{Binding OpenMainWindowCommand}"
@@ -83,11 +84,11 @@
             HorizontalAlignment="Center"
             Visibility="{Binding HasAccounts, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock loc:Loc.Key="Compact.StatusPrefix" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                <TextBlock Text="最近成功：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock loc:Loc.Key="Compact.LastSuccessPrefix" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Text="{Binding LastSuccessText}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
@@ -99,7 +100,7 @@
         <!-- 无余额记录空状态 -->
         <TextBlock
             Grid.Row="3"
-            Text="尚未查询余额"
+            loc:Loc.Key="Compact.NoSnapshot"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             HorizontalAlignment="Center"
             Visibility="{Binding HasSnapshot, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
@@ -112,10 +113,10 @@
             Message="{Binding ErrorText}" />
 
         <Grid Grid.Row="5" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
-            <Button Content="刷新" Command="{Binding RefreshCommand}" />
+            <Button loc:Loc.Key="Compact.RefreshButton" Command="{Binding RefreshCommand}" />
             <ToggleSwitch
                 Grid.Column="1"
-                Header="始终置顶"
+                loc:Loc.Key="Compact.AlwaysOnTop"
                 IsOn="{Binding IsAlwaysOnTop, Mode=TwoWay}"
                 OnContent="开"
                 OffContent="关" />

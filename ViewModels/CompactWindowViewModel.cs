@@ -63,13 +63,13 @@ public sealed partial class CompactWindowViewModel : ObservableObject
     private string _balanceText = "—";
 
     [ObservableProperty]
-    private string _statusText = "尚未查询余额";
+    private string _statusText = L10n.Get("Compact.NotQueried");
 
     [ObservableProperty]
-    private string _lastSuccessText = "尚未成功更新";
+    private string _lastSuccessText = L10n.Get("Card.NotUpdatedYet");
 
     [ObservableProperty]
-    private string _refreshStatusText = "自动刷新已开启";
+    private string _refreshStatusText = L10n.Get("Card.AutoRefreshOn");
 
     [ObservableProperty]
     private string _nextRefreshText = string.Empty;
@@ -175,7 +175,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
 
             if (result.Error?.Kind == BalanceErrorKind.Busy)
             {
-                ErrorText = "该账户正在查询，请稍候。";
+                ErrorText = L10n.Get("Status.QueryInProgressMessage");
                 HasError = true;
                 return;
             }
@@ -188,7 +188,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"紧凑窗口刷新失败: {ex.GetType().Name}");
-            ErrorText = "刷新失败，请稍后重试。";
+            ErrorText = L10n.Get("Compact.RefreshFailed");
             HasError = true;
         }
         finally
@@ -246,11 +246,11 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             MetricOptions.Clear();
             HasSnapshot = false;
             BalanceText = "—";
-            StatusText = "尚未添加 API 账户";
-            LastSuccessText = "尚未成功更新";
+            StatusText = L10n.Get("Compact.NoAccounts");
+            LastSuccessText = L10n.Get("Card.NotUpdatedYet");
             ErrorText = string.Empty;
             HasError = false;
-            RefreshStatusText = "自动刷新已开启";
+            RefreshStatusText = L10n.Get("Card.AutoRefreshOn");
             NextRefreshText = string.Empty;
             return;
         }
@@ -313,11 +313,11 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         {
             HasSnapshot = false;
             BalanceText = "—";
-            StatusText = "尚未查询余额";
+            StatusText = L10n.Get("Compact.NotQueried");
             LastSuccessText = record?.LastQuerySuccessAt is { } last
                 ? FormatTime(last)
-                : "尚未成功更新";
-            ErrorText = record?.LastQueryAttemptAt is not null ? "最近一次查询未成功" : string.Empty;
+                : L10n.Get("Card.NotUpdatedYet");
+            ErrorText = record?.LastQueryAttemptAt is not null ? L10n.Get("Card.LastQueryFailed") : string.Empty;
             HasError = !string.IsNullOrEmpty(ErrorText);
             UpdateRefreshStatus(record);
             return;
@@ -336,7 +336,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         {
             HasSnapshot = false;
             BalanceText = "—";
-            StatusText = "尚未添加 API 账户";
+            StatusText = L10n.Get("Compact.NoAccounts");
             return;
         }
 
@@ -345,8 +345,8 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         {
             HasSnapshot = false;
             BalanceText = "—";
-            StatusText = "尚未查询余额";
-            ErrorText = _currentRecord?.LastQueryAttemptAt is not null ? "最近一次查询未成功" : string.Empty;
+            StatusText = L10n.Get("Compact.NotQueried");
+            ErrorText = _currentRecord?.LastQueryAttemptAt is not null ? L10n.Get("Card.LastQueryFailed") : string.Empty;
             HasError = !string.IsNullOrEmpty(ErrorText);
             return;
         }
@@ -370,9 +370,9 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             string.Equals(r.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase));
         StatusText = ThresholdEvaluator.Evaluate(metric, rule) switch
         {
-            ThresholdStatus.BelowThreshold => "低余额",
-            ThresholdStatus.Normal => "正常",
-            _ => "未知",
+            ThresholdStatus.BelowThreshold => L10n.Get("Home.StatusLow"),
+            ThresholdStatus.Normal => L10n.Get("Home.StatusNormal"),
+            _ => L10n.Get("Home.StatusUnknown"),
         };
 
     }
@@ -390,9 +390,9 @@ public sealed partial class CompactWindowViewModel : ObservableObject
         }
 
         bool autoEnabled = _currentAccount.Monitoring.AutoRefreshEnabled;
-        RefreshStatusText = autoEnabled ? "自动刷新已开启" : "自动刷新已关闭";
+        RefreshStatusText = autoEnabled ? L10n.Get("Card.AutoRefreshOn") : L10n.Get("Card.AutoRefreshOff");
         NextRefreshText = autoEnabled && _currentAccount.Monitoring.NextRefreshAtUtc is { } next
-            ? "下次刷新：" + FormatTime(next)
+            ? L10n.Format("Card.NextRefreshAtFormat", FormatTime(next))
             : string.Empty;
     }
 
@@ -404,7 +404,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             MetricOptions.Clear();
             HasSnapshot = false;
             BalanceText = "—";
-            StatusText = "尚未添加 API 账户";
+            StatusText = L10n.Get("Compact.NoAccounts");
             return;
         }
 
@@ -430,7 +430,7 @@ public sealed partial class CompactWindowViewModel : ObservableObject
             return;
         }
 
-        ErrorText = result.Error?.Message ?? "查询失败。";
+        ErrorText = result.Error?.Message ?? L10n.Get("Card.QueryFailed");
         HasError = true;
         UpdateRefreshStatus(_currentRecord);
     }

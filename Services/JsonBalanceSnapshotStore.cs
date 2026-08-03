@@ -83,8 +83,8 @@ public sealed class JsonBalanceSnapshotStore : IBalanceSnapshotStore, IBalanceHi
                 cancellationToken);
 
             string message = string.IsNullOrEmpty(backup)
-                ? "余额记录数据文件版本不受支持，已重置。"
-                : $"余额记录数据文件版本不受支持，已备份为 {Path.GetFileName(backup)} 并重置。";
+                ? L10n.Get("Store.RecordsSchemaReset")
+                : L10n.Format("Store.RecordsSchemaResetBackedUp", Path.GetFileName(backup));
 
             return new BalanceRecordsLoadResult
             {

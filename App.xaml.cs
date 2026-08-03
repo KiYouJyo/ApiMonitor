@@ -32,8 +32,16 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _uiQueue = DispatcherQueue.GetForCurrentThread();
-        _compositionRoot = new CompositionRoot(_uiQueue, _singleInstance, _notificationService);
+        try
+        {
+            _uiQueue = DispatcherQueue.GetForCurrentThread();
+            _compositionRoot = new CompositionRoot(_uiQueue, _singleInstance, _notificationService);
+        }
+        catch (Exception ex)
+        {
+            WriteCrashDiagnostics("OnLaunched/CompositionRoot", ex);
+            throw;
+        }
 
         // 单实例：后续激活事件在初始化完成前订阅，避免错过重定向。
         // 先订阅 AppInstance.Activated（原生激活通道），再订阅业务事件转发。
@@ -62,19 +70,47 @@ public partial class App : Application
         _ = InitializeAndStartAsync();
     }
 
+    /// <summary>把早期崩溃详情写入固定文件（仅用于诊断，不含敏感数据）。</summary>
+    private static void WriteCrashDiagnostics(string stage, Exception ex)
+    {
+        try
+        {
+            string dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ApiMonitor");
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(
+                Path.Combine(dir, "startup-crash.log"),
+                $"[{DateTimeOffset.Now:O}] {stage}\n{ex}");
+        }
+        catch
+        {
+            // 诊断写入失败忽略。
+        }
+    }
+
+
     private void CreateMainWindow(bool activate)
     {
-        _window = new MainWindow(_compositionRoot!);
-        _window.RootPage.ViewModel = _compositionRoot!.MainViewModel;
-        _compositionRoot.AttachMainWindow(_window);
-
-        if (activate)
+        try
         {
-            _window.Show();
-        }
+            _window = new MainWindow(_compositionRoot!);
+            _window.RootPage.ViewModel = _compositionRoot!.MainViewModel;
+            _compositionRoot.AttachMainWindow(_window);
 
-        // Resolve the XamlRoot lazily at show time; it may still be null right after Activate.
-        _compositionRoot.DialogService.Attach(() => _window.RootPage.XamlRoot);
+            if (activate)
+            {
+                _window.Show();
+            }
+
+            // Resolve the XamlRoot lazily at show time; it may still be null right after Activate.
+            _compositionRoot.DialogService.Attach(() => _window.RootPage.XamlRoot);
+        }
+        catch (Exception ex)
+        {
+            WriteCrashDiagnostics("CreateMainWindow", ex);
+            throw;
+        }
     }
 
     private async Task InitializeAndStartAsync()
@@ -90,6 +126,12 @@ public partial class App : Application
         if (_compositionRoot.MainViewModel.NotificationSettings is { } notificationSettings)
         {
             await notificationSettings.InitializeAsync();
+        }
+
+        // v0.6.0：外观与语言（主题/语言）在调度器启动前应用，重启后恢复。
+        if (_compositionRoot.AppearanceSettings is { } appearanceSettings)
+        {
+            await appearanceSettings.InitializeAsync(_lifetime.Token);
         }
 
         _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);

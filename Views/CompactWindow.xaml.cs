@@ -2,6 +2,7 @@ using ApiMonitor.Services;
 using ApiMonitor.ViewModels;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 
 namespace ApiMonitor.Views;
@@ -45,6 +46,9 @@ public sealed partial class CompactWindow : Window
 
         ApplyAlwaysOnTop(viewModel.IsAlwaysOnTop);
     }
+
+    /// <summary>窗口根元素（供主题服务注册；内部仅供 CompositionRoot 使用）。</summary>
+    internal Grid RootGridElement => RootGrid;
 
     private void OnOpenMainWindowRequested(object? sender, EventArgs e) =>
         OpenMainWindowRequested?.Invoke(this, EventArgs.Empty);

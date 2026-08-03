@@ -45,7 +45,7 @@ public sealed partial class TraySettingsViewModel : ObservableObject
     }
 
     /// <summary>当前托盘驻留状态摘要（设置区展示）。</summary>
-    public string TrayResidencyText { get; } = "通知区域图标已启用。隐藏到通知区域后，余额自动刷新将继续运行。选择“退出 ApiMonitor”才会完全结束程序。";
+    public string TrayResidencyText { get; } = L10n.Get("Tray.ResidencyEnabled");
 
     public RelayCommand ExitApplicationCommand { get; }
 
@@ -173,11 +173,11 @@ public sealed partial class TraySettingsViewModel : ObservableObject
         StartupTaskStatusText = status switch
         {
             StartupTaskStatus.DisabledByUser =>
-                "登录启动已被你在 Windows 启动应用设置中关闭。可在应用内重新开启。",
+                L10n.Get("Tray.StartupDisabledByUser"),
             StartupTaskStatus.DisabledByPolicy =>
-                "登录启动已被组织策略限制，无法在应用内开启。",
+                L10n.Get("Tray.StartupDisabledByPolicy"),
             StartupTaskStatus.EnabledByPolicy =>
-                "登录启动由系统策略启用。",
+                L10n.Get("Tray.StartupEnabledByPolicy"),
             _ => string.Empty,
         };
     }

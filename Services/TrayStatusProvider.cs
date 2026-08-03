@@ -1,4 +1,5 @@
 using ApiMonitor.Models;
+using ApiMonitor.Services;
 
 namespace ApiMonitor.Services;
 
@@ -25,24 +26,24 @@ public interface ITrayStatusProvider
 public static class TrayStatusText
 {
     public const string AppName = "ApiMonitor";
-    public const string Normal = "余额正常";
-    public const string NoData = "尚无余额数据";
-    public const string Refreshing = "正在刷新";
-    public const string RecentFailure = "最近刷新失败";
-    public const string AutoRefreshRunning = "自动刷新：运行中";
-    public const string AutoRefreshStopped = "自动刷新：已关闭";
-    public const string LowBalanceNormal = "低余额：正常";
-    public const string LowBalanceUnknown = "低余额：未知";
+    public static string Normal => L10n.Get("Card.BalanceNormal");
+    public static string NoData => L10n.Get("Card.NoBalanceData");
+    public static string Refreshing => L10n.Get("Tray.Refreshing");
+    public static string RecentFailure => L10n.Get("Tray.RecentFailure");
+    public static string AutoRefreshRunning => L10n.Get("Tray.AutoRefreshRunning");
+    public static string AutoRefreshStopped => L10n.Get("Tray.AutoRefreshStopped");
+    public static string LowBalanceNormal => L10n.Get("Tray.LowBalanceNormal");
+    public static string LowBalanceUnknown => L10n.Get("Tray.LowBalanceUnknown");
 
     public static string LowBalanceSummary(int ruleCount) =>
-        $"低余额：{ruleCount} 项";
+        L10n.Format("Tray.LowBalanceCountFormat", ruleCount);
 
     public static string TooltipFor(int lowBalanceRuleCount, bool hasAnySnapshot, bool isRefreshing, bool hasRecentFailure)
     {
         string state = !hasAnySnapshot
             ? NoData
             : lowBalanceRuleCount > 0
-                ? $"{lowBalanceRuleCount} 个指标低于阈值"
+                ? L10n.Format("Tray.MetricsBelowThresholdFormat", lowBalanceRuleCount)
                 : Normal;
 
         if (isRefreshing)

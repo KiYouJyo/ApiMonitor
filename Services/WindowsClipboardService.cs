@@ -59,7 +59,39 @@ public sealed class WindowsClipboardService : IClipboardService
 
         if (!enqueued)
         {
-            completion.TrySetException(new InvalidOperationException("UI DispatcherQueue 不可用。"));
+            completion.TrySetException(new InvalidOperationException(L10n.Get("Clipboard.DispatcherUnavailable")));
+        }
+
+        return completion.Task;
+    }
+
+    public Task SetPlainTextAsync(string text, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return Task.CompletedTask;
+        }
+
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool enqueued = _dispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                var package = new DataPackage();
+                package.SetText(text);
+                Clipboard.SetContent(package);
+                completion.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                _log?.Error($"写入剪贴板失败: {ex.GetType().Name}");
+                completion.TrySetException(ex);
+            }
+        });
+
+        if (!enqueued)
+        {
+            completion.TrySetException(new InvalidOperationException(L10n.Get("Clipboard.DispatcherUnavailable")));
         }
 
         return completion.Task;

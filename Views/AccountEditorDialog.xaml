@@ -4,9 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels="using:ApiMonitor.ViewModels"
     xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services"
     Title="{Binding Title}"
-    PrimaryButtonText="保存"
-    SecondaryButtonText="取消"
+    PrimaryButtonText="{x:Bind SaveButtonText}"
+    SecondaryButtonText="{x:Bind CancelButtonText}"
     DefaultButton="Primary"
     IsPrimaryButtonEnabled="{Binding CanSave}"
     PrimaryButtonClick="OnPrimaryButtonClick"
@@ -374,7 +375,7 @@
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
             <RadioButtons
-                Header="凭据模式"
+                loc:Loc.Key="Dialog.CredentialMode"
                 ItemsSource="{Binding CredentialOptions}"
                 SelectedIndex="{Binding CredentialModeIndex, Mode=TwoWay}"
                 Visibility="{Binding ShowCredentialModeSelector, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -391,20 +392,20 @@
                 </RadioButtons.ItemTemplate>
             </RadioButtons>
             <TextBlock
-                Text="凭据模式已更改，请重新测试连接后才能保存。"
+                loc:Loc.Key="Dialog.CredentialModeChanged"
                 Foreground="{ThemeResource SystemFillColorCautionBrush}"
                 TextWrapping="Wrap"
                 Visibility="{Binding ModeChangedRequiresRetest, Converter={StaticResource BoolToVisibilityConverter}}" />
             <TextBox
-                Header="账户显示名称"
+                loc:Loc.Key="Dialog.AccountName"
                 Text="{Binding DisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                PlaceholderText="例如：我的 DeepSeek 账户" />
+                PlaceholderText="{x:Bind AccountNamePlaceholderText}" />
             <PasswordBox
                 Header="API Key"
                 PasswordChanged="OnApiKeyPasswordChanged"
                 PlaceholderText="{Binding ApiKeyInputHint}" />
             <TextBlock
-                Text="已保存凭据：留空则继续使用现有 API Key。"
+                loc:Loc.Key="Dialog.CredentialHint"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Visibility="{Binding HasStoredCredential, Converter={StaticResource BoolToVisibilityConverter}}" />
 
@@ -420,20 +421,20 @@
                 Message="{Binding TestResultText}" />
 
             <ToggleSwitch
-                Header="自动刷新"
-                OnContent="开启"
-                OffContent="关闭"
+                loc:Loc.Key="Dialog.AutoRefresh"
+                OnContent="{x:Bind OnContentText}"
+                OffContent="{x:Bind OffContentText}"
                 IsOn="{Binding AutoRefreshEnabled, Mode=TwoWay}" />
             <ComboBox
-                Header="刷新间隔"
+                loc:Loc.Key="Dialog.RefreshInterval"
                 ItemsSource="{Binding RefreshIntervals}"
                 SelectedItem="{Binding RefreshIntervalMinutes, Mode=TwoWay}" />
             <TextBlock
-                Text="当前版本仅在应用正在运行时自动刷新。关闭应用后将停止监测，托盘驻留将在后续版本提供。"
+                loc:Loc.Key="Dialog.RefreshIntervalHint"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
 
-            <TextBlock Text="低余额阈值" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Dialog.ThresholdTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
             <ItemsControl ItemsSource="{Binding ThresholdItems}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ThresholdEditorItem">
@@ -470,26 +471,26 @@
             </ItemsControl>
 
             <TextBlock
-                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各指标低余额阈值。"
+                loc:Loc.Key="Dialog.ThresholdEmpty"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap"
                 Visibility="{Binding ShowThresholdEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-            <TextBlock Text="通知设置" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Dialog.NotificationTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
             <ComboBox
-                Header="该账户通知"
+                loc:Loc.Key="Dialog.AccountNotification"
                 ItemsSource="{Binding NotificationEnabledOptions}"
                 DisplayMemberPath="Label"
                 SelectedValuePath="Value"
                 SelectedIndex="{Binding NotificationEnabledIndex, Mode=TwoWay}" />
             <ComboBox
-                Header="重复提醒间隔"
+                loc:Loc.Key="Dialog.RepeatInterval"
                 ItemsSource="{Binding NotificationRepeatOptions}"
                 DisplayMemberPath="Label"
                 SelectedValuePath="Value"
                 SelectedIndex="{Binding RepeatIntervalIndex, Mode=TwoWay}" />
             <ComboBox
-                Header="余额恢复提醒"
+                loc:Loc.Key="Dialog.RecoveryNotifications"
                 ItemsSource="{Binding RecoveryOptions}"
                 DisplayMemberPath="Label"
                 SelectedValuePath="Value"

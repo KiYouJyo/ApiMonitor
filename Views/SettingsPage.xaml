@@ -2,7 +2,8 @@
     x:Class="ApiMonitor.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:ApiMonitor.Views.Converters">
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -16,32 +17,32 @@
             MaxWidth="720"
             HorizontalAlignment="Left">
 
-            <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock loc:Loc.Key="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
             <!-- 1. 通知区域与启动 -->
             <Border
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="通知区域与启动" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock loc:Loc.Key="Settings.TraySection" Style="{StaticResource SubtitleTextBlockStyle}" />
                             <TextBlock
-                                Text="隐藏到通知区域后，余额自动刷新将继续运行。选择“退出 ApiMonitor”才会完全结束程序。"
+                                loc:Loc.Key="Settings.TrayDescription"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
                         <Button
                             Grid.Column="1"
-                            Content="退出 ApiMonitor"
+                            loc:Loc.Key="Settings.ExitApplication"
                             Command="{Binding TraySettings.ExitApplicationCommand}"
                             VerticalAlignment="Top" />
                     </Grid>
 
-                    <TextBlock Text="关闭主窗口时：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock loc:Loc.Key="Settings.CloseBehavior" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <RadioButtons
                         MaxColumns="2"
                         SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
@@ -54,9 +55,9 @@
                         IsEnabled="{Binding TraySettings.IsStartupTaskBusy, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
                         <ToggleSwitch.Header>
                             <StackPanel Spacing="2">
-                                <TextBlock Text="登录 Windows 时启动 ApiMonitor" />
+                                <TextBlock loc:Loc.Key="Settings.StartWithWindowsHeader" />
                                 <TextBlock
-                                    Text="启用后，ApiMonitor 将在登录时驻留通知区域，不自动弹出主窗口。"
+                                    loc:Loc.Key="Settings.StartWithWindowsDescription"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextWrapping="Wrap" />
                             </StackPanel>
@@ -76,22 +77,22 @@
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="余额提醒" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding NotificationSettings.LocalOnlyExplanationText, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                     <ToggleSwitch
-                        Header="启用余额系统提醒"
+                        loc:Loc.Key="Settings.EnableNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <TextBlock
-                            Text="默认重复提醒间隔"
+                            loc:Loc.Key="Settings.RepeatInterval"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             VerticalAlignment="Center" />
                         <ComboBox
@@ -104,16 +105,16 @@
                             SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
                     </Grid>
                     <ToggleSwitch
-                        Header="余额恢复提醒"
+                        loc:Loc.Key="Settings.RecoveryNotifications"
                         OnContent="开启"
                         OffContent="关闭"
                         IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Button
-                            Content="发送测试通知"
+                            loc:Loc.Key="Settings.SendTestNotification"
                             Command="{Binding NotificationSettings.SendTestCommand}" />
                         <Button
-                            Content="打开 Windows 通知设置"
+                            loc:Loc.Key="Settings.OpenNotificationSettings"
                             Command="{Binding NotificationSettings.OpenWindowsNotificationSettingsCommand}" />
                     </StackPanel>
                     <TextBlock
@@ -124,15 +125,94 @@
                 </StackPanel>
             </Border>
 
-            <!-- 3. 应用信息（简单，不做复杂“关于”页） -->
+            <!-- 3. 外观与语言（v0.6.0） -->
             <Border
                 Padding="18,14"
                 CornerRadius="8"
                 BorderThickness="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <TextBlock
+                            loc:Loc.Key="Settings.Theme"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            Grid.Column="1"
+                            MinWidth="160"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding AppearanceSettings.ThemeOptions}"
+                            DisplayMemberPath="DisplayName"
+                            SelectedItem="{Binding AppearanceSettings.SelectedTheme, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <TextBlock
+                            loc:Loc.Key="Settings.Language"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            Grid.Column="1"
+                            MinWidth="160"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding AppearanceSettings.LanguageOptions}"
+                            DisplayMemberPath="DisplayName"
+                            SelectedItem="{Binding AppearanceSettings.SelectedLanguage, Mode=TwoWay}" />
+                    </Grid>
+                    <TextBlock
+                        loc:Loc.Key="Settings.AppearanceDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Text="{Binding AppearanceSettings.StatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding AppearanceSettings.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 4. 数据管理（v0.6.0：便携备份导出/导入） -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock loc:Loc.Key="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock
+                        Text="{Binding DataManagement.DescriptionText, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button
+                            loc:Loc.Key="Settings.ExportBackup"
+                            Command="{Binding DataManagement.ExportBackupCommand}" />
+                        <Button
+                            loc:Loc.Key="Settings.ImportBackup"
+                            Command="{Binding DataManagement.ImportBackupCommand}" />
+                        <Button
+                            loc:Loc.Key="Settings.OpenDataFolder"
+                            Command="{Binding DataManagement.OpenDataFolderCommand}" />
+                    </StackPanel>
+                    <TextBlock
+                        Text="{Binding DataManagement.StatusText, Mode=OneWay}"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding DataManagement.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 5. 应用信息（链接迁移到“关于”页） -->
+            <Border
+                Padding="18,14"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource AppCardBorderBrush}"
+                Background="{ThemeResource AppCardBackgroundBrush}">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="应用信息" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock
                         Text="{Binding SubtitleText}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -143,10 +223,10 @@
                         TextWrapping="Wrap" />
                     <HyperlinkButton
                         NavigateUri="https://github.com/KiYouJyo/ApiMonitor"
-                        Content="GitHub 项目" />
+                        loc:Loc.Key="Settings.GitHubLink" />
                     <HyperlinkButton
                         NavigateUri="https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"
-                        Content="隐私政策" />
+                        loc:Loc.Key="Settings.PrivacyLink" />
                 </StackPanel>
             </Border>
         </StackPanel>

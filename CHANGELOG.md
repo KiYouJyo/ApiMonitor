@@ -2,6 +2,51 @@
 
 ## [Unreleased]
 
+## [0.6.0.1] - 2026-08-03（v0.6.0 主题统一修订包）
+
+### Fixed
+
+- 主题未实际应用：AppearanceSettingsViewModel 构造函数在读取持久化设置前把默认主题 System 写回文件，导致手动选择的 Light/Dark 永远无法恢复；改为构造期直接赋值后备字段
+- 应用外壳背景不统一：标题栏（原生 AppWindowTitleBar 浅青）、NavigationView Pane（Acrylic 深色）、页面内容三处各色；新增统一语义资源（AppShellBackgroundBrush/AppCardBackgroundBrush 等，Light/Dark/HighContrast 三字典），NavigationView Pane 覆盖为外壳背景，页面根继承统一背景
+- 新增 WindowThemeCoordinator：统一管理窗口根元素主题与原生标题栏颜色同步（含紧凑窗口），高对比度回退系统默认标题栏
+- 卡片背景统一为 AppCardBackgroundBrush（设置/账户/关于页卡片），与外壳背景保持层级
+
+## [0.6.0] - 2026-08-03
+
+### Added
+
+- 数据洞察页（导航主菜单）：账户/指标/时间范围选择、轻量本地趋势图（Canvas/Polyline，无图表框架）、当前值/区间变化/首末与极值、可折叠历史表、CSV 导出
+- 消费估算服务：按连续快照计算日消耗中位数与预计可用天数，至少 3 个有效区间与 24 小时跨度；数据不足/未观察到消耗/最近充值/不支持指标/当前值未知等明确原因
+- 便携备份（.apimonitor-backup，ZIP+JSON）：manifest（backupFormatVersion=1、文件大小/SHA-256、containsSecrets=false）、导出不含 API Key/凭据/日志、导入安全合并（保留本机凭据、新账户标记需要凭据、历史按 Id 去重、失败回滚）、路径穿越/超大文件拒绝
+- 主题设置：跟随系统/浅色/深色，立即生效并应用到主窗口与紧凑窗口，持久化
+- 三语支持：简体中文/English/日本語，x:Uid + ResourceLoader + 统一字符串服务；语言切换保存 PrimaryLanguageOverride 并提示重启（AppInstance.Restart）
+- 完整“关于”页：产品信息（DisplayVersion 与 PackageVersion 分离）、当前能力（Provider 注册表动态）、隐私与安全摘要、项目链接、本地文档（离线查看）、手动检查更新（GitHub REST、15 秒超时、语义版本比较）、复制诊断信息（非敏感）、打开本地数据文件夹
+- 集中版本来源 Directory.Build.props：DisplayVersion=0.6.0 / PackageVersion=0.6.0.0，不再“强制 major.minor.0”
+- 统一元数据服务 AppInfo：打包/未打包安全回退，不因 Package.Current 不可用崩溃
+
+### Changed
+
+- 分离 DisplayVersion 与 PackageVersion（集中版本来源 Directory.Build.props）
+- 数据洞察历史按需加载与图表分桶抽样（约 500 点，保留首末与极值）
+- 统一标题栏、导航面板与页面背景（详见 0.6.0.1 修订条目）
+- 高 DPI、高对比度与键盘无障碍改进
+- 本地化扩展到对话框、托盘菜单、系统通知与 Provider 错误文案
+- 导航结构：主页/数据洞察为主菜单，设置/关于移到底部区域；四页共享同一账户服务与状态，切换不重启调度器/不重复订阅/不重复读取 Credential Locker
+- 托盘菜单与系统通知文本接入 IAppStrings 本地化
+- Package.appxmanifest 声明 zh-CN/en-US/ja-JP 三种语言；版本升级到 0.6.0.0
+
+### Fixed
+
+- 修复了“查看趋势”入口：从账户卡片可进入数据洞察并自动选择该账户（以 AccountId 为主键）
+- 修复缺失或混杂语言的界面字符串（x:Uid 失效，改用 Loc 附加属性本地化）
+- 修复页面重叠回归与语言/主题状态显示
+- 页面与对话框主题同步、外壳配色不一致（详见 0.6.0.1 修订条目）
+
+### Security
+
+- 便携备份明确 containsSecrets=false；CSV/备份/诊断信息不含 API Key、凭据、Authorization、日志与本机路径
+- 更新检查仅手动触发、不上传任何账户/余额/设备数据、不自动下载安装、User-Agent=ApiMonitor/&lt;DisplayVersion&gt;
+
 ## [0.5.0.1] - 2026-08-03（v0.5.0 验收候选修订包；修复安装/备份安全）
 
 - 禁止同版本破坏性替换：已安装版本与待安装版本相同时默认停止（退出码 15），绝不自动卸载/重置包/删除 LocalState/操作 Credential Locker

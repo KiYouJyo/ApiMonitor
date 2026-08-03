@@ -65,12 +65,12 @@ public sealed class DialogService : IDialogService
 
         var dialog = new ContentDialog
         {
-            Title = "删除账户",
-            Content = $"确定要删除账户“{accountName}”（{providerDisplayName}）吗？\n\n" +
-                "删除后，该账户的凭据、余额历史、阈值、通知设置与活动通知将一并删除。\n" +
-                "此操作不可撤销。",
-            PrimaryButtonText = "删除账户",
-            CloseButtonText = "取消",
+            Title = L10n.Get("Dialog.DeleteAccountTitle"),
+            Content = L10n.Format("Dialog.DeleteAccountConfirm", accountName, providerDisplayName) +
+                L10n.Get("Dialog.DeleteAccountScope") +
+                L10n.Get("Dialog.DeleteAccountIrreversible"),
+            PrimaryButtonText = L10n.Get("Dialog.DeleteAccountTitle"),
+            CloseButtonText = L10n.Get("Common.Cancel"),
             DefaultButton = ContentDialogButton.Close,
         };
 
@@ -124,11 +124,11 @@ public sealed class DialogService : IDialogService
 
         var dialog = new ContentDialog
         {
-            Title = "隐藏到通知区域",
-            Content = "ApiMonitor 将继续在通知区域运行。你可以单击右下角图标重新打开，或从托盘菜单退出。",
-            PrimaryButtonText = "隐藏并继续运行",
-            SecondaryButtonText = "不再提示",
-            CloseButtonText = "取消",
+            Title = L10n.Get("Dialog.HideToTrayTitle"),
+            Content = L10n.Get("Dialog.HideToTrayMessage"),
+            PrimaryButtonText = L10n.Get("Dialog.HideAndRun"),
+            SecondaryButtonText = L10n.Get("Dialog.DontAskAgain"),
+            CloseButtonText = L10n.Get("Common.Cancel"),
             DefaultButton = ContentDialogButton.Primary,
         };
 
@@ -148,6 +148,39 @@ public sealed class DialogService : IDialogService
         {
             _log?.Error($"显示首次关闭说明对话框失败: {ex.GetType().Name}");
             return FirstCloseChoice.Hide;
+        }
+    }
+
+    /// <summary>v0.6.0：语言切换重启确认对话框（立即重启 / 稍后）。</summary>
+    public async Task<bool> ConfirmRestartAsync(CancellationToken cancellationToken)
+    {
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
+        {
+            // XamlRoot 不可用时默认不重启（提示手动处理）。
+            return false;
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = L10n.Get("Dialog.RestartTitle"),
+            Content = L10n.Get("Dialog.RestartMessage"),
+            PrimaryButtonText = L10n.Get("Settings.RestartNow"),
+            CloseButtonText = L10n.Get("Settings.Later"),
+            DefaultButton = ContentDialogButton.Primary,
+        };
+
+        try
+        {
+            dialog.XamlRoot = xamlRoot;
+            using var registration = cancellationToken.Register(dialog.Hide);
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示重启确认对话框失败: {ex.GetType().Name}");
+            return false;
         }
     }
 }

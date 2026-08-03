@@ -25,32 +25,45 @@ public interface ITrayMenuService
     IReadOnlyList<TrayMenuItem> BuildMenu(TrayMenuContext context);
 }
 
-/// <summary>默认托盘菜单布局：打开/紧凑、刷新与状态、登录启动、退出。</summary>
+/// <summary>
+/// 默认托盘菜单布局：打开/紧凑、刷新与状态、登录启动、退出。
+/// v0.6.0：文本通过 IAppStrings 按当前 UI 语言取；未注入时回退内置中文。
+/// </summary>
 public sealed class TrayMenuService : ITrayMenuService
 {
+    private readonly IAppStrings? _strings;
+
+    public TrayMenuService(IAppStrings? strings = null)
+    {
+        _strings = strings;
+    }
+
     public IReadOnlyList<TrayMenuItem> BuildMenu(TrayMenuContext context)
     {
         var items = new List<TrayMenuItem>
         {
-            new("打开 ApiMonitor", (uint)TrayCommand.OpenMainWindow, IsDefault: true),
-            new("打开紧凑窗口", (uint)TrayCommand.OpenCompactWindow),
+            new(T("Tray.OpenMainWindow", "打开 ApiMonitor"), (uint)TrayCommand.OpenMainWindow, IsDefault: true),
+            new(T("Tray.OpenCompactWindow", "打开紧凑窗口"), (uint)TrayCommand.OpenCompactWindow),
             new(null, 0, IsSeparator: true),
             new(
-                "刷新全部账户",
+                T("Tray.RefreshAll", "刷新全部账户"),
                 (uint)TrayCommand.RefreshAll,
                 IsEnabled: context.HasAccounts && !context.IsRefreshingAll),
             new(context.AutoRefreshStatusText, 0, IsEnabled: false),
             new(context.LowBalanceStatusText, 0, IsEnabled: false),
             new(null, 0, IsSeparator: true),
             new(
-                "登录时启动",
+                T("Tray.StartWithWindows", "登录时启动"),
                 (uint)TrayCommand.ToggleStartWithWindows,
                 IsEnabled: context.StartWithWindowsEnabled,
                 IsChecked: context.StartWithWindowsChecked),
             new(null, 0, IsSeparator: true),
-            new("退出 ApiMonitor", (uint)TrayCommand.ExitApplication),
+            new(T("Tray.ExitApplication", "退出 ApiMonitor"), (uint)TrayCommand.ExitApplication),
         };
 
         return items;
     }
+
+    private string T(string key, string fallback) =>
+        _strings is null ? fallback : _strings.Get(key);
 }

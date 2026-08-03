@@ -14,9 +14,17 @@ v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds,
 
 v0.5.0 upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, compact-window settings, tray settings, and sign-in startup preferences are preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the generic metric model. The installer never enables notifications or sign-in startup automatically; global system alerts are **off by default** until you turn them on.
 
-### Candidate package revisions (0.5.0.1, 0.5.0.2, …)
+### Upgrading v0.5.0 to v0.6.0
 
-- The user-visible version stays **v0.5.0**; only the MSIX four-part version advances for each acceptance candidate.
+v0.6.0 upgrades **in place** over v0.5.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / compact-window / sign-in startup / appearance (theme and language) settings are all preserved. Just run `Install.cmd` from the v0.6.0 `Test.zip` again. Do **not** uninstall and reinstall for a normal upgrade — that would destroy LocalState and remove Credential Locker entries.
+
+### Portable backup import
+
+A v0.6.0 portable backup (`.apimonitor-backup`) never contains API keys or Management Keys. During import, existing accounts keep their local credentials; **new accounts are marked as needing a re-entered key** — edit the imported account and save its API key (or Management Key) in the app, then test the connection. If a needed key is missing, queries for that account fail with a clear “需要重新输入凭据” prompt.
+
+### Candidate package revisions (0.5.0.1, 0.6.0.1, …)
+
+- The user-visible version stays **v0.5.0** / **v0.6.0**; only the MSIX four-part version advances for each acceptance candidate.
 - **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
 - If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
 

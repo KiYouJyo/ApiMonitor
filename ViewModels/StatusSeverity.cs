@@ -28,9 +28,11 @@ public enum AccountStatusFilter
     Failed,
 }
 
-/// <summary>主窗口导航页面（导航外壳只允许这两个页面，不创建第二份账户状态）。</summary>
+/// <summary>主窗口导航页面（导航外壳共享同一账户状态，不创建第二份账户状态）。</summary>
 public enum AppPageKind
 {
     Home,
+    Insights,
     Settings,
+    About,
 }

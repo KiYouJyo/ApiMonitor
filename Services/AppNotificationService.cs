@@ -9,12 +9,14 @@ namespace ApiMonitor.Services;
 public sealed class AppNotificationService : IAppNotificationService
 {
     private readonly AppLog? _log;
+    private IAppStrings? _strings;
     private readonly List<NotificationActivationPayload> _pendingInitialPayloads = new();
     private bool _registered;
 
-    public AppNotificationService(AppLog? log = null)
+    public AppNotificationService(AppLog? log = null, IAppStrings? strings = null)
     {
         _log = log;
+        _strings = strings;
     }
 
     public event EventHandler<NotificationActivationPayload>? Activated;
@@ -109,7 +111,7 @@ public sealed class AppNotificationService : IAppNotificationService
             .AddArgument("accountId", accountId)
             .AddArgument("providerId", providerId)
             .AddArgument("metricId", items[0].MetricId)
-            .AddText("ApiMonitor：余额不足")
+            .AddText(T("Notification.LowBalanceTitle", "ApiMonitor：余额不足"))
             .AddText($"{providerDisplayName} · {accountDisplayName}");
 
         foreach (string line in MergeItemLines(items.Select(i => i.ValueText)))
@@ -118,12 +120,12 @@ public sealed class AppNotificationService : IAppNotificationService
         }
 
         builder
-            .AddButton(new AppNotificationButton("打开账户")
+            .AddButton(new AppNotificationButton(T("Notification.OpenAccount", "打开账户"))
                 .AddArgument("action", NotificationActions.OpenAccount)
                 .AddArgument("accountId", accountId)
                 .AddArgument("providerId", providerId)
                 .AddArgument("metricId", items[0].MetricId))
-            .AddButton(new AppNotificationButton("暂停提醒 24 小时")
+            .AddButton(new AppNotificationButton(T("Notification.Snooze24h", "暂停提醒 24 小时"))
                 .AddArgument("action", NotificationActions.Snooze24Hours)
                 .AddArgument("accountId", accountId)
                 .AddArgument("providerId", providerId)
@@ -153,7 +155,7 @@ public sealed class AppNotificationService : IAppNotificationService
             .AddArgument("accountId", accountId)
             .AddArgument("providerId", providerId)
             .AddArgument("metricId", items[0].MetricId)
-            .AddText("ApiMonitor：余额已恢复")
+            .AddText(T("Notification.RecoveredTitle", "ApiMonitor：余额已恢复"))
             .AddText($"{providerDisplayName} · {accountDisplayName}");
 
         foreach (string line in MergeItemLines(items.Select(i => i.ValueText)))
@@ -173,8 +175,8 @@ public sealed class AppNotificationService : IAppNotificationService
     {
         var notification = new AppNotificationBuilder()
             .AddArgument("action", NotificationActions.Test)
-            .AddText("ApiMonitor：测试通知")
-            .AddText("这是一条测试通知。点击后打开 ApiMonitor。")
+            .AddText(T("Notification.TestTitle", "ApiMonitor：测试通知"))
+            .AddText(T("Notification.TestBody", "这是一条测试通知。点击后打开 ApiMonitor。"))
             .SetTag("ApiMonitor-test")
             .SetGroup(NotificationTags.Group)
             .SetScenario(AppNotificationScenario.Default)
@@ -198,6 +200,10 @@ public sealed class AppNotificationService : IAppNotificationService
             _log?.Error($"移除账户通知失败: {ex.GetType().Name}");
         }
     }
+
+    /// <summary>v0.6.0：注入字符串服务（Program 中先于 CompositionRoot 创建，稍后注入）。</summary>
+    public void SetStrings(IAppStrings strings) =>
+        _strings ??= strings;
 
     private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
     {
@@ -262,7 +268,10 @@ public sealed class AppNotificationService : IAppNotificationService
         }
 
         var result = list.Take(3).ToList();
-        result.Add($"另有 {list.Count - 3} 项余额低于阈值");
+        result.Add(L10n.Format("Notification.MoreBelowThreshold", list.Count - 3));
         return result;
     }
+
+    private string T(string key, string fallback) =>
+        _strings is null ? fallback : _strings.Get(key);
 }

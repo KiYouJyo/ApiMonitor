@@ -1,0 +1,36 @@
+using ApiMonitor.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
+namespace ApiMonitor.Views;
+
+/// <summary>
+/// 数据洞察页：账户/指标/时间范围选择、趋势图、估算摘要、可折叠历史表。
+/// 只做视图职责；数据加载与取消由 InsightsViewModel 管理。
+/// </summary>
+public sealed partial class InsightsPage : UserControl
+{
+    public InsightsPage()
+    {
+        InitializeComponent();
+    }
+
+    public MainViewModel? ViewModel
+    {
+        get => (MainViewModel?)DataContext;
+        set
+        {
+            // 保持 DataContext = MainViewModel（页面 Visibility 绑定依赖其
+            // 能解析 CurrentPage）；页面内部通过 MainViewModel.Insights
+            // 访问 InsightsViewModel 属性。
+            DataContext = value;
+        }
+    }
+
+    private void OnHistoryToggleChanged(object sender, RoutedEventArgs e)
+    {
+        bool show = HistoryToggle.IsChecked == true;
+        HistoryList.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        HistoryToggle.Content = show ? ApiMonitor.Services.L10n.Get("Insights.HideHistory") : ApiMonitor.Services.L10n.Get("Insights.ShowHistory");
+    }
+}

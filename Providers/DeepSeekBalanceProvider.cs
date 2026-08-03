@@ -27,7 +27,7 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
     public ProviderInfo Info { get; } = new(
         ProviderId,
         DisplayName,
-        "查询 DeepSeek 账户各币种总余额（CNY/USD 等）。",
+        L10n.Get("Provider.DeepSeekDescription"),
         SupportsAccountBalance: true,
         SupportsKeyQuota: false,
         SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
@@ -36,7 +36,7 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
             new ProviderCredentialOption(
                 "api-key",
                 "API Key",
-                "DeepSeek 平台 API Key，形如 sk-…，仅用于请求官方余额接口。",
+                L10n.Get("Provider.DeepSeekKeyHint"),
                 IsDefault: true),
         },
         ApiKeyInputHint: "sk-…",
@@ -62,7 +62,7 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.MissingCredential,
-                "未提供 API Key。");
+                L10n.Get("Provider.ErrorNoKey"));
         }
 
         try
@@ -83,20 +83,20 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Timeout,
-                "请求超时（15 秒），请稍后重试。");
+                L10n.Get("Provider.ErrorTimeout"));
         }
         catch (HttpRequestException)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Network,
-                "无法连接 DeepSeek 服务，请检查网络或 DNS。");
+                L10n.Get("Provider.ErrorNetworkDeepSeek"));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _log?.Error($"DeepSeek 查询发生意外错误: {ex.GetType().Name}");
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unknown,
-                "查询时发生意外错误，请稍后重试。");
+                L10n.Get("Provider.ErrorUnexpected"));
         }
     }
 
@@ -109,35 +109,35 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unauthorized,
-                "API Key 无效或已过期（401）。");
+                L10n.Get("Provider.Error401"));
         }
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Forbidden,
-                "访问被拒绝（403），请检查账户权限。");
+                L10n.Get("Provider.Error403DeepSeek"));
         }
 
         if (response.StatusCode == (HttpStatusCode)429)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.RateLimited,
-                "请求过于频繁（429），请稍后重试。");
+                L10n.Get("Provider.Error429"));
         }
 
         if ((int)response.StatusCode >= 500)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.ServerError,
-                $"DeepSeek 服务暂时不可用（HTTP {(int)response.StatusCode}）。");
+                L10n.Format("Provider.ErrorServiceUnavailable", (int)response.StatusCode));
         }
 
         if (!response.IsSuccessStatusCode)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unknown,
-                $"服务返回了意外的 HTTP 状态码 {(int)response.StatusCode}。");
+                L10n.Format("Provider.ErrorUnexpectedStatus", (int)response.StatusCode));
         }
 
         string body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -145,7 +145,7 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.EmptyContent,
-                "接口返回了空内容。");
+                L10n.Get("Provider.ErrorEmptyContent"));
         }
 
         DeepSeekBalanceResponse? dto;
@@ -157,14 +157,14 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidJson,
-                "接口返回的 JSON 格式无法解析。");
+                L10n.Get("Provider.ErrorInvalidJson"));
         }
 
         if (dto is null)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidJson,
-                "接口返回的 JSON 格式无法解析。");
+                L10n.Get("Provider.ErrorInvalidJson"));
         }
 
         return BalanceQueryResult.Success(MapSnapshot(account, dto));

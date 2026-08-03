@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Reflection;
 using ApiMonitor.Models;
 using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -40,15 +39,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Provider 筛选选项：全部 + 注册表中的每个 Provider。</summary>
     public IReadOnlyList<ProviderFilterOption> ProviderFilterOptions { get; private set; } =
-        new[] { new ProviderFilterOption(string.Empty, "全部 Provider") };
+        new[] { new ProviderFilterOption(string.Empty, L10n.Get("Home.FilterAllProviders")) };
 
     public IReadOnlyList<StatusFilterOption> StatusFilterOptions { get; } = new[]
     {
-        new StatusFilterOption(AccountStatusFilter.All, "全部状态"),
-        new StatusFilterOption(AccountStatusFilter.Normal, "正常"),
-        new StatusFilterOption(AccountStatusFilter.Low, "低余额"),
-        new StatusFilterOption(AccountStatusFilter.Unknown, "未知"),
-        new StatusFilterOption(AccountStatusFilter.Failed, "失败"),
+        new StatusFilterOption(AccountStatusFilter.All, L10n.Get("Home.FilterAllStatus")),
+        new StatusFilterOption(AccountStatusFilter.Normal, L10n.Get("Home.StatusNormal")),
+        new StatusFilterOption(AccountStatusFilter.Low, L10n.Get("Home.StatusLow")),
+        new StatusFilterOption(AccountStatusFilter.Unknown, L10n.Get("Home.StatusUnknown")),
+        new StatusFilterOption(AccountStatusFilter.Failed, L10n.Get("Home.StatusFailed")),
     };
 
     [ObservableProperty]
@@ -80,9 +79,25 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>“余额提醒”设置区（由 CompositionRoot 注入）。</summary>
     public NotificationSettingsViewModel? NotificationSettings { get; set; }
 
-    /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
+    /// <summary>“外观与语言”设置区（v0.6.0，由 CompositionRoot 注入）。</summary>
+    public AppearanceSettingsViewModel? AppearanceSettings { get; set; }
+
+    /// <summary>“数据管理”设置区（v0.6.0，由 CompositionRoot 注入）。</summary>
+    public DataManagementViewModel? DataManagement { get; set; }
+
+    /// <summary>数据洞察页 ViewModel（由 CompositionRoot 注入；导航外壳共享）。</summary>
+    public InsightsViewModel? Insights { get; set; }
+
+    /// <summary>关于页 ViewModel（由 CompositionRoot 注入）。</summary>
+    public AboutViewModel? About { get; set; }
+
+    /// <summary>主界面副标题，版本号取自集中元数据服务（AssemblyInformationalVersion）。</summary>
     public string SubtitleText { get; } =
-        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，支持 DeepSeek 与 OpenRouter）。";
+        L10n.Format("Home.SubtitleFormat", AppInfo.DisplayVersion);
+
+    /// <summary>主页空状态隐私说明（v0.6.0 起从资源取，避免硬编码）。</summary>
+    public string HomePrivacyMessage { get; } =
+        L10n.Get("Home.PrivacyMessageText");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
@@ -97,7 +112,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool HasAccounts => Accounts.Count > 0;
 
     public string AccountSummaryText =>
-        $"共 {TotalAccountCount} 个账户 · 低余额 {LowBalanceAccountCount} · 查询失败 {FailedAccountCount}";
+        L10n.Format("Home.AccountSummaryFormat", TotalAccountCount, LowBalanceAccountCount, FailedAccountCount);
 
     [ObservableProperty]
     private bool _isStatusVisible;
@@ -193,7 +208,7 @@ public sealed partial class MainViewModel : ObservableObject
 
             foreach (var message in _accountManager.RecoveryMessages)
             {
-                ShowStatus(StatusSeverity.Warning, "本地数据已恢复", message);
+                ShowStatus(StatusSeverity.Warning, L10n.Get("Status.DataRecoveredTitle"), message);
             }
         }
         catch (OperationCanceledException)
@@ -202,7 +217,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"初始化本地数据失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "本地数据错误", "无法读取本地数据，应用将继续以空数据启动。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.DataErrorTitle"), L10n.Get("Status.DataErrorCannotRead"));
         }
         finally
         {
@@ -245,7 +260,7 @@ public sealed partial class MainViewModel : ObservableObject
             // 新账户可能被当前筛选隐藏：自动恢复为可见筛选，体验更直接。
             ResetFiltersToAll();
             await ReloadAccountsAsync(_lifetime.Token);
-            ShowStatus(StatusSeverity.Success, "账户已保存", $"账户“{result.DisplayName}”已添加。");
+            ShowStatus(StatusSeverity.Success, L10n.Get("Status.AccountSavedTitle"), L10n.Format("Status.AccountAddedMessage", result.DisplayName));
         }
         catch (OperationCanceledException)
         {
@@ -253,7 +268,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"保存账户失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "本地数据错误", "保存账户失败，请稍后重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.DataErrorTitle"), L10n.Get("Status.AccountSaveFailed"));
         }
     }
 
@@ -297,7 +312,7 @@ public sealed partial class MainViewModel : ObservableObject
                 _lifetime.Token,
                 result.Notification);
             await ReloadAccountsAsync(_lifetime.Token);
-            ShowStatus(StatusSeverity.Success, "账户已保存", $"账户“{result.DisplayName}”已更新。");
+            ShowStatus(StatusSeverity.Success, L10n.Get("Status.AccountSavedTitle"), L10n.Format("Status.AccountUpdatedMessage", result.DisplayName));
         }
         catch (OperationCanceledException)
         {
@@ -305,7 +320,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"保存账户失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "本地数据错误", "保存账户失败，请稍后重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.DataErrorTitle"), L10n.Get("Status.AccountSaveFailed"));
         }
     }
 
@@ -330,7 +345,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             await _accountManager.DeleteAccountAsync(accountId, _lifetime.Token);
             await ReloadAccountsAsync(_lifetime.Token);
-            ShowStatus(StatusSeverity.Success, "账户已删除", $"账户“{item.DisplayName}”及其凭据、余额快照与历史记录已删除。");
+            ShowStatus(StatusSeverity.Success, L10n.Get("Status.AccountDeletedTitle"), L10n.Format("Status.AccountDeletedMessage", item.DisplayName));
         }
         catch (OperationCanceledException)
         {
@@ -338,7 +353,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"删除账户失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "本地数据错误", "删除账户失败，请稍后重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.DataErrorTitle"), L10n.Get("Status.AccountDeleteFailed"));
         }
     }
 
@@ -358,7 +373,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (result.Error?.Kind == BalanceErrorKind.Busy)
         {
-            ShowStatus(StatusSeverity.Informational, "查询进行中", "该账户正在查询，请稍候。");
+            ShowStatus(StatusSeverity.Informational, L10n.Get("Status.QueryInProgressTitle"), L10n.Get("Status.QueryInProgressMessage"));
             return;
         }
 
@@ -366,11 +381,11 @@ public sealed partial class MainViewModel : ObservableObject
 
         if (result.IsSuccess)
         {
-            ShowStatus(StatusSeverity.Success, "查询成功", $"账户“{item.DisplayName}”的余额已更新。");
+            ShowStatus(StatusSeverity.Success, L10n.Get("Status.QuerySuccessTitle"), L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
         }
         else
         {
-            ShowStatus(StatusSeverity.Error, "查询失败", result.Error?.Message ?? "未知错误。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.QueryFailedTitle"), result.Error?.Message ?? L10n.Get("Common.UnknownError"));
         }
     }
 
@@ -395,7 +410,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"刷新全部账户失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "刷新失败", "刷新全部账户时发生错误，请稍后重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.RefreshFailedTitle"), L10n.Get("Status.RefreshFailedMessage"));
         }
         finally
         {
@@ -420,8 +435,8 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 ShowStatus(
                     StatusSeverity.Error,
-                    "复制失败",
-                    "未找到该账户保存的 API Key，请重新编辑账户并保存密钥。");
+                    L10n.Get("Status.CopyFailedTitle"),
+                    L10n.Get("Status.CopyNoKeyMessage"));
                 return;
             }
 
@@ -432,8 +447,8 @@ public sealed partial class MainViewModel : ObservableObject
 
             ShowStatus(
                 StatusSeverity.Success,
-                "已复制",
-                "API Key 已复制，30 秒后将尝试从剪贴板清除");
+                L10n.Get("Status.CopiedTitle"),
+                L10n.Get("Status.CopiedMessage"));
             AutoHideStatusAfter(TimeSpan.FromSeconds(5));
         }
         catch (OperationCanceledException)
@@ -442,7 +457,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"复制 API Key 失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "复制失败", "复制 API Key 失败，请重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.CopyFailedTitle"), L10n.Get("Status.CopyFailedMessage"));
         }
         finally
         {
@@ -470,12 +485,22 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error($"打开历史记录失败: {ex.GetType().Name}");
-            ShowStatus(StatusSeverity.Error, "本地数据错误", "打开历史记录失败，请稍后重试。");
+            ShowStatus(StatusSeverity.Error, L10n.Get("Status.DataErrorTitle"), L10n.Get("Status.HistoryOpenFailed"));
         }
         finally
         {
             item.IsHistoryOpen = false;
         }
+    }
+
+    /// <summary>数据洞察页当前目标账户（由账户卡片“查看趋势”入口设置）。</summary>
+    public string? InsightsTargetAccountId { get; set; }
+
+    /// <summary>从账户卡片进入数据洞察页并预选该账户（不依赖账户名称作为主键）。</summary>
+    public void OpenInsightsForAccount(string accountId)
+    {
+        InsightsTargetAccountId = accountId;
+        NavigateTo(AppPageKind.Insights);
     }
 
     /// <summary>窗口关闭/应用退出时取消在途操作并解除事件订阅。</summary>
@@ -484,6 +509,11 @@ public sealed partial class MainViewModel : ObservableObject
         _accountManager.RefreshStarted -= OnRefreshStarted;
         _accountManager.RefreshCompleted -= OnRefreshCompleted;
         _accountManager.AccountsChanged -= OnAccountsChanged;
+        // v0.6.0：退出时取消分析/导出/更新检查等在途操作。
+        Insights?.Shutdown();
+        About?.Shutdown();
+        DataManagement?.Shutdown();
+        AppearanceSettings?.Shutdown();
         _lifetime.Cancel();
     }
 
@@ -492,7 +522,7 @@ public sealed partial class MainViewModel : ObservableObject
         var accounts = await _accountManager.GetAllAccountsAsync(cancellationToken);
         ProviderFilterOptions = new[]
             {
-                new ProviderFilterOption(string.Empty, "全部 Provider"),
+                new ProviderFilterOption(string.Empty, L10n.Get("Home.FilterAllProviders")),
             }
             .Concat(_accountManager.Providers.Select(p => new ProviderFilterOption(p.ProviderId, p.DisplayName)))
             .ToList();
@@ -514,13 +544,18 @@ public sealed partial class MainViewModel : ObservableObject
                 () => EditAccountAsync(account.AccountId),
                 () => DeleteAccountAsync(account.AccountId),
                 () => CopyKeyAsync(account.AccountId),
-                () => ShowHistoryAsync(account.AccountId));
+                () => ShowHistoryAsync(account.AccountId),
+                () =>
+                {
+                    OpenInsightsForAccount(account.AccountId);
+                    return Task.CompletedTask;
+                });
 
             if (_snoozeReader is not null)
             {
                 var snoozedUntil = await _snoozeReader(account.AccountId, cancellationToken);
                 item.SnoozeSummaryText = snoozedUntil is { } until
-                    ? "暂停提醒至 " + until.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    ? L10n.Format("Home.SnoozeUntilFormat", until.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))
                     : string.Empty;
             }
 
@@ -659,14 +694,14 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (e.Result.IsSuccess)
             {
-                ShowStatus(StatusSeverity.Success, "自动刷新完成", $"账户“{item.DisplayName}”的余额已更新。");
+                ShowStatus(StatusSeverity.Success, L10n.Get("Status.AutoRefreshDoneTitle"), L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
             }
             else
             {
                 ShowStatus(
                     StatusSeverity.Warning,
-                    "自动刷新失败",
-                    e.Result.Error?.Message ?? "未知错误。");
+                    L10n.Get("Status.AutoRefreshFailedTitle"),
+                    e.Result.Error?.Message ?? L10n.Get("Common.UnknownError"));
             }
         }
     }
@@ -723,14 +758,4 @@ public sealed partial class MainViewModel : ObservableObject
                 })
                 .ToList(),
         };
-
-    private static string GetAppVersion()
-    {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        // 用户可见版本固定为 v0.5.0：MSIX 四段版本（0.5.0.1/0.5.0.2…）
-        // 只是同一 v0.5.0 验收候选的内部修订号，不改变对外版本。
-        return version is null
-            ? "0.5.0"
-            : $"{version.Major}.{version.Minor}.0";
-    }
 }

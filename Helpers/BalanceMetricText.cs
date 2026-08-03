@@ -1,4 +1,5 @@
 using ApiMonitor.Models;
+using ApiMonitor.Services;
 
 namespace ApiMonitor.Helpers;
 
@@ -8,7 +9,7 @@ namespace ApiMonitor.Helpers;
 /// </summary>
 public static class BalanceMetricText
 {
-    public const string UnknownText = "未知";
+    public static string UnknownText => L10n.Get("Insights.UnknownValue");
 
     public static string FormatAmount(decimal? value) =>
         value is null ? UnknownText : BalanceFormatter.Format(value.Value);
@@ -23,20 +24,20 @@ public static class BalanceMetricText
         decimal? value = amount ?? MainAmount(metric);
         if (metric.Kind == BalanceMetricKind.MonetaryBalance)
         {
-            return $"{metric.Unit} 余额 {FormatAmount(value)}";
+            return L10n.Format("Metric.BalanceFormat", metric.Unit, FormatAmount(value));
         }
 
         if (metric.Kind == BalanceMetricKind.PlatformCredits)
         {
-            return $"{metric.DisplayName} {FormatAmount(value)}";
+            return L10n.Format("Metric.ValueFormat", metric.DisplayName, FormatAmount(value));
         }
 
         if (metric.Kind == BalanceMetricKind.KeyQuota)
         {
-            return $"{metric.DisplayName} {FormatAmount(value)}";
+            return L10n.Format("Metric.ValueFormat", metric.DisplayName, FormatAmount(value));
         }
 
-        return $"{metric.DisplayName} {FormatAmount(value)}";
+        return L10n.Format("Metric.ValueFormat", metric.DisplayName, FormatAmount(value));
     }
 
     /// <summary>账户卡片单行文本（“CNY · 总额 … · 赠送 … · 充值 …”）。</summary>
@@ -44,7 +45,7 @@ public static class BalanceMetricText
     {
         if (metric.IsUnlimited)
         {
-            return $"{metric.DisplayName}：无限额度";
+            return L10n.Format("Metric.UnlimitedFormat", metric.DisplayName);
         }
 
         switch (metric.Kind)
@@ -52,9 +53,9 @@ public static class BalanceMetricText
             case BalanceMetricKind.MonetaryBalance:
                 var monetaryParts = new List<string>
                 {
-                    $"总额 {FormatAmount(metric.TotalAmount ?? metric.AvailableAmount)}",
-                    $"赠送 {FormatAmount(metric.GrantedAmount)}",
-                    $"充值 {FormatAmount(metric.ToppedUpAmount)}",
+                    L10n.Format("Metric.TotalFormat", FormatAmount(metric.TotalAmount ?? metric.AvailableAmount)),
+                    L10n.Format("Metric.GrantedFormat", FormatAmount(metric.GrantedAmount)),
+                    L10n.Format("Metric.ToppedUpFormat", FormatAmount(metric.ToppedUpAmount)),
                 };
                 return $"{metric.Unit} · {string.Join(" · ", monetaryParts)}";
             case BalanceMetricKind.PlatformCredits:
@@ -64,12 +65,12 @@ public static class BalanceMetricText
                 };
                 if (metric.TotalAmount is not null && metric.AvailableAmount is not null)
                 {
-                    creditParts.Add($"累计充值 {FormatAmount(metric.TotalAmount)}");
+                    creditParts.Add(L10n.Format("Metric.CumulativeTopUpFormat", FormatAmount(metric.TotalAmount)));
                 }
 
                 if (metric.UsedAmount is not null && metric.AvailableAmount is not null)
                 {
-                    creditParts.Add($"累计使用 {FormatAmount(metric.UsedAmount)}");
+                    creditParts.Add(L10n.Format("Metric.CumulativeUsedFormat", FormatAmount(metric.UsedAmount)));
                 }
 
                 return string.Join(" · ", creditParts);
@@ -77,10 +78,10 @@ public static class BalanceMetricText
                 return $"{metric.DisplayName} {FormatAmount(metric.AvailableAmount)}"
                     + (metric.TotalAmount is null
                         ? string.Empty
-                        : $" / 上限 {FormatAmount(metric.TotalAmount)}")
+                        : L10n.Format("Metric.LimitFormat", FormatAmount(metric.TotalAmount)))
                     + (metric.UsedAmount is null
                         ? string.Empty
-                        : $" · 已用 {FormatAmount(metric.UsedAmount)}");
+                        : L10n.Format("Metric.UsedFormat", FormatAmount(metric.UsedAmount)));
             default:
                 return $"{metric.DisplayName} {FormatAmount(MainAmount(metric))}";
         }
@@ -88,14 +89,14 @@ public static class BalanceMetricText
 
     /// <summary>低余额通知正文的指标部分（“剩余 Credits 4.25，已低于阈值 10.00”）。</summary>
     public static string BuildLowBalanceValueText(BalanceMetric metric, decimal threshold) =>
-        $"{ValueText(metric)}，已低于阈值 {BalanceFormatter.Format(threshold)}";
+        L10n.Format("Metric.BelowThresholdFormat", ValueText(metric), BalanceFormatter.Format(threshold));
 
     /// <summary>恢复通知正文的指标部分（“CNY 余额已恢复至 30.00”）。</summary>
     public static string BuildRecoveryValueText(BalanceMetric metric)
     {
         string amount = FormatAmount(MainAmount(metric));
         return metric.Kind == BalanceMetricKind.MonetaryBalance
-            ? $"{metric.Unit} 余额已恢复至 {amount}"
-            : $"{metric.DisplayName} 已恢复至 {amount}";
+            ? L10n.Format("Metric.RecoveredFormat", metric.Unit, amount)
+            : L10n.Format("Metric.RecoveredGenericFormat", metric.DisplayName, amount);
     }
 }

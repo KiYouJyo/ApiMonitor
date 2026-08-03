@@ -17,4 +17,10 @@ public sealed class FakeClipboardService : IClipboardService
         LastClearAfter = clearAfter;
         return Task.CompletedTask;
     }
+
+    public Task SetPlainTextAsync(string text, CancellationToken cancellationToken)
+    {
+        SetCalls.Add(text);
+        return Task.CompletedTask;
+    }
 }

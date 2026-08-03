@@ -10,4 +10,10 @@ public interface IClipboardService
         string text,
         TimeSpan clearAfter,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 非敏感模式：复制普通文本（如诊断信息），不安排自动清理。
+    /// 调用方必须保证内容非敏感。
+    /// </summary>
+    Task SetPlainTextAsync(string text, CancellationToken cancellationToken);
 }

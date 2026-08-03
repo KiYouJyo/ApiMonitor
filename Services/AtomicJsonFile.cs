@@ -26,21 +26,61 @@ public static class AtomicJsonFile
         Directory.CreateDirectory(directory);
 
         string path = Path.Combine(directory, fileName);
-        string tempPath = Path.Combine(directory, fileName + ".tmp");
+        // 唯一临时文件：避免多实例/并发写盘时同一 .tmp 冲突（v0.6.0 修复）。
+        string tempPath = Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
 
-        await using (var stream = new FileStream(
-            tempPath,
-            FileMode.Create,
-            FileAccess.Write,
-            FileShare.None,
-            4096,
-            FileOptions.Asynchronous | FileOptions.SequentialScan))
+        try
         {
-            await JsonSerializer.SerializeAsync(stream, data, options, cancellationToken);
-            await stream.FlushAsync(cancellationToken);
-        }
+            await using (var stream = new FileStream(
+                tempPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                4096,
+                FileOptions.Asynchronous | FileOptions.SequentialScan))
+            {
+                await JsonSerializer.SerializeAsync(stream, data, options, cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+            }
 
-        File.Move(tempPath, path, overwrite: true);
+            MoveWithRetry(tempPath, path);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch
+            {
+                // 清理失败不影响结果。
+            }
+        }
+    }
+
+    /// <summary>覆盖移动，失败时短暂重试（目标文件可能被短暂打开）。</summary>
+    private static void MoveWithRetry(string sourcePath, string destinationPath)
+    {
+        const int maxAttempts = 3;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                File.Move(sourcePath, destinationPath, overwrite: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts - 1)
+            {
+                Thread.Sleep(50 * (attempt + 1));
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts - 1)
+            {
+                Thread.Sleep(50 * (attempt + 1));
+            }
+        }
     }
 
     public static async Task<LoadResult<T>> ReadOrRecoverAsync<T>(
@@ -118,6 +158,6 @@ public static class AtomicJsonFile
 
     private static string BuildRecoveryMessage(string fileName, string backupPath) =>
         string.IsNullOrEmpty(backupPath)
-            ? $"{fileName} 无法读取，已重置。"
-            : $"{fileName} 内容损坏，已备份为 {Path.GetFileName(backupPath)} 并重置。";
+            ? L10n.Format("Store.FileUnreadableReset", fileName)
+            : L10n.Format("Store.FileCorruptBackedUp", fileName, Path.GetFileName(backupPath));
 }

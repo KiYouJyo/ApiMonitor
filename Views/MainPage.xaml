@@ -3,16 +3,41 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="using:ApiMonitor.Views"
-    xmlns:converters="using:ApiMonitor.Views.Converters">
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services">
 
     <UserControl.Resources>
-        <converters:PageVisibilityConverter x:Key="PageVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <converters:PageVisibilityConverter x:Key="PageVisibilityConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--
+              v0.6.0 主题统一：覆盖 NavigationView Pane 默认背景
+              （Light 默认 AcrylicInAppFill，Dark 默认 SystemControlBackgroundBaseLow），
+              让左侧导航与标题栏、页面内容共用同一外壳背景。
+            -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AppShellBackgroundBrush" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <!--
-      主窗口导航外壳（v0.5.0 验收前修正）：
-      只承载 主页 / 设置 两个页面，两页共享同一个 MainViewModel，
-      不创建第二份账户状态、不重启调度器、不重复订阅事件。
+      主窗口导航外壳（v0.6.0）：
+      主页、数据洞察为主菜单；设置、关于放在底部区域（FooterMenuItems）。
+      四个页面共享同一个 MainViewModel 与账户服务，不创建第二份账户状态、
+      不重启调度器、不重复订阅事件、不重复读取 Credential Locker。
     -->
     <NavigationView
         x:Name="RootNavigation"
@@ -20,27 +45,46 @@
         IsSettingsVisible="False"
         PaneDisplayMode="Left"
         SelectionChanged="OnNavigationSelectionChanged"
-        Loaded="OnRootNavigationLoaded">
+        Loaded="OnRootNavigationLoaded"
+        Background="{ThemeResource AppShellBackgroundBrush}">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="主页" Tag="Home">
+            <NavigationViewItem loc:Loc.Key="Nav.Home" Tag="Home">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="设置" Tag="Settings">
+            <NavigationViewItem loc:Loc.Key="Nav.Insights" Tag="Insights">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="FourBars" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem loc:Loc.Key="Nav.Settings" Tag="Settings">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Setting" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-        </NavigationView.MenuItems>
+            <NavigationViewItem loc:Loc.Key="Nav.About" Tag="About">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Help" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.FooterMenuItems>
 
-        <Grid>
+        <Grid Background="{ThemeResource AppShellBackgroundBrush}">
             <views:HomePage
                 x:Name="HomePageControl"
                 Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Home}" />
+            <views:InsightsPage
+                x:Name="InsightsPageControl"
+                Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Insights}" />
             <views:SettingsPage
                 x:Name="SettingsPageControl"
                 Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Settings}" />
+            <views:AboutPage
+                x:Name="AboutPageControl"
+                Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=About}" />
         </Grid>
     </NavigationView>
 </UserControl>

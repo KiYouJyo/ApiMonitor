@@ -155,7 +155,7 @@ public sealed class AccountManager : IAccountManager
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.NotSupported,
-                "不支持的 Provider。");
+                L10n.Get("Account.ErrorUnsupportedProvider"));
         }
 
         string? key = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
@@ -168,7 +168,7 @@ public sealed class AccountManager : IAccountManager
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.MissingCredential,
-                "请输入 API Key 后再测试连接。");
+                L10n.Get("Account.ErrorKeyRequiredForTest"));
         }
 
         var probe = new ApiAccount
@@ -197,12 +197,12 @@ public sealed class AccountManager : IAccountManager
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
-            throw new ArgumentException("账户显示名称不能为空。", nameof(displayName));
+            throw new ArgumentException(L10n.Get("Account.ErrorNameRequired"), nameof(displayName));
         }
 
         if (_registry.GetById(providerId) is null)
         {
-            throw new ArgumentException($"不支持的 Provider: {providerId}", nameof(providerId));
+            throw new ArgumentException(L10n.Format("Account.ErrorUnsupportedProviderId", providerId), nameof(providerId));
         }
 
         string id = accountId ?? Guid.NewGuid().ToString("N");
@@ -301,7 +301,7 @@ public sealed class AccountManager : IAccountManager
         var semaphore = _refreshLocks.GetOrAdd(accountId, static _ => new SemaphoreSlim(1, 1));
         if (!await semaphore.WaitAsync(0, cancellationToken))
         {
-            return BalanceQueryResult.Failure(BalanceErrorKind.Busy, "该账户正在查询中，请稍候。");
+            return BalanceQueryResult.Failure(BalanceErrorKind.Busy, L10n.Get("Account.ErrorBusy"));
         }
 
         try
@@ -310,7 +310,7 @@ public sealed class AccountManager : IAccountManager
                 string.Equals(a.AccountId, accountId, StringComparison.OrdinalIgnoreCase));
             if (account is null)
             {
-                return BalanceQueryResult.Failure(BalanceErrorKind.AccountNotFound, "未找到该账户。");
+                return BalanceQueryResult.Failure(BalanceErrorKind.AccountNotFound, L10n.Get("Account.ErrorNotFound"));
             }
 
             var provider = _registry.GetById(account.ProviderId);
@@ -318,7 +318,7 @@ public sealed class AccountManager : IAccountManager
             {
                 return BalanceQueryResult.Failure(
                     BalanceErrorKind.NotSupported,
-                    "该账户的 Provider 不受支持。");
+                    L10n.Get("Account.ErrorProviderUnsupported"));
             }
 
             var record = _records.TryGetValue(accountId, out var existingRecord)
@@ -336,7 +336,7 @@ public sealed class AccountManager : IAccountManager
             {
                 result = BalanceQueryResult.Failure(
                     BalanceErrorKind.MissingCredential,
-                    "该账户没有保存的 API Key。");
+                    L10n.Get("Account.ErrorNoSavedKey"));
             }
             else
             {
@@ -345,7 +345,7 @@ public sealed class AccountManager : IAccountManager
                 {
                     result = BalanceQueryResult.Failure(
                         BalanceErrorKind.MissingCredential,
-                        "读取保存的 API Key 失败。");
+                        L10n.Get("Account.ErrorReadKeyFailed"));
                 }
                 else
                 {
@@ -411,7 +411,7 @@ public sealed class AccountManager : IAccountManager
             _log.Error($"刷新账户失败: {ex.GetType().Name}");
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unknown,
-                "查询时发生意外错误，请稍后重试。");
+                L10n.Get("Provider.ErrorUnexpected"));
         }
         finally
         {

@@ -1,0 +1,27 @@
+<Project>
+  <!--
+    ApiMonitor 集中版本来源（v0.6.0 起）。
+
+    明确分离两种版本：
+      1. ApiMonitorDisplayVersion（如 0.6.0）
+         - 用于界面、关于页、README 与 GitHub 标签；
+      2. ApiMonitorPackageVersion（如 0.6.0.0）
+         - 用于 MSIX 升级判断（AssemblyVersion / FileVersion / Package.appxmanifest）。
+    不再通过“强制 major.minor.0”推导产品版本。
+
+    Package.appxmanifest 的 Identity Version 与打包脚本
+    （packaging/New-PreviewInstallerPackage.ps1 等）使用的版本必须与本文件一致。
+  -->
+  <PropertyGroup>
+    <ApiMonitorDisplayVersion>0.6.0</ApiMonitorDisplayVersion>
+    <ApiMonitorPackageVersion>0.6.0.1</ApiMonitorPackageVersion>
+
+    <!-- 程序集四段版本（MSIX 升级判断）。 -->
+    <Version>$(ApiMonitorPackageVersion)</Version>
+    <AssemblyVersion>$(ApiMonitorPackageVersion)</AssemblyVersion>
+    <FileVersion>$(ApiMonitorPackageVersion)</FileVersion>
+
+    <!-- 用户可见版本（关于页/界面/诊断信息读取 AssemblyInformationalVersion）。 -->
+    <InformationalVersion>$(ApiMonitorDisplayVersion)</InformationalVersion>
+  </PropertyGroup>
+</Project>

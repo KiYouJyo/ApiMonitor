@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModels="using:ApiMonitor.ViewModels"
     xmlns:converters="using:ApiMonitor.Views.Converters"
+    xmlns:loc="using:ApiMonitor.Services"
     Title="余额历史"
     CloseButtonText="关闭"
     DefaultButton="Close">
@@ -17,14 +18,14 @@
         <StackPanel Orientation="Horizontal" Spacing="12">
             <ProgressRing Width="28" Height="28" IsActive="{Binding IsLoading}" />
             <TextBlock
-                Text="正在加载历史记录…"
+                loc:Loc.Key="History.Loading"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 VerticalAlignment="Center"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
         </StackPanel>
 
         <TextBlock
-            Text="暂无历史记录。成功的手动或自动查询会在此显示。"
+            loc:Loc.Key="History.EmptyDetailed"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             TextWrapping="Wrap"
             Visibility="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
@@ -41,8 +42,8 @@
                         Padding="12,8"
                         CornerRadius="6"
                         BorderThickness="1"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        BorderBrush="{ThemeResource AppCardBorderBrush}"
+                        Background="{ThemeResource AppCardBackgroundBrush}">
                         <StackPanel Spacing="4">
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock Text="{x:Bind TimeText}" FontWeight="SemiBold" />
@@ -77,7 +78,7 @@
             Spacing="8"
             Visibility="{Binding IsConfirmingClear, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock
-                Text="确定清除该账户全部历史记录？不会删除账户、密钥或当前余额。"
+                loc:Loc.Key="History.ClearConfirmDetailed"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap"
                 VerticalAlignment="Center" />

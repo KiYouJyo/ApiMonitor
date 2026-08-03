@@ -1,21 +1,22 @@
 # ApiMonitor
 
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [日本語](README.ja-JP.md)
 
 ![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
 
-- Current release: **v0.5.0**
+- Current version: **v0.6.0** (DisplayVersion `0.6.0`, PackageVersion `0.6.0.1`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
+- Languages: 简体中文 · English · 日本語 (switchable in Settings → Appearance and language)
 
 ## Upgrading
 
-- **v0.5.0** upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, compact-window settings, tray settings, and sign-in startup preferences are all preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the new generic metric model. The installer never enables notifications or sign-in startup automatically.
-- **v0.3.1 / v0.4.0** upgrade path (historical): those versions already supported true in-place upgrades.
+- **v0.6.0** upgrades **in place** over v0.5.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, notification settings, compact-window settings, tray settings, and sign-in startup preferences are all preserved. The installer never enables notifications or sign-in startup automatically.
+- **v0.5.0** upgrades **in place** over v0.4.0 (historical).
 - **v0.2.0 sideload packages will not upgrade in place**; uninstall the old package first and re-add your accounts.
 
 ## Features
@@ -36,6 +37,13 @@
   - Test notification button; global alerts are **off by default** after upgrade
 - Notification-area (tray) residency, close-to-tray, single instance, optional sign-in startup, and Explorer restart recovery (all from v0.4.0, unchanged)
 - Compact always-on-top balance window with account/metric selection
+- **Data Insights** page (v0.6.0): account / metric / time-range selection, a lightweight local trend chart (WinUI-native, no chart framework), current value, range change, first/latest/min/max values, a collapsible history table, and CSV export
+- **Consumption estimates** (v0.6.0): estimated daily consumption (median of valid intervals) and estimated days left, computed only from local history; clearly labeled "估算值" with a disclaimer, and explicit reasons when estimation is not possible (not enough data, no consumption observed, recent top-ups, unsupported metric, unknown current value)
+- **Portable backup** (v0.6.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/compact-window/appearance settings. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
+- **Themes** (v0.6.0): follow system / light / dark, applied immediately to the main and compact windows and persisted.
+- **Unified app shell** (v0.6.0): the title bar, navigation pane and page backgrounds share one consistent theme surface across light, dark and high-contrast.
+- **Trilingual UI** (v0.6.0): 简体中文 / English / 日本語. Switching the language saves the preference, asks to restart, and restarts via `AppInstance.Restart`; it never partially localizes the window.
+- **Complete About page** (v0.6.0): product info (DisplayVersion and PackageVersion kept separate), dynamic provider list, privacy & security summary, project links, offline local documents (privacy policy / MIT license / third-party notices), manual update check (GitHub REST, only on click, never auto-downloads or installs), copy diagnostics (non-sensitive), and open local data folder.
 - Secure one-click API key copy (clipboard auto-clear after ~30 seconds)
 
 ## Security and privacy design
@@ -45,6 +53,8 @@
 - Account metadata, balance snapshots, history, settings, and notification state are stored only in the local app data directory.
 - Notifications are generated locally by the running ApiMonitor process; notification arguments contain only non-sensitive identifiers (`action`, `accountId`, `providerId`, `metricId`) and never API keys, history text, Authorization headers, credential resources, or local file paths.
 - **No cloud push, no WNS remote push, no telemetry, no developer servers.** Notifications stop when you choose "退出 ApiMonitor".
+- Portable backups and CSV exports **never contain API keys, credentials, Authorization headers, logs, or local paths**.
+- Update checks only run when you click "检查更新"; they send no account/balance/device data and never download or install anything automatically.
 - Automatic refresh only runs while the app is running; hiding the window to the tray keeps monitoring, and exiting fully stops it.
 - Sign-in startup is user-enabled (off by default) and only resides in the tray on sign-in.
 
@@ -58,7 +68,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.5.0.1_x64_Test.zip`.
+1. Download `ApiMonitor_0.6.0.1_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.
@@ -118,8 +128,11 @@ tests/installer/          Installer tooling tests
 
 - Notifications are generated only from queries made while the ApiMonitor process is running. Sign-in startup and tray residency keep monitoring alive, but choosing "退出 ApiMonitor" stops it; there is no Windows Service or scheduled query after full exit.
 - No cloud push (WNS), email, SMS, or webhook delivery.
-- No consumption-rate prediction or "estimated days remaining".
-- No automatic updates and no Microsoft Store listing yet (planned for v1.0).
+- Consumption and remaining-days estimates are based only on local history and are labeled as estimates.
+- Language changes require an application restart.
+- Legacy stored metric display labels may retain their original text.
+- Update checks are manual only; the app never auto-downloads or auto-installs updates.
+- No Microsoft Store listing yet (planned for v1.0).
 - Exactly two providers (DeepSeek and OpenRouter); no third-party DLL provider loading.
 - The GitHub sideload release is signed with the self-signed `CN=ApiMonitorDev` certificate.
 
