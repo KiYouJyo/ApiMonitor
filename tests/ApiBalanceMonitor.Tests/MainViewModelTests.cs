@@ -2,12 +2,24 @@ using ApiBalanceMonitor.Models;
 using ApiBalanceMonitor.Services;
 using ApiBalanceMonitor.Tests.TestDoubles;
 using ApiBalanceMonitor.ViewModels;
+using System.Reflection;
 using Xunit;
 
 namespace ApiBalanceMonitor.Tests;
 
 public sealed class MainViewModelTests
 {
+    [Fact]
+    public void SubtitleText_MatchesAssemblyVersion()
+    {
+        var (vm, _, _, _, _) = CreateSut();
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+
+        Assert.NotNull(version);
+        Assert.Contains($"v{version!.Major}.{version.Minor}.{version.Build}", vm.SubtitleText);
+        Assert.DoesNotContain("v0.1.0", vm.SubtitleText);
+    }
+
     private static ApiAccount Account(string id = "acct-1") =>
         new()
         {

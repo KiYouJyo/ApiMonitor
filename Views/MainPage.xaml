@@ -21,7 +21,7 @@
         <StackPanel Grid.Row="0" Spacing="4">
             <TextBlock Text="API 余额监控" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
-                Text="查询并记录你自己的 API 账户余额（v0.1.0，支持 DeepSeek）。"
+                Text="{Binding SubtitleText}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
 

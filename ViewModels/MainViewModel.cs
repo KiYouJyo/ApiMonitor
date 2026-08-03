@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
 using ApiBalanceMonitor.Models;
 using ApiBalanceMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,6 +22,10 @@ public sealed partial class MainViewModel : ObservableObject
     private int _statusGeneration;
 
     public ObservableCollection<AccountListItemViewModel> Accounts { get; } = new();
+
+    /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
+    public string SubtitleText { get; } =
+        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，支持 DeepSeek）。";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
@@ -478,4 +483,12 @@ public sealed partial class MainViewModel : ObservableObject
                 })
                 .ToList(),
         };
+
+    private static string GetAppVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        return version is null
+            ? "?"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
+    }
 }
