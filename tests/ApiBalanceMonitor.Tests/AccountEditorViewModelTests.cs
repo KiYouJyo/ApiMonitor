@@ -17,6 +17,8 @@ public sealed class AccountEditorViewModelTests
             InitialProviderId = "deepseek",
             InitialDisplayName = editing ? "Test" : string.Empty,
             HasStoredCredential = hasCredential,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = Array.Empty<BalanceAmount>(),
         };
     }
 
@@ -64,5 +66,96 @@ public sealed class AccountEditorViewModelTests
         Assert.True(result!.SaveRequested);
         Assert.Null(result.ApiKey);
         Assert.Equal("Test", result.DisplayName);
+    }
+
+    [Fact]
+    public void NewAccount_DefaultsToAutoRefreshEnabledAnd30Minutes()
+    {
+        var vm = new AccountEditorViewModel(new FakeAccountManager(), CreateContext());
+        vm.DisplayName = "Test";
+        vm.ApiKey = "sk-test-only-not-real";
+
+        Assert.True(vm.AutoRefreshEnabled);
+        Assert.Equal(30, vm.RefreshIntervalMinutes);
+        Assert.True(vm.CanSave);
+    }
+
+    [Fact]
+    public void NegativeThreshold_IsRejected()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = new[]
+            {
+                new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m },
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "sk-test-only-not-real";
+        var item = vm.ThresholdItems.Single();
+        item.IsEnabled = true;
+        item.ThresholdText = "-5";
+
+        Assert.False(vm.CanSave);
+        Assert.False(vm.TryBuildResult(out _));
+        Assert.Contains("阈值金额", vm.ValidationMessage);
+    }
+
+    [Fact]
+    public void ValidThreshold_ParsesDecimalAndSavesRule()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = new[]
+            {
+                new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m },
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "sk-test-only-not-real";
+        var item = vm.ThresholdItems.Single();
+        item.IsEnabled = true;
+        item.ThresholdText = "20.50";
+
+        Assert.True(vm.TryBuildResult(out var result));
+        var rule = Assert.Single(result!.Monitoring.Thresholds);
+        Assert.Equal("CNY", rule.Currency);
+        Assert.True(rule.IsEnabled);
+        Assert.Equal(20.50m, rule.ThresholdAmount);
+    }
+
+    [Fact]
+    public void NewCurrencyWithoutRule_CreatesNoRuleOnSave()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentBalances = new[]
+            {
+                new BalanceAmount { Currency = "USD", TotalBalance = 5m, GrantedBalance = 0m, ToppedUpBalance = 5m },
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "sk-test-only-not-real";
+
+        Assert.True(vm.TryBuildResult(out var result));
+        Assert.Empty(result!.Monitoring.Thresholds);
     }
 }

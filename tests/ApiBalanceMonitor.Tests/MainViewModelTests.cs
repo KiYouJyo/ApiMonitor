@@ -42,20 +42,22 @@ public sealed class MainViewModelTests
         MainViewModel ViewModel,
         FakeAccountManager Manager,
         FakeDialogService Dialogs,
-        FakeClipboardService Clipboard) CreateSut()
+        FakeClipboardService Clipboard,
+        FakeUiThreadInvoker Ui) CreateSut()
     {
         var manager = new FakeAccountManager();
         var dialogs = new FakeDialogService();
         var clipboard = new FakeClipboardService();
+        var ui = new FakeUiThreadInvoker();
         var log = new AppLog(Path.Combine(Path.GetTempPath(), $"abm-log-{Guid.NewGuid():N}"));
-        var viewModel = new MainViewModel(manager, dialogs, log, clipboard);
-        return (viewModel, manager, dialogs, clipboard);
+        var viewModel = new MainViewModel(manager, dialogs, log, clipboard, ui);
+        return (viewModel, manager, dialogs, clipboard, ui);
     }
 
     [Fact]
     public async Task InitializeAsync_PopulatesAccounts()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.Accounts.Add(Account());
 
         await viewModel.InitializeAsync();
@@ -69,7 +71,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task InitializeAsync_ShowsRecoveryWarning()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.RecoveryMessagesList.Add("accounts.json 内容损坏，已备份并重置。");
 
         await viewModel.InitializeAsync();
@@ -82,7 +84,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task RefreshSuccess_UpdatesItemAndShowsSuccess()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
         await viewModel.InitializeAsync();
@@ -101,7 +103,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task RefreshFailure_ShowsErrorAndKeepsNoSnapshot()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.RefreshResult = BalanceQueryResult.Failure(
             BalanceErrorKind.Unauthorized,
@@ -121,34 +123,29 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
-    public async Task RefreshShowsLoadingState_AndPreventsDuplicateCalls()
+    public async Task RefreshState_IsDrivenByEvents_AndPreventsDuplicateClicks()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.Accounts.Add(Account());
-        manager.RefreshGate = new TaskCompletionSource();
         manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
         await viewModel.InitializeAsync();
         var item = viewModel.Accounts[0];
 
-        var first = viewModel.RefreshAccountAsync(item.Account.AccountId);
-        var second = viewModel.RefreshAccountAsync(item.Account.AccountId);
-        await Task.Delay(50);
-
+        manager.RaiseRefreshStarted("acct-1", BalanceQuerySource.Manual);
         Assert.True(item.IsRefreshing);
-        Assert.Equal(1, manager.RefreshCalls);
+        Assert.False(item.RefreshCommand.CanExecute(null));
 
-        manager.RefreshGate.SetResult();
-        await Task.WhenAll(first, second);
+        manager.RaiseRefreshCompleted("acct-1", manager.RefreshResult, BalanceQuerySource.Manual);
 
         Assert.False(item.IsRefreshing);
-        Assert.Equal(1, manager.RefreshCalls);
-        Assert.True(item.IsAvailable);
+        Assert.True(item.RefreshCommand.CanExecute(null));
+        Assert.True(item.HasSnapshot);
     }
 
     [Fact]
     public async Task InitializeShowsLoadingState()
     {
-        var (viewModel, manager, _, _) = CreateSut();
+        var (viewModel, manager, _, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.LoadGate = new TaskCompletionSource();
 
@@ -168,7 +165,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task AddAccount_SavesViaDialogResult()
     {
-        var (viewModel, manager, dialogs, _) = CreateSut();
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
         dialogs.EditorResult = new AccountEditorResult
         {
             SaveRequested = true,
@@ -187,7 +184,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task DeleteAccount_AfterConfirmation_Deletes()
     {
-        var (viewModel, manager, dialogs, _) = CreateSut();
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         dialogs.ConfirmDeleteResult = true;
         await viewModel.InitializeAsync();
@@ -202,7 +199,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task DeleteAccount_Cancel_DoesNotDelete()
     {
-        var (viewModel, manager, dialogs, _) = CreateSut();
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
         manager.Accounts.Add(Account());
         dialogs.ConfirmDeleteResult = false;
         await viewModel.InitializeAsync();
@@ -216,7 +213,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task CopyKey_FoundCredential_CallsClipboardWithKeyAndShowsSuccess()
     {
-        var (viewModel, manager, _, clipboard) = CreateSut();
+        var (viewModel, manager, _, clipboard, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.ApiKeyResult = "sk-test-only-not-real";
         await viewModel.InitializeAsync();
@@ -234,7 +231,7 @@ public sealed class MainViewModelTests
     [Fact]
     public async Task CopyKey_MissingCredential_DoesNotTouchClipboardAndShowsError()
     {
-        var (viewModel, manager, _, clipboard) = CreateSut();
+        var (viewModel, manager, _, clipboard, _) = CreateSut();
         manager.Accounts.Add(Account());
         manager.ApiKeyResult = null;
         await viewModel.InitializeAsync();
@@ -256,7 +253,7 @@ public sealed class MainViewModelTests
         var clipboard = new FakeClipboardService();
         string logDir = Path.Combine(Path.GetTempPath(), $"abm-log-{Guid.NewGuid():N}");
         var log = new AppLog(logDir);
-        var viewModel = new MainViewModel(manager, dialogs, log, clipboard);
+        var viewModel = new MainViewModel(manager, dialogs, log, clipboard, new FakeUiThreadInvoker());
         await viewModel.InitializeAsync();
         var item = viewModel.Accounts[0];
 
@@ -271,5 +268,48 @@ public sealed class MainViewModelTests
             string logContent = File.ReadAllText(logPath);
             Assert.DoesNotContain("sk-test-only-not-real", logContent, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    [Fact]
+    public async Task AutoRefreshEvents_UpdateCardStateAndShowStatus()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account());
+        await viewModel.InitializeAsync();
+        var item = viewModel.Accounts[0];
+
+        manager.RaiseRefreshStarted("acct-1", BalanceQuerySource.Automatic);
+        Assert.True(item.IsRefreshing);
+
+        manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
+        manager.RaiseRefreshCompleted("acct-1", manager.RefreshResult, BalanceQuerySource.Automatic);
+
+        Assert.False(item.IsRefreshing);
+        Assert.True(item.HasSnapshot);
+        Assert.Equal(StatusSeverity.Success, viewModel.StatusSeverity);
+        Assert.Equal("自动刷新完成", viewModel.StatusTitle);
+    }
+
+    [Fact]
+    public async Task AutoRefreshFailure_KeepsSnapshotAndShowsWarning()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account());
+        await viewModel.InitializeAsync();
+        var item = viewModel.Accounts[0];
+
+        manager.RefreshResult = BalanceQueryResult.Success(Snapshot());
+        manager.RaiseRefreshCompleted("acct-1", manager.RefreshResult, BalanceQuerySource.Automatic);
+        string lastSuccessBefore = item.LastSuccessLine;
+
+        manager.RefreshResult = BalanceQueryResult.Failure(
+            BalanceErrorKind.Network,
+            "无法连接网络。");
+        manager.RaiseRefreshCompleted("acct-1", manager.RefreshResult, BalanceQuerySource.Automatic);
+
+        Assert.True(item.HasSnapshot);
+        Assert.Equal(lastSuccessBefore, item.LastSuccessLine);
+        Assert.Equal(StatusSeverity.Warning, viewModel.StatusSeverity);
+        Assert.Equal("自动刷新失败", viewModel.StatusTitle);
     }
 }

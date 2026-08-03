@@ -5,6 +5,8 @@ public sealed class BalanceLine
 {
     public string Currency { get; }
 
+    public decimal Total { get; }
+
     public string TotalText { get; }
 
     public string GrantedText { get; }
@@ -14,9 +16,15 @@ public sealed class BalanceLine
     public string LineText =>
         $"{Currency} · 总额 {TotalText} · 赠送 {GrantedText} · 充值 {ToppedUpText}";
 
-    public BalanceLine(string currency, string totalText, string grantedText, string toppedUpText)
+    public BalanceLine(
+        string currency,
+        decimal total,
+        string totalText,
+        string grantedText,
+        string toppedUpText)
     {
         Currency = currency;
+        Total = total;
         TotalText = totalText;
         GrantedText = grantedText;
         ToppedUpText = toppedUpText;

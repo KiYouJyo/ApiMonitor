@@ -95,7 +95,29 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="状态：" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind AvailabilityText}" FontWeight="SemiBold" />
+                                        <TextBlock Text="·" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind AutoRefreshStatusText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind RefreshIntervalText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{x:Bind LastSuccessLine, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="·" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind NextRefreshText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                        <TextBlock
+                                            Text="{x:Bind ThresholdSummaryText, Mode=OneWay}"
+                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                            TextWrapping="Wrap"
+                                            Visibility="{x:Bind IsLowBalance, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Text="{x:Bind ThresholdSummaryText, Mode=OneWay}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            TextWrapping="Wrap"
+                                            Visibility="{x:Bind IsLowBalance, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+                                        <Button Grid.Column="1" Content="历史记录" Command="{x:Bind HistoryCommand}" />
+                                    </Grid>
                                     <ItemsControl ItemsSource="{x:Bind BalanceLines, Mode=OneWay}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="viewModels:BalanceLine">
@@ -103,9 +125,6 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock
-                                        Text="{x:Bind LastSuccessLine, Mode=OneWay}"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock
                                         Text="{x:Bind LastErrorText}"
                                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"

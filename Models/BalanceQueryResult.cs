@@ -49,6 +49,7 @@ public enum BalanceErrorKind
     ServerError,
     EmptyContent,
     InvalidJson,
+    Busy,
     NotSupported,
     MissingCredential,
     AccountNotFound,

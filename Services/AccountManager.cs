@@ -1,10 +1,12 @@
+using System.Collections.Concurrent;
 using ApiBalanceMonitor.Models;
 using ApiBalanceMonitor.Providers;
 
 namespace ApiBalanceMonitor.Services;
 
 /// <summary>
-/// 组合账户存储、凭据存储、快照存储与 Provider 注册表的门面实现。
+/// 组合账户存储、凭据存储、快照/历史存储与 Provider 注册表的门面实现。
+/// 手动与自动刷新共用同一账户级并发保护，历史写入与最新快照更新在同一次原子保存中完成。
 /// </summary>
 public sealed class AccountManager : IAccountManager
 {
@@ -13,28 +15,38 @@ public sealed class AccountManager : IAccountManager
     private readonly ISecretStore _secretStore;
     private readonly ProviderRegistry _registry;
     private readonly AppLog _log;
+    private readonly TimeProvider _time;
 
     private readonly List<ApiAccount> _accounts = new();
     private readonly Dictionary<string, AccountBalanceRecord> _records = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _refreshLocks = new(StringComparer.OrdinalIgnoreCase);
+
+    public event EventHandler<AccountRefreshStartedEventArgs>? RefreshStarted;
+
+    public event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
 
     public AccountManager(
         IAccountStore accountStore,
         IBalanceSnapshotStore snapshotStore,
         ISecretStore secretStore,
         ProviderRegistry registry,
-        AppLog log)
+        AppLog log,
+        TimeProvider? time = null)
     {
         _accountStore = accountStore;
         _snapshotStore = snapshotStore;
         _secretStore = secretStore;
         _registry = registry;
         _log = log;
+        _time = time ?? TimeProvider.System;
     }
 
     public IReadOnlyList<string> RecoveryMessages { get; private set; } = Array.Empty<string>();
 
     public IReadOnlyList<ProviderInfo> Providers =>
         _registry.All.Select(p => new ProviderInfo(p.ProviderId, p.DisplayName)).ToList();
+
+    private DateTimeOffset NowUtc => _time.GetUtcNow();
 
     public async Task<IReadOnlyList<ApiAccount>> LoadAsync(CancellationToken cancellationToken)
     {
@@ -63,6 +75,35 @@ public sealed class AccountManager : IAccountManager
             _records[record.AccountId] = record;
         }
 
+        // v0.1.0 迁移/旧账户：为已启用但无下次刷新时间的账户按上次查询时间回填。
+        bool settingsChanged = false;
+        foreach (var account in _accounts)
+        {
+            var monitoring = account.Monitoring;
+            if (monitoring.AutoRefreshEnabled && monitoring.NextRefreshAtUtc is null)
+            {
+                var last = _records.TryGetValue(account.AccountId, out var record)
+                    ? record.LastQueryAttemptAt ?? record.LastQuerySuccessAt
+                    : null;
+                if (last is { } lastAt)
+                {
+                    monitoring.NextRefreshAtUtc = lastAt.AddMinutes(monitoring.RefreshIntervalMinutes);
+                    settingsChanged = true;
+                }
+            }
+        }
+
+        if (settingsChanged)
+        {
+            await _accountStore.SaveAsync(_accounts, cancellationToken);
+        }
+
+        int pruned = await _snapshotStore.PruneAsync(cancellationToken);
+        if (pruned > 0)
+        {
+            _log.Info($"历史记录保留策略清理 {pruned} 条。");
+        }
+
         _log.Info($"已加载 {_accounts.Count} 个账户。");
         return _accounts;
     }
@@ -71,6 +112,14 @@ public sealed class AccountManager : IAccountManager
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IReadOnlyList<ApiAccount>>(_accounts.ToList());
+    }
+
+    public Task<ApiAccount?> GetAccountAsync(string accountId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(
+            _accounts.FirstOrDefault(a =>
+                string.Equals(a.AccountId, accountId, StringComparison.OrdinalIgnoreCase)));
     }
 
     public Task<AccountBalanceRecord?> GetRecordAsync(string accountId, CancellationToken cancellationToken)
@@ -131,6 +180,7 @@ public sealed class AccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        MonitoringSettings monitoring,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(displayName))
@@ -147,7 +197,7 @@ public sealed class AccountManager : IAccountManager
         var existing = _accounts.FirstOrDefault(a =>
             string.Equals(a.AccountId, id, StringComparison.OrdinalIgnoreCase));
 
-        var now = DateTimeOffset.UtcNow;
+        var now = NowUtc;
         bool hasCredential = existing?.HasCredential ?? false;
 
         if (!string.IsNullOrWhiteSpace(newApiKey))
@@ -155,6 +205,20 @@ public sealed class AccountManager : IAccountManager
             await _secretStore.SetAsync(id, newApiKey.Trim(), cancellationToken);
             hasCredential = true;
         }
+
+        var thresholds = monitoring.Thresholds
+            .Where(t => !string.IsNullOrWhiteSpace(t.Currency))
+            .Select(t => new BalanceThresholdRule
+            {
+                Currency = t.Currency,
+                IsEnabled = t.IsEnabled,
+                ThresholdAmount = t.ThresholdAmount,
+                CreatedAtUtc = t.CreatedAtUtc,
+                UpdatedAtUtc = t.UpdatedAtUtc,
+            })
+            .ToList();
+
+        DateTimeOffset? next = ComputeNextRefresh(existing, monitoring, now);
 
         var account = new ApiAccount
         {
@@ -164,6 +228,13 @@ public sealed class AccountManager : IAccountManager
             HasCredential = hasCredential,
             CreatedAtUtc = existing?.CreatedAtUtc ?? now,
             UpdatedAtUtc = now,
+            Monitoring = new MonitoringSettings
+            {
+                AutoRefreshEnabled = monitoring.AutoRefreshEnabled,
+                RefreshIntervalMinutes = monitoring.RefreshIntervalMinutes,
+                NextRefreshAtUtc = next,
+                Thresholds = thresholds,
+            },
         };
 
         if (existing is null)
@@ -197,72 +268,205 @@ public sealed class AccountManager : IAccountManager
         _accounts.RemoveAll(a =>
             string.Equals(a.AccountId, accountId, StringComparison.OrdinalIgnoreCase));
         _records.Remove(accountId);
+        _refreshLocks.TryRemove(accountId, out _);
 
         await PersistAsync(cancellationToken);
-        _log.Info($"已删除账户 {accountId} 及其凭据与余额快照。");
+        _log.Info($"已删除账户 {accountId} 及其凭据、余额快照与历史记录。");
     }
 
     public async Task<BalanceQueryResult> RefreshAccountAsync(
         string accountId,
+        BalanceQuerySource source,
         CancellationToken cancellationToken)
     {
-        var account = _accounts.FirstOrDefault(a =>
-            string.Equals(a.AccountId, accountId, StringComparison.OrdinalIgnoreCase));
-        if (account is null)
+        var semaphore = _refreshLocks.GetOrAdd(accountId, static _ => new SemaphoreSlim(1, 1));
+        if (!await semaphore.WaitAsync(0, cancellationToken))
         {
-            return BalanceQueryResult.Failure(
-                BalanceErrorKind.AccountNotFound,
-                "未找到该账户。");
+            return BalanceQueryResult.Failure(BalanceErrorKind.Busy, "该账户正在查询中，请稍候。");
         }
 
-        var provider = _registry.GetById(account.ProviderId);
-        if (provider is null)
+        try
         {
-            return BalanceQueryResult.Failure(
-                BalanceErrorKind.NotSupported,
-                "该账户的 Provider 不受支持。");
-        }
+            var account = _accounts.FirstOrDefault(a =>
+                string.Equals(a.AccountId, accountId, StringComparison.OrdinalIgnoreCase));
+            if (account is null)
+            {
+                return BalanceQueryResult.Failure(BalanceErrorKind.AccountNotFound, "未找到该账户。");
+            }
 
-        _records.TryGetValue(accountId, out var record);
-        record ??= new AccountBalanceRecord
-        {
-            AccountId = accountId,
-            ProviderId = account.ProviderId,
-        };
+            var provider = _registry.GetById(account.ProviderId);
+            if (provider is null)
+            {
+                return BalanceQueryResult.Failure(
+                    BalanceErrorKind.NotSupported,
+                    "该账户的 Provider 不受支持。");
+            }
 
-        if (!account.HasCredential)
-        {
-            record.LastQueryAttemptAt = DateTimeOffset.UtcNow;
+            var record = _records.TryGetValue(accountId, out var existingRecord)
+                ? existingRecord
+                : new AccountBalanceRecord
+                {
+                    AccountId = accountId,
+                    ProviderId = account.ProviderId,
+                };
+
+            record.LastQueryAttemptAt = NowUtc;
+
+            BalanceQueryResult result;
+            if (!account.HasCredential)
+            {
+                result = BalanceQueryResult.Failure(
+                    BalanceErrorKind.MissingCredential,
+                    "该账户没有保存的 API Key。");
+            }
+            else
+            {
+                var apiKey = await _secretStore.GetAsync(accountId, cancellationToken);
+                if (string.IsNullOrWhiteSpace(apiKey))
+                {
+                    result = BalanceQueryResult.Failure(
+                        BalanceErrorKind.MissingCredential,
+                        "读取保存的 API Key 失败。");
+                }
+                else
+                {
+                    RefreshStarted?.Invoke(
+                        this,
+                        new AccountRefreshStartedEventArgs { AccountId = accountId, Source = source });
+
+                    result = await provider.QueryBalanceAsync(account, apiKey, cancellationToken);
+
+                    record.LastQueryAttemptAt = NowUtc;
+                    if (result.IsSuccess && result.Snapshot is { } snapshot)
+                    {
+                        record.LastSuccessfulSnapshot = snapshot;
+                        record.LastQuerySuccessAt = record.LastQueryAttemptAt;
+                        record.History.Add(new BalanceHistoryEntry
+                        {
+                            Id = Guid.NewGuid().ToString("N"),
+                            AccountId = accountId,
+                            ProviderId = account.ProviderId,
+                            SucceededAtUtc = snapshot.RetrievedAt,
+                            Source = source,
+                            IsAvailable = snapshot.IsAvailable,
+                            Balances = snapshot.Balances,
+                        });
+                        record.History = HistoryRetention.Apply(record.History, NowUtc).ToList();
+                    }
+                }
+            }
+
+            // 手动/自动刷新完成后都重新计算下次自动刷新时间。
+            account.Monitoring.NextRefreshAtUtc = account.Monitoring.AutoRefreshEnabled
+                ? NowUtc.AddMinutes(account.Monitoring.RefreshIntervalMinutes)
+                : null;
+
             _records[accountId] = record;
             await PersistAsync(cancellationToken);
+
+            RefreshCompleted?.Invoke(
+                this,
+                new AccountRefreshCompletedEventArgs
+                {
+                    AccountId = accountId,
+                    Result = result,
+                    Source = source,
+                });
+
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"刷新账户失败: {ex.GetType().Name}");
             return BalanceQueryResult.Failure(
-                BalanceErrorKind.MissingCredential,
-                "该账户没有保存的 API Key。");
+                BalanceErrorKind.Unknown,
+                "查询时发生意外错误，请稍后重试。");
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    public Task<IReadOnlyList<string>> GetAutoRefreshDueAccountIdsAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var due = _accounts
+            .Where(a => a.Monitoring.AutoRefreshEnabled
+                && (a.Monitoring.NextRefreshAtUtc is null || a.Monitoring.NextRefreshAtUtc <= nowUtc))
+            .Select(a => a.AccountId)
+            .ToList();
+        return Task.FromResult<IReadOnlyList<string>>(due);
+    }
+
+    public Task<IReadOnlyList<BalanceHistoryEntry>> GetHistoryAsync(
+        string accountId,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!_records.TryGetValue(accountId, out var record))
+        {
+            return Task.FromResult<IReadOnlyList<BalanceHistoryEntry>>(
+                new List<BalanceHistoryEntry>());
         }
 
-        var apiKey = await _secretStore.GetAsync(accountId, cancellationToken);
-        if (string.IsNullOrWhiteSpace(apiKey))
+        return Task.FromResult<IReadOnlyList<BalanceHistoryEntry>>(
+            record.History
+                .OrderByDescending(h => h.SucceededAtUtc)
+                .ThenBy(h => h.Id)
+                .ToList());
+    }
+
+    public async Task ClearHistoryAsync(string accountId, CancellationToken cancellationToken)
+    {
+        var semaphore = _refreshLocks.GetOrAdd(accountId, static _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync(cancellationToken);
+        try
         {
-            record.LastQueryAttemptAt = DateTimeOffset.UtcNow;
-            _records[accountId] = record;
+            if (_records.TryGetValue(accountId, out var record))
+            {
+                record.History.Clear();
+            }
+
             await PersistAsync(cancellationToken);
-            return BalanceQueryResult.Failure(
-                BalanceErrorKind.MissingCredential,
-                "读取保存的 API Key 失败。");
+            _log.Info($"已清除账户 {accountId} 的历史记录。");
         }
-
-        var result = await provider.QueryBalanceAsync(account, apiKey, cancellationToken);
-
-        record.LastQueryAttemptAt = DateTimeOffset.UtcNow;
-        if (result.IsSuccess && result.Snapshot is { } snapshot)
+        finally
         {
-            record.LastSuccessfulSnapshot = snapshot;
-            record.LastQuerySuccessAt = record.LastQueryAttemptAt;
+            semaphore.Release();
+        }
+    }
+
+    private static DateTimeOffset? ComputeNextRefresh(
+        ApiAccount? existing,
+        MonitoringSettings monitoring,
+        DateTimeOffset now)
+    {
+        if (!monitoring.AutoRefreshEnabled)
+        {
+            return null;
         }
 
-        _records[accountId] = record;
-        await PersistAsync(cancellationToken);
-        return result;
+        if (existing is null)
+        {
+            return now.AddMinutes(monitoring.RefreshIntervalMinutes);
+        }
+
+        var old = existing.Monitoring;
+        if (!old.AutoRefreshEnabled
+            || old.RefreshIntervalMinutes != monitoring.RefreshIntervalMinutes
+            || old.NextRefreshAtUtc is null)
+        {
+            return now.AddMinutes(monitoring.RefreshIntervalMinutes);
+        }
+
+        return old.NextRefreshAtUtc;
     }
 
     private async Task PersistAsync(CancellationToken cancellationToken)

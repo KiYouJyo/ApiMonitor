@@ -6,7 +6,7 @@ namespace ApiBalanceMonitor.Tests.TestDoubles;
 
 public sealed class FakeHttpRequestService : IHttpRequestService
 {
-    private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler;
+    private Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler;
 
     public List<string> AuthorizationHeaders { get; } = new();
 
@@ -36,6 +36,16 @@ public sealed class FakeHttpRequestService : IHttpRequestService
                 Content = new StringContent(json, Encoding.UTF8, "application/json"),
             };
         });
+
+    /// <summary>可变行为实例：先返回成功，测试中可切换为抛错。</summary>
+    public static FakeHttpRequestService Mutable(string json) =>
+        new((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json"),
+        }));
+
+    public void SetHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler) =>
+        _handler = handler;
 
     public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

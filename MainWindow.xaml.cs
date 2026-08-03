@@ -20,7 +20,7 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
     {
-        // 应用退出时取消所有在途异步操作。
-        _compositionRoot.MainViewModel.Shutdown();
+        // 应用退出时停止调度并取消所有在途异步操作。
+        _compositionRoot.Shutdown();
     }
 }

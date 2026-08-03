@@ -6,6 +6,10 @@ namespace ApiBalanceMonitor.Tests.TestDoubles;
 
 public sealed class FakeAccountManager : IAccountManager
 {
+    public event EventHandler<AccountRefreshStartedEventArgs>? RefreshStarted;
+
+    public event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
+
     public List<ProviderInfo> ProviderList { get; } = new() { new ProviderInfo("deepseek", "DeepSeek") };
 
     public List<ApiAccount> Accounts { get; } = new();
@@ -25,9 +29,19 @@ public sealed class FakeAccountManager : IAccountManager
 
     public int RefreshCalls { get; private set; }
 
+    public BalanceQuerySource? LastRefreshSource { get; private set; }
+
+    public List<string> RefreshedAccountIds { get; } = new();
+
     public int SaveCalls { get; private set; }
 
     public int DeleteCalls { get; private set; }
+
+    public int ClearHistoryCalls { get; private set; }
+
+    public List<BalanceHistoryEntry> HistoryResult { get; set; } = new();
+
+    public List<string> DueAccountIds { get; set; } = new();
 
     public IReadOnlyList<ProviderInfo> Providers => ProviderList;
 
@@ -47,6 +61,12 @@ public sealed class FakeAccountManager : IAccountManager
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IReadOnlyList<ApiAccount>>(Accounts.ToList());
+    }
+
+    public Task<ApiAccount?> GetAccountAsync(string accountId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Accounts.FirstOrDefault(a => a.AccountId == accountId));
     }
 
     public Task<AccountBalanceRecord?> GetRecordAsync(string accountId, CancellationToken cancellationToken)
@@ -73,6 +93,7 @@ public sealed class FakeAccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        MonitoringSettings monitoring,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -86,9 +107,15 @@ public sealed class FakeAccountManager : IAccountManager
             HasCredential = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
+            Monitoring = monitoring,
         };
         Accounts.RemoveAll(a => a.AccountId == id);
         Accounts.Add(account);
+        if (!Records.ContainsKey(id))
+        {
+            Records[id] = new AccountBalanceRecord { AccountId = id, ProviderId = providerId };
+        }
+
         return Task.FromResult(account);
     }
 
@@ -101,9 +128,14 @@ public sealed class FakeAccountManager : IAccountManager
         return Task.CompletedTask;
     }
 
-    public async Task<BalanceQueryResult> RefreshAccountAsync(string accountId, CancellationToken cancellationToken)
+    public async Task<BalanceQueryResult> RefreshAccountAsync(
+        string accountId,
+        BalanceQuerySource source,
+        CancellationToken cancellationToken)
     {
         RefreshCalls++;
+        LastRefreshSource = source;
+        RefreshedAccountIds.Add(accountId);
         if (RefreshGate is not null)
         {
             await RefreshGate.Task.WaitAsync(cancellationToken);
@@ -111,4 +143,43 @@ public sealed class FakeAccountManager : IAccountManager
 
         return RefreshResult;
     }
+
+    public Task<IReadOnlyList<string>> GetAutoRefreshDueAccountIdsAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<string>>(DueAccountIds.ToList());
+    }
+
+    public Task<IReadOnlyList<BalanceHistoryEntry>> GetHistoryAsync(
+        string accountId,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<BalanceHistoryEntry>>(HistoryResult.ToList());
+    }
+
+    public Task ClearHistoryAsync(string accountId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ClearHistoryCalls++;
+        HistoryResult.Clear();
+        return Task.CompletedTask;
+    }
+
+    public void RaiseRefreshStarted(string accountId, BalanceQuerySource source) =>
+        RefreshStarted?.Invoke(this, new AccountRefreshStartedEventArgs
+        {
+            AccountId = accountId,
+            Source = source,
+        });
+
+    public void RaiseRefreshCompleted(string accountId, BalanceQueryResult result, BalanceQuerySource source) =>
+        RefreshCompleted?.Invoke(this, new AccountRefreshCompletedEventArgs
+        {
+            AccountId = accountId,
+            Result = result,
+            Source = source,
+        });
 }

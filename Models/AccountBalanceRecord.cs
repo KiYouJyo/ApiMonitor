@@ -14,4 +14,7 @@ public sealed class AccountBalanceRecord
     public DateTimeOffset? LastQuerySuccessAt { get; set; }
 
     public BalanceSnapshot? LastSuccessfulSnapshot { get; set; }
+
+    /// <summary>成功查询的余额历史（按时间倒序，受保留策略约束）。</summary>
+    public List<BalanceHistoryEntry> History { get; set; } = new();
 }

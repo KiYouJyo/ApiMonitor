@@ -83,4 +83,28 @@ public sealed class DialogService : IDialogService
             return false;
         }
     }
+
+    public async Task ShowHistoryAsync(string accountId, CancellationToken cancellationToken)
+    {
+        var xamlRoot = _xamlRootProvider?.Invoke();
+        if (xamlRoot is null)
+        {
+            _log?.Error("无法显示历史对话框：XamlRoot 为空。");
+            return;
+        }
+
+        try
+        {
+            var viewModel = new BalanceHistoryViewModel(_accountManager, accountId, _log);
+            var dialog = new BalanceHistoryDialog(viewModel) { XamlRoot = xamlRoot };
+
+            using var registration = cancellationToken.Register(dialog.Hide);
+            _ = viewModel.LoadAsync();
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"显示历史对话框失败: {ex}");
+        }
+    }
 }

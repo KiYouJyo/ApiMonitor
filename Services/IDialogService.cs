@@ -10,4 +10,7 @@ public interface IDialogService
         CancellationToken cancellationToken);
 
     Task<bool> ConfirmDeleteAsync(string accountName, CancellationToken cancellationToken);
+
+    /// <summary>显示指定账户的余额历史对话框。</summary>
+    Task ShowHistoryAsync(string accountId, CancellationToken cancellationToken);
 }
