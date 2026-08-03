@@ -18,6 +18,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IClipboardService _clipboard;
     private readonly IUiThreadInvoker _ui;
     private readonly AppLog _log;
+    private readonly Action _openCompactWindow;
     private readonly CancellationTokenSource _lifetime = new();
     private int _statusGeneration;
 
@@ -48,23 +49,28 @@ public sealed partial class MainViewModel : ObservableObject
 
     public AsyncRelayCommand AddAccountCommand { get; }
 
+    public RelayCommand OpenCompactWindowCommand { get; }
+
     public MainViewModel(
         IAccountManager accountManager,
         IDialogService dialogs,
         AppLog log,
         IClipboardService clipboard,
-        IUiThreadInvoker ui)
+        IUiThreadInvoker ui,
+        Action? openCompactWindow = null)
     {
         _accountManager = accountManager;
         _dialogs = dialogs;
         _log = log;
         _clipboard = clipboard;
         _ui = ui;
+        _openCompactWindow = openCompactWindow ?? (() => { });
 
         StatusSeverity = StatusSeverity.Informational;
         StatusTitle = string.Empty;
         StatusMessage = string.Empty;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAsync, () => !IsLoading);
+        OpenCompactWindowCommand = new RelayCommand(() => _openCompactWindow());
 
         _accountManager.RefreshStarted += OnRefreshStarted;
         _accountManager.RefreshCompleted += OnRefreshCompleted;

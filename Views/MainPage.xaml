@@ -18,12 +18,20 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Spacing="4">
-            <TextBlock Text="ApiMonitor" Style="{StaticResource TitleTextBlockStyle}" />
-            <TextBlock
-                Text="{Binding SubtitleText}"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-        </StackPanel>
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="4">
+                <TextBlock Text="ApiMonitor" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock
+                    Text="{Binding SubtitleText}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+            <Button
+                Grid.Column="1"
+                Content="打开紧凑窗口"
+                Command="{Binding OpenCompactWindowCommand}"
+                VerticalAlignment="Top"
+                ToolTipService.ToolTip="打开始终置顶的紧凑余额窗口" />
+        </Grid>
 
         <InfoBar
             Grid.Row="1"

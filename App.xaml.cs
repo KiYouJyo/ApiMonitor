@@ -21,6 +21,7 @@ public partial class App : Application
         _compositionRoot = new CompositionRoot(DispatcherQueue.GetForCurrentThread());
         _window = new MainWindow(_compositionRoot);
         _window.RootPage.ViewModel = _compositionRoot.MainViewModel;
+        _compositionRoot.AttachMainWindow(_window);
         _window.Activate();
 
         // Resolve the XamlRoot lazily at show time; it may still be null right after Activate.

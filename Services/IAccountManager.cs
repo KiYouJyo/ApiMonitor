@@ -14,6 +14,9 @@ public interface IAccountManager
     /// <summary>某账户查询完成时触发（手动与自动共用）。</summary>
     event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
 
+    /// <summary>账户集合变化时触发（加载、保存、删除后）。</summary>
+    event EventHandler? AccountsChanged;
+
     IReadOnlyList<ProviderInfo> Providers { get; }
 
     IReadOnlyList<string> RecoveryMessages { get; }

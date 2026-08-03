@@ -10,6 +10,8 @@ public sealed class FakeAccountManager : IAccountManager
 
     public event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
 
+    public event EventHandler? AccountsChanged;
+
     public List<ProviderInfo> ProviderList { get; } = new() { new ProviderInfo("deepseek", "DeepSeek") };
 
     public List<ApiAccount> Accounts { get; } = new();
@@ -116,6 +118,7 @@ public sealed class FakeAccountManager : IAccountManager
             Records[id] = new AccountBalanceRecord { AccountId = id, ProviderId = providerId };
         }
 
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
         return Task.FromResult(account);
     }
 
@@ -125,6 +128,7 @@ public sealed class FakeAccountManager : IAccountManager
         DeleteCalls++;
         Accounts.RemoveAll(a => a.AccountId == accountId);
         Records.Remove(accountId);
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
     }
 
@@ -182,4 +186,7 @@ public sealed class FakeAccountManager : IAccountManager
             Result = result,
             Source = source,
         });
+
+    public void RaiseAccountsChanged() =>
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
 }

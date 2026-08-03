@@ -8,6 +8,7 @@
 - Removed legacy local-data and credential migration
 - Added the MIT License
 - Improved repository maintenance and security configuration
+- Added the compact always-on-top balance window (v0.3.0 development)
 
 ## v0.2.0
 
