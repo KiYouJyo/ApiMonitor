@@ -55,9 +55,9 @@
                         IsEnabled="{Binding TraySettings.IsStartupTaskBusy, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
                         <ToggleSwitch.Header>
                             <StackPanel Spacing="2">
-                                <TextBlock Text="登录 Windows 时启动 ApiMonitor" />
+                                <TextBlock loc:Loc.Key="Settings.StartWithWindowsHeader" />
                                 <TextBlock
-                                    Text="启用后，ApiMonitor 将在登录时驻留通知区域，不自动弹出主窗口。"
+                                    loc:Loc.Key="Settings.StartWithWindowsDescription"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextWrapping="Wrap" />
                             </StackPanel>
@@ -111,10 +111,10 @@
                         IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Button
-                            Content="发送测试通知"
+                            loc:Loc.Key="Settings.SendTestNotification"
                             Command="{Binding NotificationSettings.SendTestCommand}" />
                         <Button
-                            Content="打开 Windows 通知设置"
+                            loc:Loc.Key="Settings.OpenNotificationSettings"
                             Command="{Binding NotificationSettings.OpenWindowsNotificationSettingsCommand}" />
                     </StackPanel>
                     <TextBlock
@@ -223,10 +223,10 @@
                         TextWrapping="Wrap" />
                     <HyperlinkButton
                         NavigateUri="https://github.com/KiYouJyo/ApiMonitor"
-                        Content="GitHub 项目" />
+                        loc:Loc.Key="Settings.GitHubLink" />
                     <HyperlinkButton
                         NavigateUri="https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"
-                        Content="隐私政策" />
+                        loc:Loc.Key="Settings.PrivacyLink" />
                 </StackPanel>
             </Border>
         </StackPanel>

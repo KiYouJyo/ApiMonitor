@@ -26,17 +26,17 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
 
     public IReadOnlyList<ThemeOption> ThemeOptions { get; } = new[]
     {
-        new ThemeOption(AppThemePreference.System, "跟随系统"),
-        new ThemeOption(AppThemePreference.Light, "浅色"),
-        new ThemeOption(AppThemePreference.Dark, "深色"),
+        new ThemeOption(AppThemePreference.System, L10n.Get("Settings.ThemeSystem")),
+        new ThemeOption(AppThemePreference.Light, L10n.Get("Settings.ThemeLight")),
+        new ThemeOption(AppThemePreference.Dark, L10n.Get("Settings.ThemeDark")),
     };
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } = new[]
     {
-        new LanguageOption(AppLanguagePreference.System, "跟随系统"),
-        new LanguageOption(AppLanguagePreference.ZhCn, "简体中文"),
-        new LanguageOption(AppLanguagePreference.EnUs, "English"),
-        new LanguageOption(AppLanguagePreference.JaJp, "日本語"),
+        new LanguageOption(AppLanguagePreference.System, L10n.Get("Settings.LanguageSystem")),
+        new LanguageOption(AppLanguagePreference.ZhCn, L10n.Get("Settings.LanguageZhCn")),
+        new LanguageOption(AppLanguagePreference.EnUs, L10n.Get("Settings.LanguageEnUs")),
+        new LanguageOption(AppLanguagePreference.JaJp, L10n.Get("Settings.LanguageJaJp")),
     };
 
     [ObservableProperty]
@@ -155,7 +155,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
                 bool restarted = _requestRestart();
                 if (!restarted)
                 {
-                    StatusText = "无法自动重启，请手动退出后再启动应用。";
+                    StatusText = L10n.Get("Settings.RestartFailed");
                     HasStatus = true;
                 }
             }
@@ -163,7 +163,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"语言切换失败: {ex.GetType().Name}");
-            StatusText = "语言切换失败，请稍后重试。";
+            StatusText = L10n.Get("Settings.LanguageSwitchFailed");
             HasStatus = true;
         }
         finally

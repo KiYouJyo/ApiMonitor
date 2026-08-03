@@ -527,7 +527,7 @@ public sealed class PortableBackupService : IPortableBackupService
 
             if (archive.Entries.Count > PortableBackupConstants.MaxEntryCount)
             {
-                throw new InvalidDataException("备份条目数量超出上限。");
+                throw new InvalidDataException(L10n.Get("Backup.ErrorTooManyEntries"));
             }
 
             long totalBytes = 0;
@@ -541,7 +541,7 @@ public sealed class PortableBackupService : IPortableBackupService
                     // 只允许扁平结构（manifest 与其文件都在根）。
                     if (entry.FullName != entry.Name)
                     {
-                        throw new InvalidDataException($"备份包含子目录或路径条目：{entry.FullName}");
+                        throw new InvalidDataException(L10n.Format("Backup.ErrorPathEntry", entry.FullName));
                     }
                 }
 
@@ -550,18 +550,18 @@ public sealed class PortableBackupService : IPortableBackupService
                     || safeName == ".."
                     || safeName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
                 {
-                    throw new InvalidDataException($"备份包含非法文件名：{entry.FullName}");
+                    throw new InvalidDataException(L10n.Format("Backup.ErrorInvalidFileName", entry.FullName));
                 }
 
                 if (entry.Length > PortableBackupConstants.MaxSingleFileBytes)
                 {
-                    throw new InvalidDataException($"备份单文件超出大小上限：{entry.FullName}");
+                    throw new InvalidDataException(L10n.Format("Backup.ErrorFileTooLarge", entry.FullName));
                 }
 
                 totalBytes += entry.Length;
                 if (totalBytes > PortableBackupConstants.MaxTotalBytes)
                 {
-                    throw new InvalidDataException("备份解压总大小超出上限。");
+                    throw new InvalidDataException(L10n.Get("Backup.ErrorTotalTooLarge"));
                 }
 
                 string dest = Path.Combine(tempRoot, safeName);
@@ -584,7 +584,7 @@ public sealed class PortableBackupService : IPortableBackupService
             string manifestPath = Path.Combine(tempRoot, PortableBackupConstants.ManifestFileName);
             if (!File.Exists(manifestPath))
             {
-                throw new InvalidDataException("备份缺少 manifest.json。");
+                throw new InvalidDataException(L10n.Get("Backup.ErrorMissingManifest"));
             }
 
             var manifest = ReadManifest(tempRoot);
@@ -596,19 +596,19 @@ public sealed class PortableBackupService : IPortableBackupService
                 string path = Path.Combine(tempRoot, name);
                 if (!File.Exists(path))
                 {
-                    throw new InvalidDataException($"备份清单包含缺失文件：{fileEntry.Name}");
+                    throw new InvalidDataException(L10n.Format("Backup.ErrorMissingFile", fileEntry.Name));
                 }
 
                 long actualSize = new FileInfo(path).Length;
                 if (actualSize != fileEntry.Size)
                 {
-                    throw new InvalidDataException($"备份文件大小不匹配：{fileEntry.Name}");
+                    throw new InvalidDataException(L10n.Format("Backup.ErrorSizeMismatch", fileEntry.Name));
                 }
 
                 string actualHash = Sha256Hex(path);
                 if (!string.Equals(actualHash, fileEntry.Sha256, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException($"备份文件校验和不匹配：{fileEntry.Name}");
+                    throw new InvalidDataException(L10n.Format("Backup.ErrorHashMismatch", fileEntry.Name));
                 }
             }
 
@@ -632,12 +632,12 @@ public sealed class PortableBackupService : IPortableBackupService
         if (manifest.BackupFormatVersion > PortableBackupConstants.BackupFormatVersion)
         {
             // 不覆盖无法识别的较新 schema。
-            throw new InvalidDataException($"备份格式版本 {manifest.BackupFormatVersion} 高于当前支持版本。");
+            throw new InvalidDataException(L10n.Format("Backup.ErrorFormatNewer", manifest.BackupFormatVersion));
         }
 
         if (manifest.ContainsSecrets)
         {
-            throw new InvalidDataException("备份清单标记为包含机密，已拒绝导入。");
+            throw new InvalidDataException(L10n.Get("Backup.ErrorContainsSecrets"));
         }
 
         var knownNames = new HashSet<string>(StringComparer.Ordinal)
@@ -655,7 +655,7 @@ public sealed class PortableBackupService : IPortableBackupService
             string name = Path.GetFileName(fileEntry.Name);
             if (!knownNames.Contains(name))
             {
-                throw new InvalidDataException($"备份清单包含未知文件：{fileEntry.Name}");
+                throw new InvalidDataException(L10n.Format("Backup.ErrorUnknownFile", fileEntry.Name));
             }
 
             string path = Path.Combine(directory, name);
@@ -664,7 +664,7 @@ public sealed class PortableBackupService : IPortableBackupService
                 var accounts = Deserialize<AccountsFileData>(path);
                 if (accounts.SchemaVersion > JsonAccountStore.CurrentSchemaVersion)
                 {
-                    throw new InvalidDataException("备份账户数据版本高于当前支持版本。");
+                    throw new InvalidDataException(L10n.Get("Backup.ErrorAccountSchemaNewer"));
                 }
             }
             else if (name == PortableBackupConstants.BalanceRecordsFileName)
@@ -672,7 +672,7 @@ public sealed class PortableBackupService : IPortableBackupService
                 var records = Deserialize<BalanceRecordsFileData>(path);
                 if (records.SchemaVersion > JsonBalanceSnapshotStore.CurrentSchemaVersion)
                 {
-                    throw new InvalidDataException("备份余额数据版本高于当前支持版本。");
+                    throw new InvalidDataException(L10n.Get("Backup.ErrorRecordsSchemaNewer"));
                 }
             }
             else
@@ -688,7 +688,7 @@ public sealed class PortableBackupService : IPortableBackupService
         var manifest = Deserialize<BackupManifest>(manifestPath);
         if (manifest.BackupFormatVersion < 1 || manifest.ContainsSecrets)
         {
-            throw new InvalidDataException("备份清单无效或不安全。");
+            throw new InvalidDataException(L10n.Get("Backup.ErrorInvalidManifest"));
         }
 
         return manifest;
@@ -705,11 +705,11 @@ public sealed class PortableBackupService : IPortableBackupService
             var result = JsonSerializer.Deserialize<T>(
                 text,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            return result ?? throw new InvalidDataException("JSON 内容为空。");
+            return result ?? throw new InvalidDataException(L10n.Get("Backup.ErrorEmptyJson"));
         }
         catch (JsonException ex)
         {
-            throw new InvalidDataException($"JSON 解析失败（{Path.GetFileName(path)}）：{ex.Message}");
+            throw new InvalidDataException(L10n.Format("Backup.ErrorJsonParse", Path.GetFileName(path), ex.Message));
         }
     }
 

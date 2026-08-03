@@ -73,7 +73,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
                 return new UpdateCheckResult
                 {
                     Status = UpdateCheckStatus.Failed,
-                    ErrorMessage = "未找到发布信息（404）。",
+                    ErrorMessage = L10n.Get("Update.NotFound404"),
                 };
             }
 
@@ -82,7 +82,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
                 return new UpdateCheckResult
                 {
                     Status = UpdateCheckStatus.Failed,
-                    ErrorMessage = "访问被限制（403，可能是速率限制）。",
+                    ErrorMessage = L10n.Get("Update.Forbidden403"),
                 };
             }
 
@@ -91,7 +91,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
                 return new UpdateCheckResult
                 {
                     Status = UpdateCheckStatus.Failed,
-                    ErrorMessage = $"HTTP {(int)response.StatusCode}。",
+                    ErrorMessage = L10n.Format("Update.HttpError", (int)response.StatusCode),
                 };
             }
 
@@ -106,7 +106,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
                 return new UpdateCheckResult
                 {
                     Status = UpdateCheckStatus.Failed,
-                    ErrorMessage = "发布信息不完整。",
+                    ErrorMessage = L10n.Get("Update.IncompleteData"),
                 };
             }
 
@@ -137,7 +137,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
             return new UpdateCheckResult
             {
                 Status = UpdateCheckStatus.Failed,
-                ErrorMessage = "检查超时（15 秒）。",
+                ErrorMessage = L10n.Get("Update.Timeout"),
             };
         }
         catch (Exception ex) when (
@@ -146,7 +146,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
             return new UpdateCheckResult
             {
                 Status = UpdateCheckStatus.Failed,
-                ErrorMessage = $"网络错误：{ex.GetType().Name}",
+                ErrorMessage = L10n.Format("Update.NetworkError", ex.GetType().Name),
             };
         }
     }

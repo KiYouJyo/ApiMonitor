@@ -158,6 +158,6 @@ public static class AtomicJsonFile
 
     private static string BuildRecoveryMessage(string fileName, string backupPath) =>
         string.IsNullOrEmpty(backupPath)
-            ? $"{fileName} 无法读取，已重置。"
-            : $"{fileName} 内容损坏，已备份为 {Path.GetFileName(backupPath)} 并重置。";
+            ? L10n.Format("Store.FileUnreadableReset", fileName)
+            : L10n.Format("Store.FileCorruptBackedUp", fileName, Path.GetFileName(backupPath));
 }

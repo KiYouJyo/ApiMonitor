@@ -27,7 +27,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
     private bool _hasStatus;
 
     public string DescriptionText =>
-        "便携备份包含账户元数据、Provider 非敏感设置、余额历史、阈值与设置；不包含 API Key 或凭据。";
+        L10n.Get("Data.BackupDescription");
 
     public IAsyncRelayCommand ExportBackupCommand { get; }
 
@@ -74,7 +74,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
         try
         {
             await _backup.ExportAsync(path, _lifetime.Token);
-            StatusText = "便携备份已导出（不包含 API Key）。";
+            StatusText = L10n.Get("About.BackupExported");
             HasStatus = true;
         }
         catch (OperationCanceledException)
@@ -83,7 +83,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"导出备份失败: {ex.GetType().Name}");
-            StatusText = "导出备份失败，请稍后重试。";
+            StatusText = L10n.Get("About.BackupExportFailed");
             HasStatus = true;
         }
         finally
@@ -108,22 +108,22 @@ public sealed partial class DataManagementViewModel : ObservableObject
         {
             var preview = await _backup.InspectAsync(path, _lifetime.Token);
             string providerSummary = preview.ProviderIds.Count == 0
-                ? "无 Provider 数据"
+                ? L10n.Get("Data.NoProviderData")
                 : string.Join("、", preview.ProviderIds);
             StatusText =
-                $"备份可导入：{preview.AccountCount} 个账户、{preview.HistoryEntryCount} 条历史；" +
-                $"Provider：{providerSummary}。导入为安全合并，不包含 API Key。";
+                L10n.Format("Data.ImportPreview", preview.AccountCount, preview.HistoryEntryCount) +
+                L10n.Format("Data.ImportPreviewProvider", providerSummary);
             HasStatus = true;
 
             // 本版本只实现安全合并：保留本机已有账户与凭据，新账户标记“需要重新输入凭据”。
             var result = await _backup.ImportAsync(path, BackupMergePreference.KeepLocal, _lifetime.Token);
             string needing = result.AccountsNeedingCredential.Count > 0
-                ? $" 需要重新输入 API Key：{string.Join("、", result.AccountsNeedingCredential)}"
+                ? L10n.Format("About.BackupImportNeedingKey", string.Join("、", result.AccountsNeedingCredential))
                 : string.Empty;
             StatusText =
-                $"导入完成：新增 {result.AddedAccounts}、更新 {result.UpdatedAccounts}、" +
-                $"跳过 {result.SkippedAccounts}、失败 {result.FailedAccounts}；" +
-                $"历史新增 {result.AddedHistoryEntries} 条、跳过 {result.SkippedHistoryEntries} 条。{needing}";
+                L10n.Format("Data.ImportDone", result.AddedAccounts, result.UpdatedAccounts) +
+                L10n.Format("Data.ImportSkipped", result.SkippedAccounts, result.FailedAccounts) +
+                L10n.Format("Data.ImportHistory", result.AddedHistoryEntries, result.SkippedHistoryEntries, needing);
             HasStatus = true;
         }
         catch (OperationCanceledException)
@@ -132,7 +132,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"导入备份失败: {ex.GetType().Name}");
-            StatusText = $"导入失败：{ex.Message}（已回滚本次变更）。";
+            StatusText = L10n.Format("About.BackupImportFailed", ex.Message);
             HasStatus = true;
         }
         finally
@@ -149,7 +149,7 @@ public sealed partial class DataManagementViewModel : ObservableObject
             bool ok = await _dataFolderOpener.OpenAsync();
             if (!ok)
             {
-                StatusText = "无法打开本地数据文件夹。";
+                StatusText = L10n.Get("About.OpenDataFolderFailed");
                 HasStatus = true;
             }
         }

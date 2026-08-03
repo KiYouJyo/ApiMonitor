@@ -59,7 +59,7 @@ public sealed class WindowsClipboardService : IClipboardService
 
         if (!enqueued)
         {
-            completion.TrySetException(new InvalidOperationException("UI DispatcherQueue 不可用。"));
+            completion.TrySetException(new InvalidOperationException(L10n.Get("Clipboard.DispatcherUnavailable")));
         }
 
         return completion.Task;
@@ -91,7 +91,7 @@ public sealed class WindowsClipboardService : IClipboardService
 
         if (!enqueued)
         {
-            completion.TrySetException(new InvalidOperationException("UI DispatcherQueue 不可用。"));
+            completion.TrySetException(new InvalidOperationException(L10n.Get("Clipboard.DispatcherUnavailable")));
         }
 
         return completion.Task;

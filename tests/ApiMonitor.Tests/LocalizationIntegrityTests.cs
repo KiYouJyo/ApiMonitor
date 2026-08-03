@@ -148,16 +148,30 @@ public sealed class LocalizationIntegrityTests
         }
     }
 
-    /// <summary>Loc 附加属性不因缺失键返回空字符串（占位机制），由 Loc 实现保证；此处验证键命名无歧义。</summary>
+    /// <summary>
+    /// 验证无 PRI“既是资源又是范围”冲突：不存在某个键 k，同时存在叶子键 k
+    /// 和以 k 为前缀的属性键（如 k.Text / k.Content）。
+    /// 示例冲突：Home.PrivacyMessage（叶子）与 Home.PrivacyMessage.Message（属性）。
+    /// </summary>
     [Fact]
-    public void LocKeys_DoNotCollideWithPropertySuffixes()
+    public void NoKeyIsBothLeafAndParentOfPropertySuffix()
     {
         var langs = LoadAllLangs();
-        var locKeys = CollectLocKeys();
-        foreach (var key in locKeys)
+        var keys = langs["zh-CN"].Keys;
+        var leafSet = new HashSet<string>(keys, StringComparer.Ordinal);
+        foreach (var key in keys)
         {
-            // 一个 Loc.Key 的完整键（key.Text 等）不能同时又是另一个键的前缀冲突。
-            Assert.DoesNotContain(key, langs["zh-CN"].Keys, StringComparer.Ordinal);
+            // 若 key 形如 X.Text/X.Content/X.Header/X.Title/X.Message，检查 X 是否也是叶子键。
+            foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message" })
+            {
+                if (key.EndsWith(suffix, StringComparison.Ordinal))
+                {
+                    string parent = key[..^suffix.Length];
+                    Assert.False(
+                        leafSet.Contains(parent),
+                        $"PRI 冲突：{parent} 既是资源又是 {key} 的范围。");
+                }
+            }
         }
     }
 

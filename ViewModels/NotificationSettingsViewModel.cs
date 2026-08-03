@@ -23,11 +23,11 @@ public sealed partial class NotificationSettingsViewModel : ObservableObject
 
     public IReadOnlyList<NotificationRepeatOption> RepeatOptions { get; } = new[]
     {
-        new NotificationRepeatOption("不重复", NotificationRepeatIntervals.None),
-        new NotificationRepeatOption("6 小时", NotificationRepeatIntervals.SixHours),
-        new NotificationRepeatOption("12 小时", NotificationRepeatIntervals.TwelveHours),
-        new NotificationRepeatOption("24 小时", NotificationRepeatIntervals.DefaultHours),
-        new NotificationRepeatOption("3 天", NotificationRepeatIntervals.ThreeDays),
+        new NotificationRepeatOption(L10n.Get("Notification.NoRepeat"), NotificationRepeatIntervals.None),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours6"), NotificationRepeatIntervals.SixHours),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours12"), NotificationRepeatIntervals.TwelveHours),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours24"), NotificationRepeatIntervals.DefaultHours),
+        new NotificationRepeatOption(L10n.Get("Notification.Days3"), NotificationRepeatIntervals.ThreeDays),
     };
 
     [ObservableProperty]
@@ -50,7 +50,7 @@ public sealed partial class NotificationSettingsViewModel : ObservableObject
 
     /// <summary>设置区固定说明：通知只在本机 ApiMonitor 运行期间生成。</summary>
     public string LocalOnlyExplanationText =>
-        "余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。";
+        L10n.Get("Settings.NotificationLocalOnly");
 
     public RelayCommand SendTestCommand { get; }
 
@@ -108,13 +108,13 @@ public sealed partial class NotificationSettingsViewModel : ObservableObject
         try
         {
             _sendTestNotification();
-            StatusText = "测试通知已发送。如果未显示，请检查 Windows 通知设置或勿扰模式。";
+            StatusText = L10n.Get("Notification.SentDetailed");
             HasStatusText = true;
         }
         catch (Exception ex)
         {
             _log?.Error($"发送测试通知失败: {ex.GetType().Name}");
-            StatusText = "测试通知发送失败，请检查 Windows 通知设置。";
+            StatusText = L10n.Get("Notification.SendFailedDetailed");
             HasStatusText = true;
         }
         finally

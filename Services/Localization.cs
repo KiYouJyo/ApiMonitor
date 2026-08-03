@@ -1,7 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Windows.ApplicationModel.Resources;
 
 namespace ApiMonitor.Services;
 
@@ -40,27 +39,6 @@ public static class Loc
 
     public static void SetArgs(DependencyObject obj, object value) => obj.SetValue(ArgsProperty, value);
 
-    private static ResourceLoader? _loader;
-
-    private static ResourceLoader Loader
-    {
-        get
-        {
-            if (_loader is null)
-            {
-                try
-                {
-                    _loader = ResourceLoader.GetForViewIndependentUse("Resources");
-                }
-                catch
-                {
-                    _loader = null;
-                }
-            }
-
-            return _loader!;
-        }
-    }
 
     private static void OnKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -108,49 +86,41 @@ public static class Loc
         }
 
         SetContent(element, resolved);
+
+        // ToggleSwitch 的 OnContent/OffContent：解析 <Key>OnContent / <Key>OffContent 键。
+        if (element is ToggleSwitch toggleSwitch)
+        {
+            string? toggleKey = GetKey(element);
+            if (!string.IsNullOrEmpty(toggleKey))
+            {
+                string? on = TryResolveValue(toggleKey + "OnContent");
+                if (!string.IsNullOrEmpty(on))
+                {
+                    toggleSwitch.OnContent = on;
+                }
+
+                string? off = TryResolveValue(toggleKey + "OffContent");
+                if (!string.IsNullOrEmpty(off))
+                {
+                    toggleSwitch.OffContent = off;
+                }
+            }
+        }
+    }
+
+    private static string? TryResolveValue(string key)
+    {
+        string resolved = Resolve(key);
+        return resolved.StartsWith("[Missing:", StringComparison.Ordinal) ? null : resolved;
     }
 
     /// <summary>
-    /// 按完整资源键查找；x:Uid 风格短键（如 "Home.AddAccount"）自动尝试
-    /// .Text/.Content/.Header 属性后缀。resw 键名点号在 PRI 中转为斜杠层级。
+    /// 委托 L10n 解析（共享 ResourceContext 语言限定 + 多属性后缀 + 斜杠规范化）。
     /// </summary>
     private static string Resolve(string key)
     {
-        string? TryGet(string k)
-        {
-            try
-            {
-                if (Loader is null)
-                {
-                    return null;
-                }
-
-                string normalized = k.Replace('.', '/');
-                string value = Loader.GetString(normalized);
-                return string.IsNullOrEmpty(value) ? null : value;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        // 完整键优先（可能已含属性后缀）。
-        if (TryGet(key) is { } direct)
-        {
-            return direct;
-        }
-
-        // x:Uid 风格短键：尝试常见属性后缀。
-        foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message" })
-        {
-            if (TryGet(key + suffix) is { } withSuffix)
-            {
-                return withSuffix;
-            }
-        }
-
-        return string.Empty;
+        // L10n 找不到时返回 "[Missing: key]"，调用方据此判断。
+        return L10n.Get(key);
     }
 
     private static void SetContent(FrameworkElement element, string text)

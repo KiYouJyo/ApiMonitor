@@ -230,4 +230,274 @@
   <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>状態：</value></data>
   <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>最終更新成功：</value></data>
   <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
+  <data name="About.ArchitectureFormat" xml:space="preserve"><value>アーキテクチャ：{0}</value></data>
+  <data name="About.BackupExportFailed" xml:space="preserve"><value>バックアップのエクスポートに失敗しました。後でもう一度お試しください。</value></data>
+  <data name="About.BackupExported" xml:space="preserve"><value>ポータブルバックアップをエクスポートしました（API キーは含まれません）。</value></data>
+  <data name="About.BackupImportDone" xml:space="preserve"><value>インポート完了：追加 {0}、更新 {1}、</value></data>
+  <data name="About.BackupImportFailed" xml:space="preserve"><value>インポートに失敗しました：{0}（変更はロールバックされました）。</value></data>
+  <data name="About.BackupImportMerge" xml:space="preserve"><value>インポートは安全なマージです。既存アカウントはローカル資格情報を保持し、新規アカウントは API キーの再入力が必要です。</value></data>
+  <data name="About.BackupImportNeedingKey" xml:space="preserve"><value> API キーの再入力が必要なアカウント：{0}</value></data>
+  <data name="About.BackupImportPreview" xml:space="preserve"><value>バックアップをインポートできます：{0} アカウント、{1} 件の履歴。</value></data>
+  <data name="About.BackupImportSkipped" xml:space="preserve"><value>{0} スキップ、{1} 失敗。</value></data>
+  <data name="About.CurrentLanguageFormat" xml:space="preserve"><value>現在の UI 言語：{0}</value></data>
+  <data name="About.CurrentThemeFormat" xml:space="preserve"><value>現在のテーマ：{0}</value></data>
+  <data name="About.DiagnosticsCopyFailed" xml:space="preserve"><value>診断情報のコピーに失敗しました。</value></data>
+  <data name="About.DisplayVersionFormat" xml:space="preserve"><value>バージョン：v{0}</value></data>
+  <data name="About.LinkIssuesTitle" xml:space="preserve"><value>問題を報告</value></data>
+  <data name="About.LinkLicenseTitle" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkPrivacyTitle" xml:space="preserve"><value>プライバシーポリシー</value></data>
+  <data name="About.LinkReleasesTitle" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkRepositoryTitle" xml:space="preserve"><value>GitHub リポジトリ</value></data>
+  <data name="About.LinkSecurityTitle" xml:space="preserve"><value>セキュリティポリシー</value></data>
+  <data name="About.LinkSupportTitle" xml:space="preserve"><value>サポートドキュメント</value></data>
+  <data name="About.LinkThirdPartyTitle" xml:space="preserve"><value>サードパーティ製の声明</value></data>
+  <data name="About.OpenDataFolderFailed" xml:space="preserve"><value>ローカルデータフォルダーを開けませんでした。</value></data>
+  <data name="About.PackageIdentityFormat" xml:space="preserve"><value>パッケージ ID：{0}</value></data>
+  <data name="About.PackageVersionFormat" xml:space="preserve"><value>パッケージバージョン：{0}</value></data>
+  <data name="About.ProviderCountFormat" xml:space="preserve"><value>現在の Provider 数：{0}</value></data>
+  <data name="About.PublisherFormat" xml:space="preserve"><value>発行元：{0}</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します</value></data>
+  <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>新しいバージョン v{0} があります。</value></data>
+  <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>更新の確認に失敗しました：{0}</value></data>
+  <data name="Home.SubtitleFormat" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します（v{0}、DeepSeek と OpenRouter に対応）。</value></data>
+  <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API キーは Windows の資格情報ロッカー（Credential Locker）に保存され、対応する Provider の公式 API への要求にのみ使用されます。通常の設定と残高スナップショットはローカルのアプリデータのみに保存されます。</value></data>
+  <data name="Home.AccountSummaryFormat" xml:space="preserve"><value>合計 {0} アカウント · 残高不足 {1} · 照会失敗 {2}</value></data>
+  <data name="Home.SnoozeUntilFormat" xml:space="preserve"><value>{0} までアラート一時停止</value></data>
+  <data name="Status.DataRecoveredTitle" xml:space="preserve"><value>ローカルデータを復元しました</value></data>
+  <data name="Status.DataErrorTitle" xml:space="preserve"><value>ローカルデータエラー</value></data>
+  <data name="Status.DataErrorCannotRead" xml:space="preserve"><value>ローカルデータを読み取れません。アプリは空のデータで起動します。</value></data>
+  <data name="Status.AccountSavedTitle" xml:space="preserve"><value>アカウントを保存しました</value></data>
+  <data name="Status.AccountAddedMessage" xml:space="preserve"><value>アカウント「{0}」を追加しました。</value></data>
+  <data name="Status.AccountUpdatedMessage" xml:space="preserve"><value>アカウント「{0}」を更新しました。</value></data>
+  <data name="Status.AccountSaveFailed" xml:space="preserve"><value>アカウントの保存に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="Status.AccountDeletedTitle" xml:space="preserve"><value>アカウントを削除しました</value></data>
+  <data name="Status.AccountDeletedMessage" xml:space="preserve"><value>アカウント「{0}」とその資格情報、残高スナップショット、履歴を削除しました。</value></data>
+  <data name="Status.AccountDeleteFailed" xml:space="preserve"><value>アカウントの削除に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="Status.QueryInProgressTitle" xml:space="preserve"><value>照会中</value></data>
+  <data name="Status.QueryInProgressMessage" xml:space="preserve"><value>このアカウントを照会しています。お待ちください。</value></data>
+  <data name="Status.QuerySuccessTitle" xml:space="preserve"><value>照会に成功しました</value></data>
+  <data name="Status.QuerySuccessMessage" xml:space="preserve"><value>アカウント「{0}」の残高を更新しました。</value></data>
+  <data name="Status.QueryFailedTitle" xml:space="preserve"><value>照会に失敗しました</value></data>
+  <data name="Common.UnknownError" xml:space="preserve"><value>不明なエラーです。</value></data>
+  <data name="Status.RefreshFailedTitle" xml:space="preserve"><value>更新に失敗しました</value></data>
+  <data name="Status.RefreshFailedMessage" xml:space="preserve"><value>すべてのアカウントの更新中にエラーが発生しました。後でもう一度お試しください。</value></data>
+  <data name="Status.AutoRefreshDoneTitle" xml:space="preserve"><value>自動更新が完了しました</value></data>
+  <data name="Status.AutoRefreshFailedTitle" xml:space="preserve"><value>自動更新に失敗しました</value></data>
+  <data name="Status.CopyFailedTitle" xml:space="preserve"><value>コピーに失敗しました</value></data>
+  <data name="Status.CopyNoKeyMessage" xml:space="preserve"><value>このアカウントに保存された API キーが見つかりません。アカウントを編集してキーを保存してください。</value></data>
+  <data name="Status.CopiedTitle" xml:space="preserve"><value>コピーしました</value></data>
+  <data name="Status.CopiedMessage" xml:space="preserve"><value>API キーをコピーしました。30 秒後にクリップボードからの削除を試みます。</value></data>
+  <data name="Status.CopyFailedMessage" xml:space="preserve"><value>API キーのコピーに失敗しました。再試行してください。</value></data>
+  <data name="Status.HistoryOpenFailed" xml:space="preserve"><value>履歴を開けませんでした。後でもう一度お試しください。</value></data>
+  <data name="Card.AutoRefreshOn" xml:space="preserve"><value>自動更新：オン</value></data>
+  <data name="Card.AutoRefreshOff" xml:space="preserve"><value>自動更新：オフ</value></data>
+  <data name="Card.RefreshIntervalFormat" xml:space="preserve"><value>更新間隔：{0} 分</value></data>
+  <data name="Card.NextRefreshOff" xml:space="preserve"><value>次回更新：自動更新オフ</value></data>
+  <data name="Card.NextRefreshAtFormat" xml:space="preserve"><value>次回更新：{0}</value></data>
+  <data name="Card.NextRefreshNever" xml:space="preserve"><value>次回更新：未照会</value></data>
+  <data name="Card.NoBalanceData" xml:space="preserve"><value>残高データはまだありません</value></data>
+  <data name="Card.CredentialModeApiKey" xml:space="preserve"><value>通常の API キー</value></data>
+  <data name="Card.NotificationsOn" xml:space="preserve"><value>通知：オン</value></data>
+  <data name="Card.NotificationsOff" xml:space="preserve"><value>通知：オフ</value></data>
+  <data name="Card.NotificationsInherit" xml:space="preserve"><value>通知：グローバルに従う</value></data>
+  <data name="Card.Unavailable" xml:space="preserve"><value>利用不可</value></data>
+  <data name="Card.NotUpdatedYet" xml:space="preserve"><value>未更新</value></data>
+  <data name="Card.LastSuccessLineFormat" xml:space="preserve"><value>最終更新成功：{0}</value></data>
+  <data name="Card.LastQueryFailed" xml:space="preserve"><value>前回の照会は失敗しました</value></data>
+  <data name="Card.Available" xml:space="preserve"><value>利用可能</value></data>
+  <data name="Card.QueryFailed" xml:space="preserve"><value>照会に失敗しました。</value></data>
+  <data name="Card.BalanceNormal" xml:space="preserve"><value>残高は正常です</value></data>
+  <data name="Card.AlertsDisabled" xml:space="preserve"><value>アラート無効</value></data>
+  <data name="Card.BelowThresholdFormat" xml:space="preserve"><value>{0} がしきい値 {1} を下回っています</value></data>
+  <data name="Card.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} 個の指標がしきい値を下回っています</value></data>
+  <data name="Insights.NoData" xml:space="preserve"><value>データなし</value></data>
+  <data name="Insights.PerDayFormat" xml:space="preserve"><value>{0} / 日</value></data>
+  <data name="Insights.EstimateExplanation" xml:space="preserve"><value>推定値 · ローカルの履歴に基づいて計算されており、実際の消費量とは異なる場合があります。</value></data>
+  <data name="Insights.EstimateUnavailableFormat" xml:space="preserve"><value>推定できません（{0}）。</value></data>
+  <data name="Insights.ChartSummaryFormat" xml:space="preserve"><value>{0} 傾向：{1} データ点、{2}、最小 {3}、最大 {4}</value></data>
+  <data name="Insights.ExportCsvFailed" xml:space="preserve"><value>CSV のエクスポートに失敗しました。後でもう一度お試しください。</value></data>
+  <data name="Insights.NonPositiveConsumption" xml:space="preserve"><value>1 日あたりの消費量が正ではありません</value></data>
+  <data name="Insights.CannotEstimate" xml:space="preserve"><value>推定できません</value></data>
+  <data name="Dialog.DeleteAccountTitle" xml:space="preserve"><value>アカウントを削除</value></data>
+  <data name="Dialog.DeleteAccountConfirm" xml:space="preserve"><value>アカウント「{0}」（{1}）を削除しますか？
+
+</value></data>
+  <data name="Dialog.DeleteAccountScope" xml:space="preserve"><value>このアカウントの資格情報、残高履歴、しきい値、通知設定、アクティブな通知が削除されます。
+</value></data>
+  <data name="Dialog.DeleteAccountIrreversible" xml:space="preserve"><value>この操作は元に戻せません。</value></data>
+  <data name="Dialog.HideToTrayTitle" xml:space="preserve"><value>通知領域に隠す</value></data>
+  <data name="Dialog.HideToTrayMessage" xml:space="preserve"><value>ApiMonitor は通知領域で実行を続けます。トレイアイコンをクリックして再度開くか、トレイメニューから終了できます。</value></data>
+  <data name="Dialog.HideAndRun" xml:space="preserve"><value>隠して実行を続ける</value></data>
+  <data name="Dialog.DontAskAgain" xml:space="preserve"><value>今後表示しない</value></data>
+  <data name="Dialog.RestartTitle" xml:space="preserve"><value>アプリを再起動</value></data>
+  <data name="Dialog.RestartMessage" xml:space="preserve"><value>言語の変更はアプリの再起動後に有効になります。今すぐ再起動しますか？</value></data>
+  <data name="Dialog.EditAccountTitle" xml:space="preserve"><value>アカウントを編集</value></data>
+  <data name="Dialog.AddAccountTitle" xml:space="preserve"><value>アカウントを追加</value></data>
+  <data name="Dialog.TestSuccessTitle" xml:space="preserve"><value>接続に成功しました</value></data>
+  <data name="Dialog.TestSuccessNoBalance" xml:space="preserve"><value>接続に成功しましたが、API が残高の詳細を返しませんでした。</value></data>
+  <data name="Dialog.TestSuccessSuffix" xml:space="preserve"><value> 保存をクリックした後にのみアカウントと資格情報が保存されます。</value></data>
+  <data name="Dialog.TestFailedTitle" xml:space="preserve"><value>接続に失敗しました</value></data>
+  <data name="Dialog.TestFailedDefault" xml:space="preserve"><value>テスト接続に失敗しました。</value></data>
+  <data name="Dialog.TestUnexpectedError" xml:space="preserve"><value>テスト中に予期しないエラーが発生しました。後でもう一度お試しください。</value></data>
+  <data name="Dialog.ValidationTestPending" xml:space="preserve"><value>テストはまだ完了していません。お待ちください。</value></data>
+  <data name="Dialog.ValidationNameRequired" xml:space="preserve"><value>アカウントの表示名を入力してください。</value></data>
+  <data name="Dialog.ValidationKeyRequired" xml:space="preserve"><value>API キーを入力してください。</value></data>
+  <data name="Dialog.ValidationThresholdInvalid" xml:space="preserve"><value>しきい値は 0 以上の有効な数値である必要があります。</value></data>
+  <data name="Dialog.ValidationIntervalInvalid" xml:space="preserve"><value>更新間隔が無効です。</value></data>
+  <data name="Notification.InheritGlobal" xml:space="preserve"><value>グローバルに従う</value></data>
+  <data name="Notification.NoRepeat" xml:space="preserve"><value>繰り返さない</value></data>
+  <data name="Notification.Hours6" xml:space="preserve"><value>6 時間</value></data>
+  <data name="Notification.Hours12" xml:space="preserve"><value>12 時間</value></data>
+  <data name="Notification.Hours24" xml:space="preserve"><value>24 時間</value></data>
+  <data name="Notification.Days3" xml:space="preserve"><value>3 日</value></data>
+  <data name="Compact.NotQueried" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
+  <data name="Compact.NoAccounts" xml:space="preserve"><value>API アカウントがまだありません</value></data>
+  <data name="Compact.RefreshFailed" xml:space="preserve"><value>更新に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="History.Loading" xml:space="preserve"><value>履歴を読み込んでいます…</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>表示できる履歴はありません。</value></data>
+  <data name="History.ClearFailed" xml:space="preserve"><value>履歴の削除に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="History.Cleared" xml:space="preserve"><value>履歴を削除しました。</value></data>
+  <data name="History.ClearTitle" xml:space="preserve"><value>履歴を削除</value></data>
+  <data name="History.ClearConfirm" xml:space="preserve"><value>このアカウントのすべての残高履歴を削除しますか？この操作は元に戻せません。</value></data>
+  <data name="Data.BackupDescription" xml:space="preserve"><value>ポータブルバックアップには、アカウントメタデータ、Provider の非機密設定、残高履歴、しきい値、設定が含まれます。API キーや資格情報は一切含まれません。</value></data>
+  <data name="Data.ImportPreview" xml:space="preserve"><value>バックアップをインポートできます：{0} アカウント、{1} 件の履歴；</value></data>
+  <data name="Data.ImportPreviewProvider" xml:space="preserve"><value>Provider：{0}。インポートは安全なマージで、API キーは含まれません。</value></data>
+  <data name="Data.ImportDone" xml:space="preserve"><value>インポート完了：追加 {0}、更新 {1}、</value></data>
+  <data name="Data.ImportSkipped" xml:space="preserve"><value>{0} スキップ、{1} 失敗；</value></data>
+  <data name="Data.ImportHistory" xml:space="preserve"><value>履歴：{0} 件追加、{1} 件スキップ。{2}</value></data>
+  <data name="Settings.NotificationLocalOnly" xml:space="preserve"><value>残高アラートは ApiMonitor の実行中にローカルで生成されます。ApiMonitor を終了すると、以後の照会やアラートは送信されません。</value></data>
+  <data name="Settings.LanguageSwitchFailed" xml:space="preserve"><value>言語の切り替えに失敗しました。後でもう一度お試しください。</value></data>
+  <data name="Notification.Sent" xml:space="preserve"><value>通知を送信しました。</value></data>
+  <data name="Notification.SendFailed" xml:space="preserve"><value>テスト通知を送信できませんでした。後でもう一度お試しください。</value></data>
+  <data name="Notification.SentDetailed" xml:space="preserve"><value>テスト通知を送信しました。表示されない場合は、Windows の通知設定またはおやすみモードを確認してください。</value></data>
+  <data name="Notification.SendFailedDetailed" xml:space="preserve"><value>テスト通知の送信に失敗しました。Windows の通知設定を確認してください。</value></data>
+  <data name="Metric.BalanceFormat" xml:space="preserve"><value>{0} 残高 {1}</value></data>
+  <data name="Metric.ValueFormat" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="Metric.UnlimitedFormat" xml:space="preserve"><value>{0}：無制限</value></data>
+  <data name="Metric.TotalFormat" xml:space="preserve"><value>合計 {0}</value></data>
+  <data name="Metric.GrantedFormat" xml:space="preserve"><value>付与 {0}</value></data>
+  <data name="Metric.ToppedUpFormat" xml:space="preserve"><value>チャージ {0}</value></data>
+  <data name="Metric.CumulativeTopUpFormat" xml:space="preserve"><value>累計チャージ {0}</value></data>
+  <data name="Metric.CumulativeUsedFormat" xml:space="preserve"><value>累計使用 {0}</value></data>
+  <data name="Metric.LimitFormat" xml:space="preserve"><value> / 上限 {0}</value></data>
+  <data name="Metric.UsedFormat" xml:space="preserve"><value> · 使用 {0}</value></data>
+  <data name="Metric.BelowThresholdFormat" xml:space="preserve"><value>{0}、しきい値 {1} を下回っています</value></data>
+  <data name="Metric.RecoveredFormat" xml:space="preserve"><value>{0} 残高は {1} に回復しました</value></data>
+  <data name="Metric.RecoveredGenericFormat" xml:space="preserve"><value>{0} は {1} に回復しました</value></data>
+  <data name="Tray.Refreshing" xml:space="preserve"><value>更新中</value></data>
+  <data name="Tray.RecentFailure" xml:space="preserve"><value>前回の更新は失敗しました</value></data>
+  <data name="Tray.AutoRefreshRunning" xml:space="preserve"><value>自動更新：実行中</value></data>
+  <data name="Tray.AutoRefreshStopped" xml:space="preserve"><value>自動更新：オフ</value></data>
+  <data name="Tray.LowBalanceNormal" xml:space="preserve"><value>残高不足：正常</value></data>
+  <data name="Tray.LowBalanceUnknown" xml:space="preserve"><value>残高不足：不明</value></data>
+  <data name="Tray.LowBalanceCountFormat" xml:space="preserve"><value>残高不足：{0} 件</value></data>
+  <data name="Tray.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} 個の指標がしきい値を下回っています</value></data>
+  <data name="Tray.ResidencyEnabled" xml:space="preserve"><value>通知領域アイコンが有効です。通知領域に隠した後も自動更新は継続します。「ApiMonitor を終了」を選んだ場合のみアプリは完全に終了します。</value></data>
+  <data name="Tray.StartupDisabledByUser" xml:space="preserve"><value>サインイン時の起動は Windows のスタートアップアプリ設定で無効にされています。アプリ内で再度有効にできます。</value></data>
+  <data name="Tray.StartupDisabledByPolicy" xml:space="preserve"><value>サインイン時の起動は組織のポリシーで制限されており、アプリ内では有効にできません。</value></data>
+  <data name="Tray.StartupEnabledByPolicy" xml:space="preserve"><value>サインイン時の起動はシステムポリシーで有効になっています。</value></data>
+  <data name="Settings.EnableNotificationsOnContent" xml:space="preserve"><value>オン</value></data>
+  <data name="Settings.EnableNotificationsOffContent" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.RecoveryNotificationsOnContent" xml:space="preserve"><value>オン</value></data>
+  <data name="Settings.RecoveryNotificationsOffContent" xml:space="preserve"><value>オフ</value></data>
+  <data name="Compact.AlwaysOnTopOnContent" xml:space="preserve"><value>オン</value></data>
+  <data name="Compact.AlwaysOnTopOffContent" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.SendTestNotificationContent" xml:space="preserve"><value>テスト通知を送信</value></data>
+  <data name="Settings.OpenNotificationSettingsContent" xml:space="preserve"><value>Windows の通知設定を開く</value></data>
+  <data name="Settings.StartWithWindowsHeader" xml:space="preserve"><value>Windows へのサインイン時に ApiMonitor を起動</value></data>
+  <data name="Compact.RefreshButton.Content" xml:space="preserve"><value>更新</value></data>
+  <data name="Compact.AlwaysOnTop.Header" xml:space="preserve"><value>常に手前に表示</value></data>
+  <data name="Dialog.AccountName" xml:space="preserve"><value>アカウント表示名</value></data>
+  <data name="Dialog.AccountNamePlaceholder" xml:space="preserve"><value>例：マイ DeepSeek アカウント</value></data>
+  <data name="Dialog.AccountNotification" xml:space="preserve"><value>このアカウントの通知</value></data>
+  <data name="Dialog.AutoRefresh" xml:space="preserve"><value>自動更新</value></data>
+  <data name="Dialog.CredentialHint" xml:space="preserve"><value>資格情報は保存済みです。空のままにすると既存の API キーを維持します。</value></data>
+  <data name="Dialog.CredentialMode" xml:space="preserve"><value>資格情報モード</value></data>
+  <data name="Dialog.CredentialModeChanged" xml:space="preserve"><value>資格情報モードが変更されました。保存する前に接続を再テストしてください。</value></data>
+  <data name="Dialog.NotificationTitle" xml:space="preserve"><value>通知設定</value></data>
+  <data name="Dialog.RecoveryNotifications" xml:space="preserve"><value>残高回復通知</value></data>
+  <data name="Dialog.RefreshInterval" xml:space="preserve"><value>更新間隔</value></data>
+  <data name="Dialog.RefreshIntervalHint" xml:space="preserve"><value>自動更新はアプリの実行中のみ行われます。アプリを閉じると監視は停止します。</value></data>
+  <data name="Dialog.RepeatInterval" xml:space="preserve"><value>繰り返しアラート間隔</value></data>
+  <data name="Dialog.ThresholdEmpty" xml:space="preserve"><value>残高データはまだありません。アカウントを保存して最初の残高照会を完了するか、「接続テスト」で残高を取得すると、指標ごとの残高不足しきい値を設定できます。</value></data>
+  <data name="Dialog.ThresholdTitle" xml:space="preserve"><value>残高不足しきい値</value></data>
+  <data name="Update.NotFound404" xml:space="preserve"><value>リリース情報が見つかりません（404）。</value></data>
+  <data name="Update.Forbidden403" xml:space="preserve"><value>アクセスが制限されています（403、レート制限の可能性）。</value></data>
+  <data name="Update.HttpError" xml:space="preserve"><value>HTTP {0}。</value></data>
+  <data name="Update.IncompleteData" xml:space="preserve"><value>リリース情報が不完全です。</value></data>
+  <data name="Update.Timeout" xml:space="preserve"><value>確認がタイムアウトしました（15 秒）。</value></data>
+  <data name="Update.NetworkError" xml:space="preserve"><value>ネットワークエラー：{0}</value></data>
+  <data name="History.DialogTitle" xml:space="preserve"><value>残高履歴</value></data>
+  <data name="History.EmptyDetailed" xml:space="preserve"><value>履歴はまだありません。成功した手動または自動の照会がここに表示されます。</value></data>
+  <data name="History.ClearConfirmDetailed" xml:space="preserve"><value>このアカウントのすべての履歴を削除しますか？アカウント、キー、現在の残高には影響しません。</value></data>
+  <data name="About.DocReadFailed" xml:space="preserve"><value>ローカルドキュメントを読み取れません。</value></data>
+  <data name="About.DocNotFound" xml:space="preserve"><value>ローカルドキュメントが見つかりません。</value></data>
+  <data name="Notification.MoreBelowThreshold" xml:space="preserve"><value>他 {0} 件の指標がしきい値を下回っています</value></data>
+  <data name="Threshold.CurrentBalanceFormat" xml:space="preserve"><value>現在の残高：{0}</value></data>
+  <data name="Threshold.StatusFormat" xml:space="preserve"><value>状態：{0}</value></data>
+  <data name="Threshold.InvalidAmount" xml:space="preserve"><value>無効な金額</value></data>
+  <data name="Threshold.BelowFormat" xml:space="preserve"><value>しきい値 {0} を下回っています</value></data>
+  <data name="Provider.OpenRouterDescription" xml:space="preserve"><value>通常の API キー（キー割当てと期間使用量）と Management キー（アカウントの Credits）に対応しています。</value></data>
+  <data name="Provider.OpenRouterApiKeyMode" xml:space="preserve"><value>通常の API キー</value></data>
+  <data name="Provider.OpenRouterApiKeyHint" xml:space="preserve"><value>このキーの残り割当てと使用量のみを照会し、アカウントの Credits は読み取りません。</value></data>
+  <data name="Provider.OpenRouterMgmtHint" xml:space="preserve"><value>通常の API キーより権限が高く、アカウントの Credits を照会する場合のみ使用します。キーは Windows Credential Locker にのみ保存されます。</value></data>
+  <data name="Provider.OpenRouterKeyInputHint" xml:space="preserve"><value>sk-or-…（通常キー）または sk-or-v1-…（Management キー）</value></data>
+  <data name="Provider.DeepSeekDescription" xml:space="preserve"><value>DeepSeek アカウントの各通貨の総残高（CNY/USD など）を照会します。</value></data>
+  <data name="Provider.DeepSeekKeyHint" xml:space="preserve"><value>DeepSeek プラットフォームの API キー（sk-…）で、公式の残高 API の呼び出しにのみ使用します。</value></data>
+  <data name="Provider.ErrorNoKey" xml:space="preserve"><value>API キーが指定されていません。</value></data>
+  <data name="Provider.ErrorTimeout" xml:space="preserve"><value>リクエストがタイムアウトしました（15 秒）。後でもう一度お試しください。</value></data>
+  <data name="Provider.ErrorNetwork" xml:space="preserve"><value>OpenRouter サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkDeepSeek" xml:space="preserve"><value>DeepSeek サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorUnexpected" xml:space="preserve"><value>照会中に予期しないエラーが発生しました。後でもう一度お試しください。</value></data>
+  <data name="Provider.Error401" xml:space="preserve"><value>API キーが無効または期限切れです（401）。</value></data>
+  <data name="Provider.Error402" xml:space="preserve"><value>アカウント残高が不足しているか、支払いが必要です（402）。</value></data>
+  <data name="Provider.Error403Credits" xml:space="preserve"><value>アクセスが拒否されました（403）：通常の API キーではアカウントの Credits を照会できません。Management キーを使用してください。</value></data>
+  <data name="Provider.Error403" xml:space="preserve"><value>アクセスが拒否されました（403）。キーの権限を確認してください。</value></data>
+  <data name="Provider.Error403DeepSeek" xml:space="preserve"><value>アクセスが拒否されました（403）。アカウントの権限を確認してください。</value></data>
+  <data name="Provider.Error429" xml:space="preserve"><value>リクエストが多すぎます（429）。後でもう一度お試しください。</value></data>
+  <data name="Provider.ErrorServiceUnavailable" xml:space="preserve"><value>{0} サービスは一時的に利用できません（HTTP {1}）。</value></data>
+  <data name="Provider.ErrorUnexpectedStatus" xml:space="preserve"><value>サービスが予期しない HTTP ステータスコード {0} を返しました。</value></data>
+  <data name="Provider.ErrorEmptyContent" xml:space="preserve"><value>API が空のコンテンツを返しました。</value></data>
+  <data name="Provider.ErrorInvalidJson" xml:space="preserve"><value>API が解析できない JSON を返しました。</value></data>
+  <data name="Provider.ErrorMissingData" xml:space="preserve"><value>API レスポンスに data フィールドがありません。</value></data>
+  <data name="Backup.ErrorTooManyEntries" xml:space="preserve"><value>バックアップのエントリ数が上限を超えています。</value></data>
+  <data name="Backup.ErrorPathEntry" xml:space="preserve"><value>バックアップにサブディレクトリまたはパスエントリが含まれています：{0}</value></data>
+  <data name="Backup.ErrorInvalidFileName" xml:space="preserve"><value>バックアップに不正なファイル名が含まれています：{0}</value></data>
+  <data name="Backup.ErrorFileTooLarge" xml:space="preserve"><value>バックアップの単一ファイルがサイズ上限を超えています：{0}</value></data>
+  <data name="Backup.ErrorTotalTooLarge" xml:space="preserve"><value>バックアップの展開サイズ合計が上限を超えています。</value></data>
+  <data name="Backup.ErrorMissingManifest" xml:space="preserve"><value>バックアップに manifest.json がありません。</value></data>
+  <data name="Backup.ErrorMissingFile" xml:space="preserve"><value>バックアップマニフェストに存在しないファイルがあります：{0}</value></data>
+  <data name="Backup.ErrorSizeMismatch" xml:space="preserve"><value>バックアップファイルのサイズが一致しません：{0}</value></data>
+  <data name="Backup.ErrorHashMismatch" xml:space="preserve"><value>バックアップファイルのチェックサムが一致しません：{0}</value></data>
+  <data name="Backup.ErrorFormatNewer" xml:space="preserve"><value>バックアップ形式バージョン {0} は現在のサポートより新しいです。</value></data>
+  <data name="Backup.ErrorContainsSecrets" xml:space="preserve"><value>バックアップマニフェストが機密情報を含むとマークされており、インポートを拒否しました。</value></data>
+  <data name="Backup.ErrorUnknownFile" xml:space="preserve"><value>バックアップマニフェストに不明なファイルがあります：{0}</value></data>
+  <data name="Backup.ErrorAccountSchemaNewer" xml:space="preserve"><value>バックアップのアカウントスキーマが現在のサポートより新しいです。</value></data>
+  <data name="Backup.ErrorRecordsSchemaNewer" xml:space="preserve"><value>バックアップの残高スキーマが現在のサポートより新しいです。</value></data>
+  <data name="Backup.ErrorInvalidManifest" xml:space="preserve"><value>バックアップマニフェストが無効または安全ではありません。</value></data>
+  <data name="Backup.ErrorEmptyJson" xml:space="preserve"><value>JSON コンテンツが空です。</value></data>
+  <data name="Backup.ErrorJsonParse" xml:space="preserve"><value>JSON の解析に失敗しました（{0}）：{1}</value></data>
+  <data name="Account.ErrorUnsupportedProvider" xml:space="preserve"><value>サポートされていない Provider です。</value></data>
+  <data name="Account.ErrorKeyRequiredForTest" xml:space="preserve"><value>接続テストの前に API キーを入力してください。</value></data>
+  <data name="Account.ErrorNameRequired" xml:space="preserve"><value>アカウント表示名は空にできません。</value></data>
+  <data name="Account.ErrorUnsupportedProviderId" xml:space="preserve"><value>サポートされていない Provider：{0}</value></data>
+  <data name="Account.ErrorBusy" xml:space="preserve"><value>このアカウントを照会中です。お待ちください。</value></data>
+  <data name="Account.ErrorNotFound" xml:space="preserve"><value>アカウントが見つかりません。</value></data>
+  <data name="Account.ErrorProviderUnsupported" xml:space="preserve"><value>このアカウントの Provider はサポートされていません。</value></data>
+  <data name="Account.ErrorNoSavedKey" xml:space="preserve"><value>このアカウントに保存された API キーがありません。</value></data>
+  <data name="Account.ErrorReadKeyFailed" xml:space="preserve"><value>保存された API キーの読み取りに失敗しました。</value></data>
+  <data name="Store.AccountSchemaReset" xml:space="preserve"><value>アカウントデータファイルのスキーマがサポート外のため、リセットしました。</value></data>
+  <data name="Store.AccountSchemaResetBackedUp" xml:space="preserve"><value>アカウントデータファイルのスキーマがサポート外のため、{0} にバックアップしてリセットしました。</value></data>
+  <data name="Store.RecordsSchemaReset" xml:space="preserve"><value>残高記録ファイルのスキーマがサポート外のため、リセットしました。</value></data>
+  <data name="Store.RecordsSchemaResetBackedUp" xml:space="preserve"><value>残高記録ファイルのスキーマがサポート外のため、{0} にバックアップしてリセットしました。</value></data>
+  <data name="Notify.AccountMissingTitle" xml:space="preserve"><value>アカウントが見つかりません</value></data>
+  <data name="Notify.AccountMissingMessage" xml:space="preserve"><value>この通知のアカウントは削除されました。</value></data>
+  <data name="Insights.TrendChartName" xml:space="preserve"><value>傾向グラフ</value></data>
+  <data name="History.LoadFailed" xml:space="preserve"><value>履歴を読み取れませんでした。後でもう一度お試しください。</value></data>
+  <data name="Data.NoProviderData" xml:space="preserve"><value>Provider データなし</value></data>
+  <data name="Clipboard.DispatcherUnavailable" xml:space="preserve"><value>UI DispatcherQueue を利用できません。</value></data>
+  <data name="Provider.ErrorMissingField" xml:space="preserve"><value>API レスポンスに必須フィールドがありません。</value></data>
+  <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>API レスポンスに必須フィールド（total_credits）がありません。</value></data>
+  <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} を読み取れず、リセットしました。</value></data>
+  <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} が破損していたため、{1} にバックアップしてリセットしました。</value></data>
 </root>

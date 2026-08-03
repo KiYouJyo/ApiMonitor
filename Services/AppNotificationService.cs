@@ -268,7 +268,7 @@ public sealed class AppNotificationService : IAppNotificationService
         }
 
         var result = list.Take(3).ToList();
-        result.Add($"另有 {list.Count - 3} 项余额低于阈值");
+        result.Add(L10n.Format("Notification.MoreBelowThreshold", list.Count - 3));
         return result;
     }
 

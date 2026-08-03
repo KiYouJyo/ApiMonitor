@@ -73,7 +73,7 @@ public sealed class TrendChartControl : UserControl
 
     public TrendChartControl()
     {
-        AutomationProperties.SetName(this, "趋势图");
+        AutomationProperties.SetName(this, ApiMonitor.Services.L10n.Get("Insights.TrendChartName"));
 
         _root = new Grid { RowSpacing = 4 };
 
@@ -87,7 +87,7 @@ public sealed class TrendChartControl : UserControl
 
         _emptyText = new TextBlock
         {
-            Text = "尚无足够的历史数据",
+            Text = ApiMonitor.Services.L10n.Get("Insights.EmptyState"),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),

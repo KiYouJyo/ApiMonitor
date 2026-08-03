@@ -128,5 +128,6 @@
     <Compile Include="../../Services/DiagnosticsInfoService.cs" Link="Services/DiagnosticsInfoService.cs" />
     <Compile Include="../../Services/IFilePickerService.cs" Link="Services/IFilePickerService.cs" />
     <Compile Include="../../Services/IAppStrings.cs" Link="Services/IAppStrings.cs" />
+    <Compile Include="../../Services/L10n.cs" Link="Services/L10n.cs" />
   </ItemGroup>
 </Project>

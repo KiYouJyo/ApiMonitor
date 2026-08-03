@@ -41,15 +41,15 @@ public sealed partial class AboutPage : UserControl
         switch (tag)
         {
             case "privacy":
-                title = "隐私政策";
+                title = ApiMonitor.Services.L10n.Get("About.DocsPrivacy");
                 filePath = ResolveDocPath("PRIVACY.md");
                 break;
             case "license":
-                title = "MIT License";
+                title = ApiMonitor.Services.L10n.Get("About.DocsLicense");
                 filePath = ResolveDocPath("LICENSE");
                 break;
             default:
-                title = "第三方声明";
+                title = ApiMonitor.Services.L10n.Get("About.DocsThirdParty");
                 filePath = ResolveDocPath("THIRD-PARTY-NOTICES.md");
                 break;
         }
@@ -63,12 +63,12 @@ public sealed partial class AboutPage : UserControl
             }
             catch
             {
-                content = "无法读取本地文档。";
+                content = ApiMonitor.Services.L10n.Get("About.DocReadFailed");
             }
         }
         else
         {
-            content = "本地文档未找到。";
+            content = ApiMonitor.Services.L10n.Get("About.DocNotFound");
         }
 
         var textBlock = new TextBlock
@@ -89,7 +89,7 @@ public sealed partial class AboutPage : UserControl
         {
             Title = title,
             Content = scrollViewer,
-            CloseButtonText = "关闭",
+            CloseButtonText = ApiMonitor.Services.L10n.Get("Common.Close"),
             DefaultButton = ContentDialogButton.Close,
         };
 

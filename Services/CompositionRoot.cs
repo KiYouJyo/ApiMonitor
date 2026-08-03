@@ -71,6 +71,33 @@ public sealed class CompositionRoot
 
     private IntPtr _mainWindowHandle = IntPtr.Zero;
 
+    /// <summary>
+    /// 从 appearance-settings.json 读取持久化语言偏好并映射为语言代码
+    /// （zh-CN/en-US/ja-JP）；失败或跟随系统时返回空（让 ResourceContext
+    /// 回退系统语言）。不依赖 PrimaryLanguageOverride（未打包不可靠）。
+    /// </summary>
+
+
+    private static string ReadPersistedLanguage(string dataDirectory)
+    {
+        try
+        {
+            var store = new JsonAppearanceSettingsStore(dataDirectory);
+            var settings = store.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            return settings.Language switch
+            {
+                nameof(AppLanguagePreference.ZhCn) => "zh-CN",
+                nameof(AppLanguagePreference.EnUs) => "en-US",
+                nameof(AppLanguagePreference.JaJp) => "ja-JP",
+                _ => string.Empty,
+            };
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
     /// <summary>主题服务（v0.6.0；主窗口/紧凑窗口根元素注册处）。</summary>
     private readonly AppearanceService _appearanceService;
 
@@ -82,6 +109,28 @@ public sealed class CompositionRoot
         ISingleInstanceService singleInstanceService,
         IAppNotificationService notificationService)
     {
+        // v0.6.0：静态本地化入口必须最先初始化（VM 构造时即用 L10n.Get/Format，
+        // 例如 MainViewModel.SubtitleText；若晚于 VM 创建会返回 [Missing: key]）。
+        // 语言取自已持久化的 appearance-settings（不依赖 PrimaryLanguageOverride，
+        // 该 API 在未打包与部分打包场景不可靠），通过全局 Language qualifier
+        // 驱动 ResourceLoader 按目标语言解析三语资源。
+
+        L10n.Initialize(key =>
+        {
+            try
+            {
+                // 用 WGA Core ResourceContext 指定语言，独立于 PrimaryLanguageOverride。
+                var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse("Resources");
+                string normalized = key.Replace('.', '/');
+                string value = loader.GetString(normalized);
+                return string.IsNullOrEmpty(value) ? null : value;
+            }
+            catch
+            {
+                return null;
+            }
+        });
+
         string dataDirectory = AppPaths.GetLocalDataDirectory();
         Directory.CreateDirectory(dataDirectory);
 

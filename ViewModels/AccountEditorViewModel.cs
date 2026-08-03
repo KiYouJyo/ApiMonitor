@@ -26,26 +26,26 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public IReadOnlyList<NotificationPreferenceOption> NotificationEnabledOptions { get; } = new[]
     {
-        new NotificationPreferenceOption("继承全局", 0),
-        new NotificationPreferenceOption("开启", 1),
-        new NotificationPreferenceOption("关闭", 2),
+        new NotificationPreferenceOption(L10n.Get("Notification.InheritGlobal"), 0),
+        new NotificationPreferenceOption(L10n.Get("Settings.On"), 1),
+        new NotificationPreferenceOption(L10n.Get("Settings.Off"), 2),
     };
 
     public IReadOnlyList<NotificationRepeatOption> NotificationRepeatOptions { get; } = new[]
     {
-        new NotificationRepeatOption("继承全局", -1),
-        new NotificationRepeatOption("不重复", 0),
-        new NotificationRepeatOption("6 小时", 6),
-        new NotificationRepeatOption("12 小时", 12),
-        new NotificationRepeatOption("24 小时", 24),
-        new NotificationRepeatOption("3 天", 72),
+        new NotificationRepeatOption(L10n.Get("Notification.InheritGlobal"), -1),
+        new NotificationRepeatOption(L10n.Get("Notification.NoRepeat"), 0),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours6"), 6),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours12"), 12),
+        new NotificationRepeatOption(L10n.Get("Notification.Hours24"), 24),
+        new NotificationRepeatOption(L10n.Get("Notification.Days3"), 72),
     };
 
     public IReadOnlyList<NotificationPreferenceOption> RecoveryOptions { get; } = new[]
     {
-        new NotificationPreferenceOption("继承全局", 0),
-        new NotificationPreferenceOption("开启", 1),
-        new NotificationPreferenceOption("关闭", 2),
+        new NotificationPreferenceOption(L10n.Get("Notification.InheritGlobal"), 0),
+        new NotificationPreferenceOption(L10n.Get("Settings.On"), 1),
+        new NotificationPreferenceOption(L10n.Get("Settings.Off"), 2),
     };
 
     [ObservableProperty]
@@ -90,7 +90,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public bool HasStoredCredential => _context.HasStoredCredential;
 
-    public string Title => IsEditing ? "编辑账户" : "添加账户";
+    public string Title => IsEditing ? L10n.Get("Dialog.EditAccountTitle") : L10n.Get("Dialog.AddAccountTitle");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSave), nameof(CanTest))]
@@ -275,14 +275,14 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             if (result.IsSuccess && result.Snapshot is { } snapshot)
             {
                 TestSeverity = StatusSeverity.Success;
-                TestTitle = "连接成功";
+                TestTitle = L10n.Get("Dialog.TestSuccessTitle");
                 TestResultText = snapshot.Metrics.Count == 0
-                    ? "连接成功，但接口未返回余额明细。点击保存后才会写入账户与凭据。"
+                    ? L10n.Get("Dialog.TestSuccessNoBalance")
                     : string.Join(
                         "；",
                         snapshot.Metrics.Select(b =>
                             $"{BalanceMetricText.ValueText(b)}"))
-                        + "。点击保存后才会写入账户与凭据。";
+                        + L10n.Get("Dialog.TestSuccessSuffix");
 
                 // 把接口返回的指标余额同步到阈值区，让添加流程也能直接配置阈值。
                 ApplyTestMetrics(snapshot.Metrics);
@@ -290,8 +290,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             else
             {
                 TestSeverity = StatusSeverity.Error;
-                TestTitle = "连接失败";
-                TestResultText = result.Error?.Message ?? "测试连接失败。";
+                TestTitle = L10n.Get("Dialog.TestFailedTitle");
+                TestResultText = result.Error?.Message ?? L10n.Get("Dialog.TestFailedDefault");
             }
         }
         catch (OperationCanceledException)
@@ -301,8 +301,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         {
             HasTestResult = true;
             TestSeverity = StatusSeverity.Error;
-            TestTitle = "连接失败";
-            TestResultText = "测试连接时发生意外错误，请稍后重试。";
+            TestTitle = L10n.Get("Dialog.TestFailedTitle");
+            TestResultText = L10n.Get("Dialog.TestUnexpectedError");
         }
         finally
         {
@@ -316,31 +316,31 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
         if (IsTesting)
         {
-            ShowValidation("测试尚未完成，请稍候。");
+            ShowValidation(L10n.Get("Dialog.ValidationTestPending"));
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(DisplayName))
         {
-            ShowValidation("请输入账户显示名称。");
+            ShowValidation(L10n.Get("Dialog.ValidationNameRequired"));
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(ApiKey) && !(IsEditing && HasStoredCredential))
         {
-            ShowValidation("请输入 API Key。");
+            ShowValidation(L10n.Get("Dialog.ValidationKeyRequired"));
             return false;
         }
 
         if (!ThresholdsValid)
         {
-            ShowValidation("阈值金额必须是不小于 0 的有效数字。");
+            ShowValidation(L10n.Get("Dialog.ValidationThresholdInvalid"));
             return false;
         }
 
         if (!MonitoringIntervals.Options.Contains(RefreshIntervalMinutes))
         {
-            ShowValidation("刷新间隔无效。");
+            ShowValidation(L10n.Get("Dialog.ValidationIntervalInvalid"));
             return false;
         }
 

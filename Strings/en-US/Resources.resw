@@ -230,4 +230,274 @@
   <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>Status: </value></data>
   <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>Last successful: </value></data>
   <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>No balance queried yet</value></data>
+  <data name="About.ArchitectureFormat" xml:space="preserve"><value>Architecture: {0}</value></data>
+  <data name="About.BackupExportFailed" xml:space="preserve"><value>Export backup failed. Please try again later.</value></data>
+  <data name="About.BackupExported" xml:space="preserve"><value>Portable backup exported (no API keys).</value></data>
+  <data name="About.BackupImportDone" xml:space="preserve"><value>Import complete: {0} added, {1} updated, </value></data>
+  <data name="About.BackupImportFailed" xml:space="preserve"><value>Import failed: {0} (changes rolled back).</value></data>
+  <data name="About.BackupImportMerge" xml:space="preserve"><value>Import is a safe merge: existing accounts keep local credentials; new accounts need an API key re-entered.</value></data>
+  <data name="About.BackupImportNeedingKey" xml:space="preserve"><value> Accounts needing an API key: {0}</value></data>
+  <data name="About.BackupImportPreview" xml:space="preserve"><value>Backup can be imported: {0} accounts, {1} history entries.</value></data>
+  <data name="About.BackupImportSkipped" xml:space="preserve"><value>{0} skipped, {1} failed.</value></data>
+  <data name="About.CurrentLanguageFormat" xml:space="preserve"><value>Current UI language: {0}</value></data>
+  <data name="About.CurrentThemeFormat" xml:space="preserve"><value>Current theme: {0}</value></data>
+  <data name="About.DiagnosticsCopyFailed" xml:space="preserve"><value>Failed to copy diagnostics.</value></data>
+  <data name="About.DisplayVersionFormat" xml:space="preserve"><value>Version: v{0}</value></data>
+  <data name="About.LinkIssuesTitle" xml:space="preserve"><value>Report an issue</value></data>
+  <data name="About.LinkLicenseTitle" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkPrivacyTitle" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="About.LinkReleasesTitle" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkRepositoryTitle" xml:space="preserve"><value>GitHub repository</value></data>
+  <data name="About.LinkSecurityTitle" xml:space="preserve"><value>Security policy</value></data>
+  <data name="About.LinkSupportTitle" xml:space="preserve"><value>Support documentation</value></data>
+  <data name="About.LinkThirdPartyTitle" xml:space="preserve"><value>Third-party notices</value></data>
+  <data name="About.OpenDataFolderFailed" xml:space="preserve"><value>Unable to open the local data folder.</value></data>
+  <data name="About.PackageIdentityFormat" xml:space="preserve"><value>Package Identity: {0}</value></data>
+  <data name="About.PackageVersionFormat" xml:space="preserve"><value>Package version: {0}</value></data>
+  <data name="About.ProviderCountFormat" xml:space="preserve"><value>Provider count: {0}</value></data>
+  <data name="About.PublisherFormat" xml:space="preserve"><value>Publisher: {0}</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>Query and record your own API account balances</value></data>
+  <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>A new version v{0} is available.</value></data>
+  <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>Update check failed: {0}</value></data>
+  <data name="Home.SubtitleFormat" xml:space="preserve"><value>Query and record your own API account balances (v{0}, supports DeepSeek and OpenRouter).</value></data>
+  <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker and are only used to call the provider official API; plain configuration and balance snapshots are stored only in the local app data directory.</value></data>
+  <data name="Home.AccountSummaryFormat" xml:space="preserve"><value>{0} accounts · {1} low balance · {2} query failed</value></data>
+  <data name="Home.SnoozeUntilFormat" xml:space="preserve"><value>Alerts paused until {0}</value></data>
+  <data name="Status.DataRecoveredTitle" xml:space="preserve"><value>Local data recovered</value></data>
+  <data name="Status.DataErrorTitle" xml:space="preserve"><value>Local data error</value></data>
+  <data name="Status.DataErrorCannotRead" xml:space="preserve"><value>Unable to read local data; the app will start with empty data.</value></data>
+  <data name="Status.AccountSavedTitle" xml:space="preserve"><value>Account saved</value></data>
+  <data name="Status.AccountAddedMessage" xml:space="preserve"><value>Account "{0}" has been added.</value></data>
+  <data name="Status.AccountUpdatedMessage" xml:space="preserve"><value>Account "{0}" has been updated.</value></data>
+  <data name="Status.AccountSaveFailed" xml:space="preserve"><value>Failed to save account. Please try again later.</value></data>
+  <data name="Status.AccountDeletedTitle" xml:space="preserve"><value>Account deleted</value></data>
+  <data name="Status.AccountDeletedMessage" xml:space="preserve"><value>Account "{0}" and its credentials, balance snapshots, and history have been deleted.</value></data>
+  <data name="Status.AccountDeleteFailed" xml:space="preserve"><value>Failed to delete account. Please try again later.</value></data>
+  <data name="Status.QueryInProgressTitle" xml:space="preserve"><value>Query in progress</value></data>
+  <data name="Status.QueryInProgressMessage" xml:space="preserve"><value>This account is being queried. Please wait.</value></data>
+  <data name="Status.QuerySuccessTitle" xml:space="preserve"><value>Query succeeded</value></data>
+  <data name="Status.QuerySuccessMessage" xml:space="preserve"><value>Balance for account "{0}" has been updated.</value></data>
+  <data name="Status.QueryFailedTitle" xml:space="preserve"><value>Query failed</value></data>
+  <data name="Common.UnknownError" xml:space="preserve"><value>Unknown error.</value></data>
+  <data name="Status.RefreshFailedTitle" xml:space="preserve"><value>Refresh failed</value></data>
+  <data name="Status.RefreshFailedMessage" xml:space="preserve"><value>An error occurred while refreshing all accounts. Please try again later.</value></data>
+  <data name="Status.AutoRefreshDoneTitle" xml:space="preserve"><value>Auto refresh complete</value></data>
+  <data name="Status.AutoRefreshFailedTitle" xml:space="preserve"><value>Auto refresh failed</value></data>
+  <data name="Status.CopyFailedTitle" xml:space="preserve"><value>Copy failed</value></data>
+  <data name="Status.CopyNoKeyMessage" xml:space="preserve"><value>No saved API key found for this account. Edit the account and save the key.</value></data>
+  <data name="Status.CopiedTitle" xml:space="preserve"><value>Copied</value></data>
+  <data name="Status.CopiedMessage" xml:space="preserve"><value>API key copied. A clipboard clear will be attempted after 30 seconds.</value></data>
+  <data name="Status.CopyFailedMessage" xml:space="preserve"><value>Failed to copy API key. Please retry.</value></data>
+  <data name="Status.HistoryOpenFailed" xml:space="preserve"><value>Failed to open history. Please try again later.</value></data>
+  <data name="Card.AutoRefreshOn" xml:space="preserve"><value>Auto refresh: on</value></data>
+  <data name="Card.AutoRefreshOff" xml:space="preserve"><value>Auto refresh: off</value></data>
+  <data name="Card.RefreshIntervalFormat" xml:space="preserve"><value>Refresh interval: {0} minutes</value></data>
+  <data name="Card.NextRefreshOff" xml:space="preserve"><value>Next refresh: auto refresh off</value></data>
+  <data name="Card.NextRefreshAtFormat" xml:space="preserve"><value>Next refresh: {0}</value></data>
+  <data name="Card.NextRefreshNever" xml:space="preserve"><value>Next refresh: not queried yet</value></data>
+  <data name="Card.NoBalanceData" xml:space="preserve"><value>No balance data yet</value></data>
+  <data name="Card.CredentialModeApiKey" xml:space="preserve"><value>API Key</value></data>
+  <data name="Card.NotificationsOn" xml:space="preserve"><value>Notifications: on</value></data>
+  <data name="Card.NotificationsOff" xml:space="preserve"><value>Notifications: off</value></data>
+  <data name="Card.NotificationsInherit" xml:space="preserve"><value>Notifications: inherit global</value></data>
+  <data name="Card.Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Card.NotUpdatedYet" xml:space="preserve"><value>Not updated yet</value></data>
+  <data name="Card.LastSuccessLineFormat" xml:space="preserve"><value>Last successful update: {0}</value></data>
+  <data name="Card.LastQueryFailed" xml:space="preserve"><value>Last query was not successful</value></data>
+  <data name="Card.Available" xml:space="preserve"><value>Available</value></data>
+  <data name="Card.QueryFailed" xml:space="preserve"><value>Query failed.</value></data>
+  <data name="Card.BalanceNormal" xml:space="preserve"><value>Balance normal</value></data>
+  <data name="Card.AlertsDisabled" xml:space="preserve"><value>Alerts disabled</value></data>
+  <data name="Card.BelowThresholdFormat" xml:space="preserve"><value>{0} below threshold {1}</value></data>
+  <data name="Card.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} metrics below threshold</value></data>
+  <data name="Insights.NoData" xml:space="preserve"><value>No data</value></data>
+  <data name="Insights.PerDayFormat" xml:space="preserve"><value>{0} / day</value></data>
+  <data name="Insights.EstimateExplanation" xml:space="preserve"><value>Estimated · calculated from local history; actual consumption may differ.</value></data>
+  <data name="Insights.EstimateUnavailableFormat" xml:space="preserve"><value>Cannot estimate ({0}).</value></data>
+  <data name="Insights.ChartSummaryFormat" xml:space="preserve"><value>{0} trend: {1} data points, {2}, minimum {3}, maximum {4}</value></data>
+  <data name="Insights.ExportCsvFailed" xml:space="preserve"><value>Failed to export CSV. Please try again later.</value></data>
+  <data name="Insights.NonPositiveConsumption" xml:space="preserve"><value>Daily consumption is not positive</value></data>
+  <data name="Insights.CannotEstimate" xml:space="preserve"><value>Cannot estimate</value></data>
+  <data name="Dialog.DeleteAccountTitle" xml:space="preserve"><value>Delete account</value></data>
+  <data name="Dialog.DeleteAccountConfirm" xml:space="preserve"><value>Delete account "{0}" ({1})?
+
+</value></data>
+  <data name="Dialog.DeleteAccountScope" xml:space="preserve"><value>Credentials, balance history, thresholds, notification settings, and active notifications for this account will be deleted.
+</value></data>
+  <data name="Dialog.DeleteAccountIrreversible" xml:space="preserve"><value>This action cannot be undone.</value></data>
+  <data name="Dialog.HideToTrayTitle" xml:space="preserve"><value>Hide to notification area</value></data>
+  <data name="Dialog.HideToTrayMessage" xml:space="preserve"><value>ApiMonitor will keep running in the notification area. Click the tray icon to reopen, or use the tray menu to exit.</value></data>
+  <data name="Dialog.HideAndRun" xml:space="preserve"><value>Hide and keep running</value></data>
+  <data name="Dialog.DontAskAgain" xml:space="preserve"><value>Don't ask again</value></data>
+  <data name="Dialog.RestartTitle" xml:space="preserve"><value>Restart app</value></data>
+  <data name="Dialog.RestartMessage" xml:space="preserve"><value>The language change will take effect after the app restarts. Restart now?</value></data>
+  <data name="Dialog.EditAccountTitle" xml:space="preserve"><value>Edit account</value></data>
+  <data name="Dialog.AddAccountTitle" xml:space="preserve"><value>Add account</value></data>
+  <data name="Dialog.TestSuccessTitle" xml:space="preserve"><value>Connection succeeded</value></data>
+  <data name="Dialog.TestSuccessNoBalance" xml:space="preserve"><value>Connection succeeded, but the API returned no balance details.</value></data>
+  <data name="Dialog.TestSuccessSuffix" xml:space="preserve"><value> The account and credentials are only saved after you click Save.</value></data>
+  <data name="Dialog.TestFailedTitle" xml:space="preserve"><value>Connection failed</value></data>
+  <data name="Dialog.TestFailedDefault" xml:space="preserve"><value>Test connection failed.</value></data>
+  <data name="Dialog.TestUnexpectedError" xml:space="preserve"><value>An unexpected error occurred during the test. Please try again later.</value></data>
+  <data name="Dialog.ValidationTestPending" xml:space="preserve"><value>Test is not finished yet. Please wait.</value></data>
+  <data name="Dialog.ValidationNameRequired" xml:space="preserve"><value>Please enter an account display name.</value></data>
+  <data name="Dialog.ValidationKeyRequired" xml:space="preserve"><value>Please enter an API key.</value></data>
+  <data name="Dialog.ValidationThresholdInvalid" xml:space="preserve"><value>Threshold must be a valid number greater than or equal to 0.</value></data>
+  <data name="Dialog.ValidationIntervalInvalid" xml:space="preserve"><value>Refresh interval is invalid.</value></data>
+  <data name="Notification.InheritGlobal" xml:space="preserve"><value>Inherit global</value></data>
+  <data name="Notification.NoRepeat" xml:space="preserve"><value>No repeat</value></data>
+  <data name="Notification.Hours6" xml:space="preserve"><value>6 hours</value></data>
+  <data name="Notification.Hours12" xml:space="preserve"><value>12 hours</value></data>
+  <data name="Notification.Hours24" xml:space="preserve"><value>24 hours</value></data>
+  <data name="Notification.Days3" xml:space="preserve"><value>3 days</value></data>
+  <data name="Compact.NotQueried" xml:space="preserve"><value>Balance not queried yet</value></data>
+  <data name="Compact.NoAccounts" xml:space="preserve"><value>No API accounts yet</value></data>
+  <data name="Compact.RefreshFailed" xml:space="preserve"><value>Refresh failed. Please try again later.</value></data>
+  <data name="History.Loading" xml:space="preserve"><value>Loading history…</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>No history to display.</value></data>
+  <data name="History.ClearFailed" xml:space="preserve"><value>Failed to clear history. Please try again later.</value></data>
+  <data name="History.Cleared" xml:space="preserve"><value>History cleared.</value></data>
+  <data name="History.ClearTitle" xml:space="preserve"><value>Clear history</value></data>
+  <data name="History.ClearConfirm" xml:space="preserve"><value>Clear all balance history for this account? This cannot be undone.</value></data>
+  <data name="Data.BackupDescription" xml:space="preserve"><value>The portable backup contains account metadata, non-sensitive provider settings, balance history, thresholds, and settings; it never contains API keys or credentials.</value></data>
+  <data name="Data.ImportPreview" xml:space="preserve"><value>Backup can be imported: {0} accounts, {1} history entries; </value></data>
+  <data name="Data.ImportPreviewProvider" xml:space="preserve"><value>Providers: {0}. Import is a safe merge and contains no API keys.</value></data>
+  <data name="Data.ImportDone" xml:space="preserve"><value>Import complete: {0} added, {1} updated, </value></data>
+  <data name="Data.ImportSkipped" xml:space="preserve"><value>{0} skipped, {1} failed; </value></data>
+  <data name="Data.ImportHistory" xml:space="preserve"><value>History: {0} added, {1} skipped. {2}</value></data>
+  <data name="Settings.NotificationLocalOnly" xml:space="preserve"><value>Balance alerts are generated locally by ApiMonitor while it is running. After exiting ApiMonitor, no further queries or alerts are sent.</value></data>
+  <data name="Settings.LanguageSwitchFailed" xml:space="preserve"><value>Language switch failed. Please try again later.</value></data>
+  <data name="Notification.Sent" xml:space="preserve"><value>Notification sent.</value></data>
+  <data name="Notification.SendFailed" xml:space="preserve"><value>Unable to send test notification. Please try again later.</value></data>
+  <data name="Notification.SentDetailed" xml:space="preserve"><value>Test notification sent. If it does not appear, check Windows notification settings or Do Not Disturb.</value></data>
+  <data name="Notification.SendFailedDetailed" xml:space="preserve"><value>Failed to send test notification. Check Windows notification settings.</value></data>
+  <data name="Metric.BalanceFormat" xml:space="preserve"><value>{0} balance {1}</value></data>
+  <data name="Metric.ValueFormat" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="Metric.UnlimitedFormat" xml:space="preserve"><value>{0}: unlimited</value></data>
+  <data name="Metric.TotalFormat" xml:space="preserve"><value>Total {0}</value></data>
+  <data name="Metric.GrantedFormat" xml:space="preserve"><value>Granted {0}</value></data>
+  <data name="Metric.ToppedUpFormat" xml:space="preserve"><value>Top-up {0}</value></data>
+  <data name="Metric.CumulativeTopUpFormat" xml:space="preserve"><value>Total top-ups {0}</value></data>
+  <data name="Metric.CumulativeUsedFormat" xml:space="preserve"><value>Total used {0}</value></data>
+  <data name="Metric.LimitFormat" xml:space="preserve"><value> / limit {0}</value></data>
+  <data name="Metric.UsedFormat" xml:space="preserve"><value> · used {0}</value></data>
+  <data name="Metric.BelowThresholdFormat" xml:space="preserve"><value>{0}, below threshold {1}</value></data>
+  <data name="Metric.RecoveredFormat" xml:space="preserve"><value>{0} balance recovered to {1}</value></data>
+  <data name="Metric.RecoveredGenericFormat" xml:space="preserve"><value>{0} recovered to {1}</value></data>
+  <data name="Tray.Refreshing" xml:space="preserve"><value>Refreshing</value></data>
+  <data name="Tray.RecentFailure" xml:space="preserve"><value>Last refresh failed</value></data>
+  <data name="Tray.AutoRefreshRunning" xml:space="preserve"><value>Auto refresh: running</value></data>
+  <data name="Tray.AutoRefreshStopped" xml:space="preserve"><value>Auto refresh: off</value></data>
+  <data name="Tray.LowBalanceNormal" xml:space="preserve"><value>Low balance: normal</value></data>
+  <data name="Tray.LowBalanceUnknown" xml:space="preserve"><value>Low balance: unknown</value></data>
+  <data name="Tray.LowBalanceCountFormat" xml:space="preserve"><value>Low balance: {0}</value></data>
+  <data name="Tray.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} metrics below threshold</value></data>
+  <data name="Tray.ResidencyEnabled" xml:space="preserve"><value>The notification area icon is enabled. After hiding to the notification area, auto refresh keeps running. Only "Exit ApiMonitor" fully quits the app.</value></data>
+  <data name="Tray.StartupDisabledByUser" xml:space="preserve"><value>Sign-in startup was turned off in the Windows startup apps settings. It can be re-enabled in the app.</value></data>
+  <data name="Tray.StartupDisabledByPolicy" xml:space="preserve"><value>Sign-in startup is restricted by organization policy and cannot be enabled in the app.</value></data>
+  <data name="Tray.StartupEnabledByPolicy" xml:space="preserve"><value>Sign-in startup is enabled by system policy.</value></data>
+  <data name="Settings.EnableNotificationsOnContent" xml:space="preserve"><value>On</value></data>
+  <data name="Settings.EnableNotificationsOffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="Settings.RecoveryNotificationsOnContent" xml:space="preserve"><value>On</value></data>
+  <data name="Settings.RecoveryNotificationsOffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="Compact.AlwaysOnTopOnContent" xml:space="preserve"><value>On</value></data>
+  <data name="Compact.AlwaysOnTopOffContent" xml:space="preserve"><value>Off</value></data>
+  <data name="Settings.SendTestNotificationContent" xml:space="preserve"><value>Send test notification</value></data>
+  <data name="Settings.OpenNotificationSettingsContent" xml:space="preserve"><value>Open Windows notification settings</value></data>
+  <data name="Settings.StartWithWindowsHeader" xml:space="preserve"><value>Start ApiMonitor when I sign in to Windows</value></data>
+  <data name="Compact.RefreshButton.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Compact.AlwaysOnTop.Header" xml:space="preserve"><value>Always on top</value></data>
+  <data name="Dialog.AccountName" xml:space="preserve"><value>Account display name</value></data>
+  <data name="Dialog.AccountNamePlaceholder" xml:space="preserve"><value>e.g. My DeepSeek account</value></data>
+  <data name="Dialog.AccountNotification" xml:space="preserve"><value>Account notifications</value></data>
+  <data name="Dialog.AutoRefresh" xml:space="preserve"><value>Auto refresh</value></data>
+  <data name="Dialog.CredentialHint" xml:space="preserve"><value>Credential saved: leave empty to keep the existing API key.</value></data>
+  <data name="Dialog.CredentialMode" xml:space="preserve"><value>Credential mode</value></data>
+  <data name="Dialog.CredentialModeChanged" xml:space="preserve"><value>Credential mode changed. Re-test the connection before saving.</value></data>
+  <data name="Dialog.NotificationTitle" xml:space="preserve"><value>Notification settings</value></data>
+  <data name="Dialog.RecoveryNotifications" xml:space="preserve"><value>Balance recovery notifications</value></data>
+  <data name="Dialog.RefreshInterval" xml:space="preserve"><value>Refresh interval</value></data>
+  <data name="Dialog.RefreshIntervalHint" xml:space="preserve"><value>Auto refresh runs only while the app is running. Monitoring stops when the app is closed.</value></data>
+  <data name="Dialog.RepeatInterval" xml:space="preserve"><value>Repeat alert interval</value></data>
+  <data name="Dialog.ThresholdEmpty" xml:space="preserve"><value>No balance data yet. Save the account and complete a first balance query, or use "Test connection" to set low-balance thresholds per metric.</value></data>
+  <data name="Dialog.ThresholdTitle" xml:space="preserve"><value>Low-balance thresholds</value></data>
+  <data name="Update.NotFound404" xml:space="preserve"><value>No release information found (404).</value></data>
+  <data name="Update.Forbidden403" xml:space="preserve"><value>Access restricted (403, possibly rate limited).</value></data>
+  <data name="Update.HttpError" xml:space="preserve"><value>HTTP {0}.</value></data>
+  <data name="Update.IncompleteData" xml:space="preserve"><value>Release information is incomplete.</value></data>
+  <data name="Update.Timeout" xml:space="preserve"><value>Check timed out (15 seconds).</value></data>
+  <data name="Update.NetworkError" xml:space="preserve"><value>Network error: {0}</value></data>
+  <data name="History.DialogTitle" xml:space="preserve"><value>Balance history</value></data>
+  <data name="History.EmptyDetailed" xml:space="preserve"><value>No history yet. Successful manual or automatic queries will appear here.</value></data>
+  <data name="History.ClearConfirmDetailed" xml:space="preserve"><value>Clear all history for this account? The account, key, and current balance are not affected.</value></data>
+  <data name="About.DocReadFailed" xml:space="preserve"><value>Unable to read the local document.</value></data>
+  <data name="About.DocNotFound" xml:space="preserve"><value>Local document not found.</value></data>
+  <data name="Notification.MoreBelowThreshold" xml:space="preserve"><value>{0} more metrics below threshold</value></data>
+  <data name="Threshold.CurrentBalanceFormat" xml:space="preserve"><value>Current balance: {0}</value></data>
+  <data name="Threshold.StatusFormat" xml:space="preserve"><value>Status: {0}</value></data>
+  <data name="Threshold.InvalidAmount" xml:space="preserve"><value>Invalid amount</value></data>
+  <data name="Threshold.BelowFormat" xml:space="preserve"><value>Below threshold {0}</value></data>
+  <data name="Provider.OpenRouterDescription" xml:space="preserve"><value>Supports regular API Key (key quota and period usage) and Management Key (account Credits).</value></data>
+  <data name="Provider.OpenRouterApiKeyMode" xml:space="preserve"><value>API Key</value></data>
+  <data name="Provider.OpenRouterApiKeyHint" xml:space="preserve"><value>Queries only this key remaining quota and usage; it does not read account Credits.</value></data>
+  <data name="Provider.OpenRouterMgmtHint" xml:space="preserve"><value>Higher privilege than a regular API Key; use only when querying account Credits. Keys stay in the Windows Credential Locker.</value></data>
+  <data name="Provider.OpenRouterKeyInputHint" xml:space="preserve"><value>sk-or-… (regular key) or sk-or-v1-… (Management key)</value></data>
+  <data name="Provider.DeepSeekDescription" xml:space="preserve"><value>Queries the total balance of each currency in a DeepSeek account (CNY/USD, etc.).</value></data>
+  <data name="Provider.DeepSeekKeyHint" xml:space="preserve"><value>DeepSeek platform API key (sk-…) used only to call the official balance API.</value></data>
+  <data name="Provider.ErrorNoKey" xml:space="preserve"><value>No API key provided.</value></data>
+  <data name="Provider.ErrorTimeout" xml:space="preserve"><value>Request timed out (15 seconds). Please try again later.</value></data>
+  <data name="Provider.ErrorNetwork" xml:space="preserve"><value>Unable to reach the OpenRouter service. Check network or DNS.</value></data>
+  <data name="Provider.ErrorNetworkDeepSeek" xml:space="preserve"><value>Unable to reach the DeepSeek service. Check network or DNS.</value></data>
+  <data name="Provider.ErrorUnexpected" xml:space="preserve"><value>An unexpected error occurred during the query. Please try again later.</value></data>
+  <data name="Provider.Error401" xml:space="preserve"><value>API key is invalid or expired (401).</value></data>
+  <data name="Provider.Error402" xml:space="preserve"><value>Insufficient account balance or payment required (402).</value></data>
+  <data name="Provider.Error403Credits" xml:space="preserve"><value>Access denied (403): a regular API key cannot query account Credits. Use a Management key.</value></data>
+  <data name="Provider.Error403" xml:space="preserve"><value>Access denied (403). Check key permissions.</value></data>
+  <data name="Provider.Error403DeepSeek" xml:space="preserve"><value>Access denied (403). Check account permissions.</value></data>
+  <data name="Provider.Error429" xml:space="preserve"><value>Too many requests (429). Please try again later.</value></data>
+  <data name="Provider.ErrorServiceUnavailable" xml:space="preserve"><value>{0} service temporarily unavailable (HTTP {1}).</value></data>
+  <data name="Provider.ErrorUnexpectedStatus" xml:space="preserve"><value>The service returned an unexpected HTTP status code {0}.</value></data>
+  <data name="Provider.ErrorEmptyContent" xml:space="preserve"><value>The API returned empty content.</value></data>
+  <data name="Provider.ErrorInvalidJson" xml:space="preserve"><value>The API returned JSON that could not be parsed.</value></data>
+  <data name="Provider.ErrorMissingData" xml:space="preserve"><value>The API response is missing the data field.</value></data>
+  <data name="Backup.ErrorTooManyEntries" xml:space="preserve"><value>Backup contains too many entries.</value></data>
+  <data name="Backup.ErrorPathEntry" xml:space="preserve"><value>Backup contains a path entry: {0}</value></data>
+  <data name="Backup.ErrorInvalidFileName" xml:space="preserve"><value>Backup contains an invalid file name: {0}</value></data>
+  <data name="Backup.ErrorFileTooLarge" xml:space="preserve"><value>Backup file exceeds the size limit: {0}</value></data>
+  <data name="Backup.ErrorTotalTooLarge" xml:space="preserve"><value>Total extracted backup size exceeds the limit.</value></data>
+  <data name="Backup.ErrorMissingManifest" xml:space="preserve"><value>Backup is missing manifest.json.</value></data>
+  <data name="Backup.ErrorMissingFile" xml:space="preserve"><value>Backup manifest lists a missing file: {0}</value></data>
+  <data name="Backup.ErrorSizeMismatch" xml:space="preserve"><value>Backup file size mismatch: {0}</value></data>
+  <data name="Backup.ErrorHashMismatch" xml:space="preserve"><value>Backup file checksum mismatch: {0}</value></data>
+  <data name="Backup.ErrorFormatNewer" xml:space="preserve"><value>Backup format version {0} is newer than supported.</value></data>
+  <data name="Backup.ErrorContainsSecrets" xml:space="preserve"><value>Backup manifest is marked as containing secrets; import rejected.</value></data>
+  <data name="Backup.ErrorUnknownFile" xml:space="preserve"><value>Backup manifest contains an unknown file: {0}</value></data>
+  <data name="Backup.ErrorAccountSchemaNewer" xml:space="preserve"><value>Backup account schema is newer than supported.</value></data>
+  <data name="Backup.ErrorRecordsSchemaNewer" xml:space="preserve"><value>Backup balance schema is newer than supported.</value></data>
+  <data name="Backup.ErrorInvalidManifest" xml:space="preserve"><value>Backup manifest is invalid or unsafe.</value></data>
+  <data name="Backup.ErrorEmptyJson" xml:space="preserve"><value>JSON content is empty.</value></data>
+  <data name="Backup.ErrorJsonParse" xml:space="preserve"><value>JSON parse failed ({0}): {1}</value></data>
+  <data name="Account.ErrorUnsupportedProvider" xml:space="preserve"><value>Unsupported provider.</value></data>
+  <data name="Account.ErrorKeyRequiredForTest" xml:space="preserve"><value>Enter an API key before testing the connection.</value></data>
+  <data name="Account.ErrorNameRequired" xml:space="preserve"><value>Account display name cannot be empty.</value></data>
+  <data name="Account.ErrorUnsupportedProviderId" xml:space="preserve"><value>Unsupported provider: {0}</value></data>
+  <data name="Account.ErrorBusy" xml:space="preserve"><value>This account is being queried. Please wait.</value></data>
+  <data name="Account.ErrorNotFound" xml:space="preserve"><value>Account not found.</value></data>
+  <data name="Account.ErrorProviderUnsupported" xml:space="preserve"><value>This account provider is not supported.</value></data>
+  <data name="Account.ErrorNoSavedKey" xml:space="preserve"><value>No saved API key for this account.</value></data>
+  <data name="Account.ErrorReadKeyFailed" xml:space="preserve"><value>Failed to read the saved API key.</value></data>
+  <data name="Store.AccountSchemaReset" xml:space="preserve"><value>Account data file schema is unsupported; it has been reset.</value></data>
+  <data name="Store.AccountSchemaResetBackedUp" xml:space="preserve"><value>Account data file schema is unsupported; backed up to {0} and reset.</value></data>
+  <data name="Store.RecordsSchemaReset" xml:space="preserve"><value>Balance records schema is unsupported; it has been reset.</value></data>
+  <data name="Store.RecordsSchemaResetBackedUp" xml:space="preserve"><value>Balance records schema is unsupported; backed up to {0} and reset.</value></data>
+  <data name="Notify.AccountMissingTitle" xml:space="preserve"><value>Account not found</value></data>
+  <data name="Notify.AccountMissingMessage" xml:space="preserve"><value>The account for this notification has been deleted.</value></data>
+  <data name="Insights.TrendChartName" xml:space="preserve"><value>Trend chart</value></data>
+  <data name="History.LoadFailed" xml:space="preserve"><value>Unable to read history. Please try again later.</value></data>
+  <data name="Data.NoProviderData" xml:space="preserve"><value>No provider data</value></data>
+  <data name="Clipboard.DispatcherUnavailable" xml:space="preserve"><value>UI DispatcherQueue is unavailable.</value></data>
+  <data name="Provider.ErrorMissingField" xml:space="preserve"><value>The API response is missing required fields.</value></data>
+  <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>The API response is missing required fields (total_credits).</value></data>
+  <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} could not be read and was reset.</value></data>
+  <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} was corrupt; backed up to {1} and reset.</value></data>
 </root>

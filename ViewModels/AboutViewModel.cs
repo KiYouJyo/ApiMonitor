@@ -34,17 +34,17 @@ public sealed partial class AboutViewModel : ObservableObject
     // ---- 产品信息（来自统一元数据服务） ----
     public string ProductName => "ApiMonitor";
 
-    public string Tagline => "查询并记录你自己的 API 账户余额";
+    public string Tagline => L10n.Get("About.TaglineText");
 
-    public string DisplayVersionText => $"版本：v{AppInfo.DisplayVersion}";
+    public string DisplayVersionText => L10n.Format("About.DisplayVersionFormat", AppInfo.DisplayVersion);
 
-    public string PackageVersionText => $"包版本：{AppInfo.PackageVersion}";
+    public string PackageVersionText => L10n.Format("About.PackageVersionFormat", AppInfo.PackageVersion);
 
-    public string ArchitectureText => $"架构：{AppInfo.Architecture}";
+    public string ArchitectureText => L10n.Format("About.ArchitectureFormat", AppInfo.Architecture);
 
-    public string PackageIdentityText => $"Package Identity：{AppInfo.PackageIdentity}";
+    public string PackageIdentityText => L10n.Format("About.PackageIdentityFormat", AppInfo.PackageIdentity);
 
-    public string PublisherText => $"发布者：{AppInfo.Publisher}";
+    public string PublisherText => L10n.Format("About.PublisherFormat", AppInfo.Publisher);
 
     public string LicenseText => "MIT License";
 
@@ -53,30 +53,30 @@ public sealed partial class AboutViewModel : ObservableObject
     // ---- 当前能力（动态，来自注册表） ----
     public ObservableCollection<AboutProviderRow> Providers { get; } = new();
 
-    public string ProviderCountText => $"当前 Provider 数量：{Providers.Count}";
+    public string ProviderCountText => L10n.Format("About.ProviderCountFormat", Providers.Count);
 
     // ---- 隐私与安全摘要 ----
     public IReadOnlyList<string> PrivacyItems { get; } = new[]
     {
-        "API Key 保存在 Windows Credential Locker。",
-        "余额、历史和设置保存在本机。",
-        "应用没有开发者云端服务器。",
-        "没有遥测和广告。",
-        "通知由本机生成。",
-        "便携备份不包含 API Key。",
+        L10n.Get("About.PrivacyItemCredentialLocker"),
+        L10n.Get("About.PrivacyItemLocalData"),
+        L10n.Get("About.PrivacyItemNoCloud"),
+        L10n.Get("About.PrivacyItemNoTelemetry"),
+        L10n.Get("About.PrivacyItemLocalNotifications"),
+        L10n.Get("About.PrivacyItemBackupNoSecrets"),
     };
 
     // ---- 项目链接 ----
     public IReadOnlyList<AboutLinkRow> Links { get; } = new[]
     {
-        new AboutLinkRow("Repository", "GitHub 仓库", "https://github.com/KiYouJyo/ApiMonitor"),
-        new AboutLinkRow("Releases", "Releases", "https://github.com/KiYouJyo/ApiMonitor/releases"),
-        new AboutLinkRow("Issues", "提交问题", "https://github.com/KiYouJyo/ApiMonitor/issues"),
-        new AboutLinkRow("Privacy", "隐私政策", "https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"),
-        new AboutLinkRow("Security", "安全政策", "https://github.com/KiYouJyo/ApiMonitor/blob/main/SECURITY.md"),
-        new AboutLinkRow("Support", "支持文档", "https://github.com/KiYouJyo/ApiMonitor/blob/main/SUPPORT.md"),
-        new AboutLinkRow("License", "MIT License", "https://github.com/KiYouJyo/ApiMonitor/blob/main/LICENSE"),
-        new AboutLinkRow("ThirdParty", "第三方声明", "https://github.com/KiYouJyo/ApiMonitor/blob/main/THIRD-PARTY-NOTICES.md"),
+        new AboutLinkRow("Repository", L10n.Get("About.LinkRepositoryTitle"), "https://github.com/KiYouJyo/ApiMonitor"),
+        new AboutLinkRow("Releases", L10n.Get("About.LinkReleasesTitle"), "https://github.com/KiYouJyo/ApiMonitor/releases"),
+        new AboutLinkRow("Issues", L10n.Get("About.LinkIssuesTitle"), "https://github.com/KiYouJyo/ApiMonitor/issues"),
+        new AboutLinkRow("Privacy", L10n.Get("About.LinkPrivacyTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"),
+        new AboutLinkRow("Security", L10n.Get("About.LinkSecurityTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/SECURITY.md"),
+        new AboutLinkRow("Support", L10n.Get("About.LinkSupportTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/SUPPORT.md"),
+        new AboutLinkRow("License", L10n.Get("About.LinkLicenseTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/LICENSE"),
+        new AboutLinkRow("ThirdParty", L10n.Get("About.LinkThirdPartyTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/THIRD-PARTY-NOTICES.md"),
     };
 
     // ---- 更新检查状态 ----
@@ -102,9 +102,9 @@ public sealed partial class AboutViewModel : ObservableObject
     private bool _isDiagnosticsCopying;
 
     /// <summary>当前 UI 语言与主题（关于页“当前能力”展示）。</summary>
-    public string CurrentLanguageText { get; private set; } = "当前 UI 语言：en-US";
+    public string CurrentLanguageText { get; private set; } = L10n.Format("About.CurrentLanguageFormat", "en-US");
 
-    public string CurrentThemeText { get; private set; } = "当前主题：跟随系统";
+    public string CurrentThemeText { get; private set; } = L10n.Format("About.CurrentThemeFormat", L10n.Get("About.ThemeSystem"));
 
     public IAsyncRelayCommand CheckUpdatesCommand { get; }
 
@@ -144,8 +144,8 @@ public sealed partial class AboutViewModel : ObservableObject
         _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
         // 语言与主题状态来自统一服务，避免默认值错误显示。
-        CurrentLanguageText = $"当前 UI 语言：{languageCode}";
-        CurrentThemeText = $"当前主题：{FormatThemeName(themeName)}";
+        CurrentLanguageText = L10n.Format("About.CurrentLanguageFormat", languageCode);
+        CurrentThemeText = L10n.Format("About.CurrentThemeFormat", FormatThemeName(themeName));
 
         foreach (var provider in providers.OrderBy(p => p.ProviderId, StringComparer.OrdinalIgnoreCase))
         {
@@ -166,8 +166,8 @@ public sealed partial class AboutViewModel : ObservableObject
     /// <summary>设置当前语言与主题文本（由视图层或注入方调用）。</summary>
     public void SetEnvironmentTexts(string languageCode, string themeName)
     {
-        CurrentLanguageText = $"当前 UI 语言：{languageCode}";
-        CurrentThemeText = $"当前主题：{FormatThemeName(themeName)}";
+        CurrentLanguageText = L10n.Format("About.CurrentLanguageFormat", languageCode);
+        CurrentThemeText = L10n.Format("About.CurrentThemeFormat", FormatThemeName(themeName));
         OnPropertyChanged(nameof(CurrentLanguageText));
         OnPropertyChanged(nameof(CurrentThemeText));
     }
@@ -175,9 +175,9 @@ public sealed partial class AboutViewModel : ObservableObject
     private static string FormatThemeName(string themeName) =>
         themeName switch
         {
-            nameof(AppThemePreference.Light) => "浅色",
-            nameof(AppThemePreference.Dark) => "深色",
-            _ => "跟随系统",
+            nameof(AppThemePreference.Light) => L10n.Get("About.ThemeLight"),
+            nameof(AppThemePreference.Dark) => L10n.Get("About.ThemeDark"),
+            _ => L10n.Get("About.ThemeSystem"),
         };
 
     private async Task OpenReleasePageAsync()
@@ -191,7 +191,7 @@ public sealed partial class AboutViewModel : ObservableObject
         bool ok = await _launcher.LaunchUriAsync(uri);
         if (!ok)
         {
-            UpdateStatusText = "无法打开链接，请稍后重试。";
+            UpdateStatusText = L10n.Get("About.LinkLaunchFailed");
             HasUpdateStatus = true;
         }
     }
@@ -209,7 +209,7 @@ public sealed partial class AboutViewModel : ObservableObject
 
         IsCheckingUpdates = true;
         HasUpdateAvailable = false;
-        UpdateStatusText = "正在检查更新…";
+        UpdateStatusText = L10n.Get("About.CheckingUpdates");
         HasUpdateStatus = true;
         try
         {
@@ -217,19 +217,19 @@ public sealed partial class AboutViewModel : ObservableObject
             switch (result.Status)
             {
                 case UpdateCheckStatus.UpToDate:
-                    UpdateStatusText = "已是最新版本。";
+                    UpdateStatusText = L10n.Get("About.UpToDate");
                     break;
                 case UpdateCheckStatus.UpdateAvailable:
                     UpdateAvailableVersion = result.LatestVersion ?? string.Empty;
                     UpdateReleaseUrl = result.ReleaseUrl ?? string.Empty;
-                    UpdateStatusText = $"发现新版本 v{result.LatestVersion}。";
+                    UpdateStatusText = L10n.Format("About.UpdateAvailableFormat", result.LatestVersion ?? string.Empty);
                     HasUpdateAvailable = true;
                     break;
                 case UpdateCheckStatus.DevVersionNewer:
-                    UpdateStatusText = "当前为较新的开发版本。";
+                    UpdateStatusText = L10n.Get("About.DevVersionNewer");
                     break;
                 default:
-                    UpdateStatusText = $"检查更新失败：{result.ErrorMessage ?? "未知错误"}";
+                    UpdateStatusText = L10n.Format("About.UpdateCheckFailedFormat", result.ErrorMessage ?? L10n.Get("Common.Unknown"));
                     break;
             }
         }
@@ -239,7 +239,7 @@ public sealed partial class AboutViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"检查更新失败: {ex.GetType().Name}");
-            UpdateStatusText = "检查更新失败，请稍后重试。";
+            UpdateStatusText = L10n.Get("About.UpdateCheckFailed");
         }
         finally
         {
@@ -259,7 +259,7 @@ public sealed partial class AboutViewModel : ObservableObject
         {
             string text = await _diagnostics.BuildAsync(_lifetime.Token);
             await _clipboard.SetPlainTextAsync(text, _lifetime.Token);
-            UpdateStatusText = "诊断信息已复制到剪贴板。";
+            UpdateStatusText = L10n.Get("About.DiagnosticsCopied");
             HasUpdateStatus = true;
         }
         catch (OperationCanceledException)
@@ -268,7 +268,7 @@ public sealed partial class AboutViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"复制诊断信息失败: {ex.GetType().Name}");
-            UpdateStatusText = "复制诊断信息失败。";
+            UpdateStatusText = L10n.Get("About.DiagnosticsCopyFailed");
             HasUpdateStatus = true;
         }
         finally
@@ -287,7 +287,7 @@ public sealed partial class AboutViewModel : ObservableObject
         bool ok = await _launcher.LaunchUriAsync(uri);
         if (!ok)
         {
-            UpdateStatusText = "无法打开链接，请稍后重试。";
+            UpdateStatusText = L10n.Get("About.LinkLaunchFailed");
             HasUpdateStatus = true;
         }
     }
@@ -297,7 +297,7 @@ public sealed partial class AboutViewModel : ObservableObject
         bool ok = await _dataFolderOpener.OpenAsync();
         if (!ok)
         {
-            UpdateStatusText = "无法打开本地数据文件夹。";
+            UpdateStatusText = L10n.Get("About.OpenDataFolderFailed");
             HasUpdateStatus = true;
         }
     }
@@ -316,7 +316,7 @@ public sealed partial class AboutViewModel : ObservableObject
         try
         {
             await _backup.ExportAsync(path, _lifetime.Token);
-            UpdateStatusText = "便携备份已导出（不含 API Key）。";
+            UpdateStatusText = L10n.Get("About.BackupExported");
             HasUpdateStatus = true;
         }
         catch (OperationCanceledException)
@@ -325,7 +325,7 @@ public sealed partial class AboutViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"导出备份失败: {ex.GetType().Name}");
-            UpdateStatusText = "导出备份失败，请稍后重试。";
+            UpdateStatusText = L10n.Get("About.BackupExportFailed");
             HasUpdateStatus = true;
         }
     }
@@ -344,17 +344,17 @@ public sealed partial class AboutViewModel : ObservableObject
         {
             var preview = await _backup.InspectAsync(path, _lifetime.Token);
             UpdateStatusText =
-                $"备份可导入：{preview.AccountCount} 个账户、{preview.HistoryEntryCount} 条历史。" +
-                "导入为安全合并，已有账户保留本机凭据；新账户需要重新输入 API Key。";
+                L10n.Format("About.BackupImportPreview", preview.AccountCount, preview.HistoryEntryCount) +
+                L10n.Get("About.BackupImportMerge");
             HasUpdateStatus = true;
 
             // 本版本只实现安全合并（保留本机优先），不实现无提示全量覆盖。
             var result = await _backup.ImportAsync(path, BackupMergePreference.KeepLocal, _lifetime.Token);
             UpdateStatusText =
-                $"导入完成：新增 {result.AddedAccounts}、更新 {result.UpdatedAccounts}、" +
-                $"跳过 {result.SkippedAccounts}、失败 {result.FailedAccounts}。" +
+                L10n.Format("About.BackupImportDone", result.AddedAccounts, result.UpdatedAccounts) +
+                L10n.Format("About.BackupImportSkipped", result.SkippedAccounts, result.FailedAccounts) +
                 (result.AccountsNeedingCredential.Count > 0
-                    ? $" 以下账户需要重新输入 API Key：{string.Join("、", result.AccountsNeedingCredential)}"
+                    ? L10n.Format("About.BackupImportNeedingKey", string.Join("、", result.AccountsNeedingCredential))
                     : string.Empty);
             HasUpdateStatus = true;
         }
@@ -364,7 +364,7 @@ public sealed partial class AboutViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"导入备份失败: {ex.GetType().Name}");
-            UpdateStatusText = $"导入失败：{ex.Message}（已回滚本次变更）。";
+            UpdateStatusText = L10n.Format("About.BackupImportFailed", ex.Message);
             HasUpdateStatus = true;
         }
     }

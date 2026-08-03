@@ -31,6 +31,6 @@ public sealed partial class InsightsPage : UserControl
     {
         bool show = HistoryToggle.IsChecked == true;
         HistoryList.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-        HistoryToggle.Content = show ? "隐藏历史数据表" : "显示历史数据表";
+        HistoryToggle.Content = show ? ApiMonitor.Services.L10n.Get("Insights.HideHistory") : ApiMonitor.Services.L10n.Get("Insights.ShowHistory");
     }
 }

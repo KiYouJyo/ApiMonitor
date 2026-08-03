@@ -30,9 +30,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public bool AutoRefreshEnabled => Account.Monitoring.AutoRefreshEnabled;
 
-    public string AutoRefreshStatusText => AutoRefreshEnabled ? "自动刷新：已开启" : "自动刷新：已关闭";
+    public string AutoRefreshStatusText => AutoRefreshEnabled ? L10n.Get("Card.AutoRefreshOn") : L10n.Get("Card.AutoRefreshOff");
 
-    public string RefreshIntervalText => $"刷新间隔：{Account.Monitoring.RefreshIntervalMinutes} 分钟";
+    public string RefreshIntervalText => L10n.Format("Card.RefreshIntervalFormat", Account.Monitoring.RefreshIntervalMinutes);
 
     public string NextRefreshText
     {
@@ -40,16 +40,16 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         {
             if (!AutoRefreshEnabled)
             {
-                return "下次刷新：自动刷新已关闭";
+                return L10n.Get("Card.NextRefreshOff");
             }
 
             return Account.Monitoring.NextRefreshAtUtc is { } next
-                ? "下次刷新：" + FormatTime(next)
-                : "下次刷新：尚未查询";
+                ? L10n.Format("Card.NextRefreshAtFormat", FormatTime(next))
+                : L10n.Get("Card.NextRefreshNever");
         }
     }
 
-    public string ThresholdSummaryText { get; private set; } = "尚无余额数据";
+    public string ThresholdSummaryText { get; private set; } = L10n.Get("Card.NoBalanceData");
 
     public bool IsLowBalance { get; private set; }
 
@@ -58,10 +58,10 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public string StatusKindText => StatusKind switch
     {
-        AccountStatusKind.Normal => "正常",
-        AccountStatusKind.Low => "低余额",
-        AccountStatusKind.Failed => "失败",
-        _ => "未知",
+        AccountStatusKind.Normal => L10n.Get("Home.StatusNormal"),
+        AccountStatusKind.Low => L10n.Get("Home.StatusLow"),
+        AccountStatusKind.Failed => L10n.Get("Home.StatusFailed"),
+        _ => L10n.Get("Home.StatusUnknown"),
     };
 
     /// <summary>通知激活定位时的高亮标记（由主窗口清除）。</summary>
@@ -73,7 +73,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         Account.ProviderId == "openrouter"
             ? string.Equals(Account.CredentialMode, "management-key", StringComparison.OrdinalIgnoreCase)
                 ? "Management Key"
-                : "普通 API Key"
+                : L10n.Get("Card.CredentialModeApiKey")
             : string.Empty;
 
     public bool HasCredentialModeText => !string.IsNullOrEmpty(CredentialModeText);
@@ -81,9 +81,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     /// <summary>该账户通知开关摘要（三态：开启/关闭/继承全局）。</summary>
     public string NotificationsEnabledText => Account.Notification.NotificationsEnabled switch
     {
-        true => "通知：开启",
-        false => "通知：关闭",
-        _ => "通知：继承全局",
+        true => L10n.Get("Card.NotificationsOn"),
+        false => L10n.Get("Card.NotificationsOff"),
+        _ => L10n.Get("Card.NotificationsInherit"),
     };
 
     /// <summary>暂停提醒摘要（由通知状态读取，非持久化账户字段）。</summary>
@@ -109,13 +109,13 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     private bool _hasSnapshot;
 
     [ObservableProperty]
-    private string _availabilityText = "不可用";
+    private string _availabilityText = L10n.Get("Card.Unavailable");
 
     [ObservableProperty]
-    private string _lastSuccessText = "尚未成功更新";
+    private string _lastSuccessText = L10n.Get("Card.NotUpdatedYet");
 
     /// <summary>账户卡片“最近成功更新”整行文本（含前缀）。</summary>
-    public string LastSuccessLine => $"最近成功更新：{LastSuccessText}";
+    public string LastSuccessLine => L10n.Format("Card.LastSuccessLineFormat", LastSuccessText);
 
     [ObservableProperty]
     private string _lastErrorText = string.Empty;
@@ -158,8 +158,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         _copyAsync = copyAsync;
         _historyAsync = historyAsync;
 
-        AvailabilityText = "不可用";
-        LastSuccessText = "尚未成功更新";
+        AvailabilityText = L10n.Get("Card.Unavailable");
+        LastSuccessText = L10n.Get("Card.NotUpdatedYet");
         LastErrorText = string.Empty;
         BalanceLines = Array.Empty<BalanceLine>();
 
@@ -187,7 +187,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
         if (record?.LastQueryAttemptAt is not null && record.LastSuccessfulSnapshot is null)
         {
-            LastErrorText = "最近一次查询未成功";
+            LastErrorText = L10n.Get("Card.LastQueryFailed");
         }
 
         RecomputeStatusKind();
@@ -215,7 +215,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     {
         IsAvailable = snapshot.IsAvailable;
         HasSnapshot = true;
-        AvailabilityText = snapshot.IsAvailable ? "可用" : "不可用";
+        AvailabilityText = snapshot.IsAvailable ? L10n.Get("Card.Available") : L10n.Get("Card.Unavailable");
         LastSuccessText = FormatTime(snapshot.RetrievedAt);
         LastErrorText = string.Empty;
         _latestMetrics = snapshot.Metrics;
@@ -228,10 +228,10 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public void ApplyError(BalanceQueryError? error)
     {
-        LastErrorText = error?.Message ?? "查询失败。";
+        LastErrorText = error?.Message ?? L10n.Get("Card.QueryFailed");
         if (!HasSnapshot)
         {
-            AvailabilityText = "不可用";
+            AvailabilityText = L10n.Get("Card.Unavailable");
         }
 
         RecomputeStatusKind();
@@ -266,7 +266,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     {
         if (!HasSnapshot || _latestMetrics.Count == 0)
         {
-            ThresholdSummaryText = "尚无余额数据";
+            ThresholdSummaryText = L10n.Get("Card.NoBalanceData");
             IsLowBalance = false;
             OnPropertyChanged(nameof(ThresholdSummaryText));
             OnPropertyChanged(nameof(IsLowBalance));
@@ -289,18 +289,18 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         {
             bool anyEnabledRule = rules.Any(r =>
                 r.IsEnabled && _latestMetrics.Any(b => b.MetricId == r.MetricId));
-            ThresholdSummaryText = anyEnabledRule ? "余额正常" : "未启用提醒";
+            ThresholdSummaryText = anyEnabledRule ? L10n.Get("Card.BalanceNormal") : L10n.Get("Card.AlertsDisabled");
             IsLowBalance = false;
         }
         else if (below.Count == 1)
         {
             ThresholdSummaryText =
-                $"{below[0].DisplayName} 低于阈值 {BalanceFormatter.Format(below[0].Threshold)}";
+                L10n.Format("Card.BelowThresholdFormat", below[0].DisplayName, BalanceFormatter.Format(below[0].Threshold));
             IsLowBalance = true;
         }
         else
         {
-            ThresholdSummaryText = $"{below.Count} 个指标低于阈值";
+            ThresholdSummaryText = L10n.Format("Card.MetricsBelowThresholdFormat", below.Count);
             IsLowBalance = true;
         }
 

@@ -81,8 +81,8 @@ public sealed class JsonAccountStore : IAccountStore
                 cancellationToken);
 
             string message = string.IsNullOrEmpty(backup)
-                ? "账户数据文件版本不受支持，已重置。"
-                : $"账户数据文件版本不受支持，已备份为 {Path.GetFileName(backup)} 并重置。";
+                ? L10n.Get("Store.AccountSchemaReset")
+                : L10n.Format("Store.AccountSchemaResetBackedUp", Path.GetFileName(backup));
 
             return new AccountsFileLoadResult
             {

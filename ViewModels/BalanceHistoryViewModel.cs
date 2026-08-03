@@ -74,7 +74,7 @@ public sealed partial class BalanceHistoryViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"加载历史记录失败: {ex.GetType().Name}");
-            StatusMessage = "无法读取历史记录，请稍后重试。";
+            StatusMessage = L10n.Get("History.LoadFailed");
             HasStatus = true;
         }
         finally
@@ -90,13 +90,13 @@ public sealed partial class BalanceHistoryViewModel : ObservableObject
         {
             await _accountManager.ClearHistoryAsync(_accountId, CancellationToken.None);
             await LoadAsync();
-            StatusMessage = "历史记录已清除。";
+            StatusMessage = L10n.Get("History.Cleared");
             HasStatus = true;
         }
         catch (Exception ex)
         {
             _log?.Error($"清除历史失败: {ex.GetType().Name}");
-            StatusMessage = "清除历史记录失败，请稍后重试。";
+            StatusMessage = L10n.Get("History.ClearFailed");
             HasStatus = true;
         }
     }
@@ -116,8 +116,8 @@ public sealed class BalanceHistoryDisplayItem
     public BalanceHistoryDisplayItem(BalanceHistoryEntry entry)
     {
         TimeText = entry.SucceededAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
-        SourceText = entry.Source == BalanceQuerySource.Automatic ? "自动" : "手动";
-        AvailabilityText = entry.IsAvailable ? "可用" : "不可用";
+        SourceText = entry.Source == BalanceQuerySource.Automatic ? L10n.Get("Insights.SourceAutomatic") : L10n.Get("Insights.SourceManual");
+        AvailabilityText = entry.IsAvailable ? L10n.Get("Card.Available") : L10n.Get("Card.Unavailable");
         BalanceLines = entry.Metrics
             .Select(b =>
                 $"{BalanceMetricText.BuildLineText(b)}")

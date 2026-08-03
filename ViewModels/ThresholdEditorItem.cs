@@ -20,7 +20,7 @@ public sealed partial class ThresholdEditorItem : ObservableObject
 
     public string CurrentBalanceText => BalanceMetricText.FormatAmount(CurrentAmount);
 
-    public string CurrentBalanceLine => $"当前余额：{CurrentBalanceText}";
+    public string CurrentBalanceLine => L10n.Format("Threshold.CurrentBalanceFormat", CurrentBalanceText);
 
     public BalanceThresholdRule? OriginalRule { get; }
 
@@ -31,9 +31,9 @@ public sealed partial class ThresholdEditorItem : ObservableObject
     private string _thresholdText = string.Empty;
 
     [ObservableProperty]
-    private string _statusText = "未启用提醒";
+    private string _statusText = L10n.Get("Card.AlertsDisabled");
 
-    public string StatusLine => $"状态：{StatusText}";
+    public string StatusLine => L10n.Format("Threshold.StatusFormat", StatusText);
 
     public ThresholdEditorItem(BalanceMetric metric, BalanceThresholdRule? rule)
     {
@@ -119,13 +119,13 @@ public sealed partial class ThresholdEditorItem : ObservableObject
     {
         if (!IsEnabled)
         {
-            StatusText = "未启用提醒";
+            StatusText = L10n.Get("Card.AlertsDisabled");
             return;
         }
 
         if (!TryParseAmount(out var amount))
         {
-            StatusText = "无效金额";
+            StatusText = L10n.Get("Threshold.InvalidAmount");
             return;
         }
 
@@ -152,9 +152,9 @@ public sealed partial class ThresholdEditorItem : ObservableObject
 
         StatusText = ThresholdEvaluator.Evaluate(metric, rule) switch
         {
-            ThresholdStatus.BelowThreshold => $"低于阈值 {BalanceFormatter.Format(amount)}",
-            ThresholdStatus.Normal => "正常",
-            _ => "未启用提醒",
+            ThresholdStatus.BelowThreshold => L10n.Format("Threshold.BelowFormat", BalanceFormatter.Format(amount)),
+            ThresholdStatus.Normal => L10n.Get("Home.StatusNormal"),
+            _ => L10n.Get("Card.AlertsDisabled"),
         };
     }
 }

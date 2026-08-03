@@ -59,7 +59,7 @@ public sealed class NotificationActivationRouter
                 {
                     // 已删除账户：强制回到主页并显示普通提示，不崩溃。
                     _navigateHome();
-                    _showMessage("账户不存在", "该通知对应的账户已被删除。");
+                    _showMessage(L10n.Get("Notify.AccountMissingTitle"), L10n.Get("Notify.AccountMissingMessage"));
                 }
                 else
                 {

@@ -151,10 +151,10 @@ public sealed partial class InsightsViewModel : ObservableObject
         _filePicker = filePicker;
         _log = log ?? new AppLog(Path.GetTempPath());
 
-        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days7, "最近 7 天"));
-        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days30, "最近 30 天"));
-        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days90, "最近 90 天"));
-        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.All, "全部可用历史"));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days7, L10n.Get("Insights.Range7Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days30, L10n.Get("Insights.Range30Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days90, L10n.Get("Insights.Range90Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.All, L10n.Get("Insights.RangeAll")));
         SelectedRange = Ranges[1];
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -195,7 +195,7 @@ public sealed partial class InsightsViewModel : ObservableObject
             if (Accounts.Count == 0)
             {
                 HasData = false;
-                EmptyMessage = "尚未添加账户。请先在主页添加账户。";
+                EmptyMessage = L10n.Get("Insights.NoAccount");
                 return;
             }
 
@@ -298,7 +298,7 @@ public sealed partial class InsightsViewModel : ObservableObject
             if (Metrics.Count == 0)
             {
                 HasData = false;
-                EmptyMessage = "尚无足够的历史数据。余额成功刷新后，趋势将在这里显示。";
+                EmptyMessage = L10n.Get("Insights.EmptyState");
                 return;
             }
 
@@ -320,7 +320,7 @@ public sealed partial class InsightsViewModel : ObservableObject
         {
             _log?.Error($"加载洞察数据失败: {ex.GetType().Name}");
             HasData = false;
-            EmptyMessage = "加载历史数据失败，请稍后重试。";
+            EmptyMessage = L10n.Get("Insights.LoadError");
         }
         finally
         {
@@ -360,7 +360,7 @@ public sealed partial class InsightsViewModel : ObservableObject
             }
 
             HasData = points.Count > 0;
-            EmptyMessage = HasData ? string.Empty : "尚无足够的历史数据。余额成功刷新后，趋势将在这里显示。";
+            EmptyMessage = HasData ? string.Empty : L10n.Get("Insights.EmptyState");
 
             UpdateSummaryValues(points, ct);
             FillHistoryRows(ct);
@@ -385,7 +385,7 @@ public sealed partial class InsightsViewModel : ObservableObject
 
         if (values.Count == 0)
         {
-            CurrentValueText = "未知";
+            CurrentValueText = L10n.Get("Insights.UnknownValue");
             ChangeInRangeText = "—";
             FirstValueText = "—";
             LatestValueText = "—";
@@ -394,7 +394,7 @@ public sealed partial class InsightsViewModel : ObservableObject
             DailyConsumptionText = "—";
             EstimatedDaysLeftText = "—";
             EstimateExplanationText = string.Empty;
-            ChartSummaryText = "尚无数据";
+            ChartSummaryText = L10n.Get("Insights.NoData");
             HasChartSummary = false;
             return;
         }
@@ -420,22 +420,22 @@ public sealed partial class InsightsViewModel : ObservableObject
 
         if (estimate.IsAvailable && estimate.DailyConsumption > 0)
         {
-            DailyConsumptionText = $"{FormatValue(estimate.DailyConsumption, metric.Unit)} / 天";
+            DailyConsumptionText = L10n.Format("Insights.PerDayFormat", FormatValue(estimate.DailyConsumption, metric.Unit));
             EstimatedDaysLeftText = estimate.EstimatedDaysLeft is { } days
                 ? days.ToString("0.#", CultureInfo.CurrentCulture)
                 : "—";
-            EstimateExplanationText = "估算值 · 基于本机历史记录计算，实际消耗可能不同。";
+            EstimateExplanationText = L10n.Get("Insights.EstimateExplanation");
         }
         else
         {
             DailyConsumptionText = "—";
             EstimatedDaysLeftText = "—";
-            EstimateExplanationText = $"不可估算（{UnavailableReasonText(estimate.UnavailableReason)}）。";
+            EstimateExplanationText = L10n.Format("Insights.EstimateUnavailableFormat", UnavailableReasonText(estimate.UnavailableReason));
         }
 
         string timeSpan = $"{points[0].TimeUtc.ToLocalTime():MM-dd} ~ {points[^1].TimeUtc.ToLocalTime():MM-dd}";
         ChartSummaryText =
-            $"{metric.DisplayName} 趋势：{points.Count} 个数据点，{timeSpan}，最低 {MinimumValueText}，最高 {MaximumValueText}";
+            L10n.Format("Insights.ChartSummaryFormat", metric.DisplayName, points.Count, timeSpan, MinimumValueText, MaximumValueText);
         HasChartSummary = true;
     }
 
@@ -476,9 +476,9 @@ public sealed partial class InsightsViewModel : ObservableObject
                     MetricDisplayName = metric.DisplayName,
                     ValueText = metric.AvailableAmount is { } v
                         ? FormatValue(v, metric.Unit)
-                        : "未知",
+                        : L10n.Get("Insights.UnknownValue"),
                     Unit = metric.Unit,
-                    SourceText = entry.Source == BalanceQuerySource.Automatic ? "自动" : "手动",
+                    SourceText = entry.Source == BalanceQuerySource.Automatic ? L10n.Get("Insights.SourceAutomatic") : L10n.Get("Insights.SourceManual"),
                 });
                 break;
             }
@@ -510,7 +510,7 @@ public sealed partial class InsightsViewModel : ObservableObject
             string csv = await _csvExporter.ExportAsync(_loadedHistory, byId, _lifetime.Token);
             // UTF-8 with BOM。
             await File.WriteAllTextAsync(path, csv, new System.Text.UTF8Encoding(true), _lifetime.Token);
-            StatusMessage = "CSV 已导出。";
+            StatusMessage = L10n.Get("Insights.ExportCsvDone");
             HasStatus = true;
         }
         catch (OperationCanceledException)
@@ -519,7 +519,7 @@ public sealed partial class InsightsViewModel : ObservableObject
         catch (Exception ex)
         {
             _log?.Error($"导出 CSV 失败: {ex.GetType().Name}");
-            StatusMessage = "导出 CSV 失败，请稍后重试。";
+            StatusMessage = L10n.Get("Insights.ExportCsvFailed");
             HasStatus = true;
         }
         finally
@@ -541,13 +541,13 @@ public sealed partial class InsightsViewModel : ObservableObject
     private static string UnavailableReasonText(EstimateUnavailableReason? reason) =>
         reason switch
         {
-            EstimateUnavailableReason.NotEnoughData => "数据不足",
-            EstimateUnavailableReason.TimeSpanTooShort => "时间跨度不足",
-            EstimateUnavailableReason.NoConsumption => "尚未观察到消耗",
-            EstimateUnavailableReason.RecentTopUpOrReset => "最近主要为充值或重置",
-            EstimateUnavailableReason.UnsupportedMetric => "指标不支持预测",
-            EstimateUnavailableReason.UnknownCurrentValue => "当前值未知",
-            EstimateUnavailableReason.NonPositiveConsumption => "日消耗不为正",
-            _ => "无法估算",
+            EstimateUnavailableReason.NotEnoughData => L10n.Get("Insights.NotEnoughData"),
+            EstimateUnavailableReason.TimeSpanTooShort => L10n.Get("Insights.TimeSpanTooShort"),
+            EstimateUnavailableReason.NoConsumption => L10n.Get("Insights.NoConsumption"),
+            EstimateUnavailableReason.RecentTopUpOrReset => L10n.Get("Insights.RecentTopUp"),
+            EstimateUnavailableReason.UnsupportedMetric => L10n.Get("Insights.UnsupportedMetric"),
+            EstimateUnavailableReason.UnknownCurrentValue => L10n.Get("Insights.UnknownCurrentValue"),
+            EstimateUnavailableReason.NonPositiveConsumption => L10n.Get("Insights.NonPositiveConsumption"),
+            _ => L10n.Get("Insights.CannotEstimate"),
         };
 }

@@ -11,6 +11,17 @@ public sealed partial class AccountEditorDialog : ContentDialog
 
     public AccountEditorResult? Result { get; private set; }
 
+    /// <summary>对话框按钮/开关文本（v0.6.0 本地化，供 x:Bind）。</summary>
+    public string SaveButtonText => Services.L10n.Get("Common.Save");
+
+    public string CancelButtonText => Services.L10n.Get("Common.Cancel");
+
+    public string OnContentText => Services.L10n.Get("Settings.On");
+
+    public string OffContentText => Services.L10n.Get("Settings.Off");
+
+    public string AccountNamePlaceholderText => Services.L10n.Get("Dialog.AccountNamePlaceholder");
+
     public AccountEditorDialog(AccountEditorViewModel viewModel)
     {
         ViewModel = viewModel;

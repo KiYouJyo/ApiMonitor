@@ -230,4 +230,274 @@
   <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>状态：</value></data>
   <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>最近成功：</value></data>
   <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>尚未查询余额</value></data>
+  <data name="About.ArchitectureFormat" xml:space="preserve"><value>架构：{0}</value></data>
+  <data name="About.BackupExportFailed" xml:space="preserve"><value>导出备份失败，请稍后重试。</value></data>
+  <data name="About.BackupExported" xml:space="preserve"><value>便携备份已导出（不含 API Key）。</value></data>
+  <data name="About.BackupImportDone" xml:space="preserve"><value>导入完成：新增 {0}、更新 {1}、</value></data>
+  <data name="About.BackupImportFailed" xml:space="preserve"><value>导入失败：{0}（已回滚本次变更）。</value></data>
+  <data name="About.BackupImportMerge" xml:space="preserve"><value>导入为安全合并，已有账户保留本机凭据；新账户需要重新输入 API Key。</value></data>
+  <data name="About.BackupImportNeedingKey" xml:space="preserve"><value> 以下账户需要重新输入 API Key：{0}</value></data>
+  <data name="About.BackupImportPreview" xml:space="preserve"><value>备份可导入：{0} 个账户、{1} 条历史。</value></data>
+  <data name="About.BackupImportSkipped" xml:space="preserve"><value>跳过 {0}、失败 {1}。</value></data>
+  <data name="About.CurrentLanguageFormat" xml:space="preserve"><value>当前 UI 语言：{0}</value></data>
+  <data name="About.CurrentThemeFormat" xml:space="preserve"><value>当前主题：{0}</value></data>
+  <data name="About.DiagnosticsCopyFailed" xml:space="preserve"><value>复制诊断信息失败。</value></data>
+  <data name="About.DisplayVersionFormat" xml:space="preserve"><value>版本：v{0}</value></data>
+  <data name="About.LinkIssuesTitle" xml:space="preserve"><value>提交问题</value></data>
+  <data name="About.LinkLicenseTitle" xml:space="preserve"><value>MIT License</value></data>
+  <data name="About.LinkPrivacyTitle" xml:space="preserve"><value>隐私政策</value></data>
+  <data name="About.LinkReleasesTitle" xml:space="preserve"><value>Releases</value></data>
+  <data name="About.LinkRepositoryTitle" xml:space="preserve"><value>GitHub 仓库</value></data>
+  <data name="About.LinkSecurityTitle" xml:space="preserve"><value>安全政策</value></data>
+  <data name="About.LinkSupportTitle" xml:space="preserve"><value>支持文档</value></data>
+  <data name="About.LinkThirdPartyTitle" xml:space="preserve"><value>第三方声明</value></data>
+  <data name="About.OpenDataFolderFailed" xml:space="preserve"><value>无法打开本地数据文件夹。</value></data>
+  <data name="About.PackageIdentityFormat" xml:space="preserve"><value>Package Identity：{0}</value></data>
+  <data name="About.PackageVersionFormat" xml:space="preserve"><value>包版本：{0}</value></data>
+  <data name="About.ProviderCountFormat" xml:space="preserve"><value>当前 Provider 数量：{0}</value></data>
+  <data name="About.PublisherFormat" xml:space="preserve"><value>发布者：{0}</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>查询并记录你自己的 API 账户余额</value></data>
+  <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>发现新版本 v{0}。</value></data>
+  <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>检查更新失败：{0}</value></data>
+  <data name="Home.SubtitleFormat" xml:space="preserve"><value>查询并记录你自己的 API 账户余额（v{0}，支持 DeepSeek 与 OpenRouter）。</value></data>
+  <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。</value></data>
+  <data name="Home.AccountSummaryFormat" xml:space="preserve"><value>共 {0} 个账户 · 低余额 {1} · 查询失败 {2}</value></data>
+  <data name="Home.SnoozeUntilFormat" xml:space="preserve"><value>暂停提醒至 {0}</value></data>
+  <data name="Status.DataRecoveredTitle" xml:space="preserve"><value>本地数据已恢复</value></data>
+  <data name="Status.DataErrorTitle" xml:space="preserve"><value>本地数据错误</value></data>
+  <data name="Status.DataErrorCannotRead" xml:space="preserve"><value>无法读取本地数据，应用将继续以空数据启动。</value></data>
+  <data name="Status.AccountSavedTitle" xml:space="preserve"><value>账户已保存</value></data>
+  <data name="Status.AccountAddedMessage" xml:space="preserve"><value>账户“{0}”已添加。</value></data>
+  <data name="Status.AccountUpdatedMessage" xml:space="preserve"><value>账户“{0}”已更新。</value></data>
+  <data name="Status.AccountSaveFailed" xml:space="preserve"><value>保存账户失败，请稍后重试。</value></data>
+  <data name="Status.AccountDeletedTitle" xml:space="preserve"><value>账户已删除</value></data>
+  <data name="Status.AccountDeletedMessage" xml:space="preserve"><value>账户“{0}”及其凭据、余额快照与历史记录已删除。</value></data>
+  <data name="Status.AccountDeleteFailed" xml:space="preserve"><value>删除账户失败，请稍后重试。</value></data>
+  <data name="Status.QueryInProgressTitle" xml:space="preserve"><value>查询进行中</value></data>
+  <data name="Status.QueryInProgressMessage" xml:space="preserve"><value>该账户正在查询，请稍候。</value></data>
+  <data name="Status.QuerySuccessTitle" xml:space="preserve"><value>查询成功</value></data>
+  <data name="Status.QuerySuccessMessage" xml:space="preserve"><value>账户“{0}”的余额已更新。</value></data>
+  <data name="Status.QueryFailedTitle" xml:space="preserve"><value>查询失败</value></data>
+  <data name="Common.UnknownError" xml:space="preserve"><value>未知错误。</value></data>
+  <data name="Status.RefreshFailedTitle" xml:space="preserve"><value>刷新失败</value></data>
+  <data name="Status.RefreshFailedMessage" xml:space="preserve"><value>刷新全部账户时发生错误，请稍后重试。</value></data>
+  <data name="Status.AutoRefreshDoneTitle" xml:space="preserve"><value>自动刷新完成</value></data>
+  <data name="Status.AutoRefreshFailedTitle" xml:space="preserve"><value>自动刷新失败</value></data>
+  <data name="Status.CopyFailedTitle" xml:space="preserve"><value>复制失败</value></data>
+  <data name="Status.CopyNoKeyMessage" xml:space="preserve"><value>未找到该账户保存的 API Key，请重新编辑账户并保存密钥。</value></data>
+  <data name="Status.CopiedTitle" xml:space="preserve"><value>已复制</value></data>
+  <data name="Status.CopiedMessage" xml:space="preserve"><value>API Key 已复制，30 秒后将尝试从剪贴板清除。</value></data>
+  <data name="Status.CopyFailedMessage" xml:space="preserve"><value>复制 API Key 失败，请重试。</value></data>
+  <data name="Status.HistoryOpenFailed" xml:space="preserve"><value>打开历史记录失败，请稍后重试。</value></data>
+  <data name="Card.AutoRefreshOn" xml:space="preserve"><value>自动刷新：已开启</value></data>
+  <data name="Card.AutoRefreshOff" xml:space="preserve"><value>自动刷新：已关闭</value></data>
+  <data name="Card.RefreshIntervalFormat" xml:space="preserve"><value>刷新间隔：{0} 分钟</value></data>
+  <data name="Card.NextRefreshOff" xml:space="preserve"><value>下次刷新：自动刷新已关闭</value></data>
+  <data name="Card.NextRefreshAtFormat" xml:space="preserve"><value>下次刷新：{0}</value></data>
+  <data name="Card.NextRefreshNever" xml:space="preserve"><value>下次刷新：尚未查询</value></data>
+  <data name="Card.NoBalanceData" xml:space="preserve"><value>尚无余额数据</value></data>
+  <data name="Card.CredentialModeApiKey" xml:space="preserve"><value>普通 API Key</value></data>
+  <data name="Card.NotificationsOn" xml:space="preserve"><value>通知：开启</value></data>
+  <data name="Card.NotificationsOff" xml:space="preserve"><value>通知：关闭</value></data>
+  <data name="Card.NotificationsInherit" xml:space="preserve"><value>通知：继承全局</value></data>
+  <data name="Card.Unavailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="Card.NotUpdatedYet" xml:space="preserve"><value>尚未成功更新</value></data>
+  <data name="Card.LastSuccessLineFormat" xml:space="preserve"><value>最近成功更新：{0}</value></data>
+  <data name="Card.LastQueryFailed" xml:space="preserve"><value>最近一次查询未成功</value></data>
+  <data name="Card.Available" xml:space="preserve"><value>可用</value></data>
+  <data name="Card.QueryFailed" xml:space="preserve"><value>查询失败。</value></data>
+  <data name="Card.BalanceNormal" xml:space="preserve"><value>余额正常</value></data>
+  <data name="Card.AlertsDisabled" xml:space="preserve"><value>未启用提醒</value></data>
+  <data name="Card.BelowThresholdFormat" xml:space="preserve"><value>{0} 低于阈值 {1}</value></data>
+  <data name="Card.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} 个指标低于阈值</value></data>
+  <data name="Insights.NoData" xml:space="preserve"><value>尚无数据</value></data>
+  <data name="Insights.PerDayFormat" xml:space="preserve"><value>{0} / 天</value></data>
+  <data name="Insights.EstimateExplanation" xml:space="preserve"><value>估算值 · 基于本机历史记录计算，实际消耗可能不同。</value></data>
+  <data name="Insights.EstimateUnavailableFormat" xml:space="preserve"><value>不可估算（{0}）。</value></data>
+  <data name="Insights.ChartSummaryFormat" xml:space="preserve"><value>{0} 趋势：{1} 个数据点，{2}，最低 {3}，最高 {4}</value></data>
+  <data name="Insights.ExportCsvFailed" xml:space="preserve"><value>导出 CSV 失败，请稍后重试。</value></data>
+  <data name="Insights.NonPositiveConsumption" xml:space="preserve"><value>日消耗不为正</value></data>
+  <data name="Insights.CannotEstimate" xml:space="preserve"><value>无法估算</value></data>
+  <data name="Dialog.DeleteAccountTitle" xml:space="preserve"><value>删除账户</value></data>
+  <data name="Dialog.DeleteAccountConfirm" xml:space="preserve"><value>确定要删除账户“{0}”（{1}）吗？
+
+</value></data>
+  <data name="Dialog.DeleteAccountScope" xml:space="preserve"><value>删除后，该账户的凭据、余额历史、阈值、通知设置与活动通知将一并删除。
+</value></data>
+  <data name="Dialog.DeleteAccountIrreversible" xml:space="preserve"><value>此操作不可撤销。</value></data>
+  <data name="Dialog.HideToTrayTitle" xml:space="preserve"><value>隐藏到通知区域</value></data>
+  <data name="Dialog.HideToTrayMessage" xml:space="preserve"><value>ApiMonitor 将继续在通知区域运行。你可以单击右下角图标重新打开，或从托盘菜单退出。</value></data>
+  <data name="Dialog.HideAndRun" xml:space="preserve"><value>隐藏并继续运行</value></data>
+  <data name="Dialog.DontAskAgain" xml:space="preserve"><value>不再提示</value></data>
+  <data name="Dialog.RestartTitle" xml:space="preserve"><value>重启应用</value></data>
+  <data name="Dialog.RestartMessage" xml:space="preserve"><value>语言更改将在重启应用后生效。是否立即重启？</value></data>
+  <data name="Dialog.EditAccountTitle" xml:space="preserve"><value>编辑账户</value></data>
+  <data name="Dialog.AddAccountTitle" xml:space="preserve"><value>添加账户</value></data>
+  <data name="Dialog.TestSuccessTitle" xml:space="preserve"><value>连接成功</value></data>
+  <data name="Dialog.TestSuccessNoBalance" xml:space="preserve"><value>连接成功，但接口未返回余额明细。</value></data>
+  <data name="Dialog.TestSuccessSuffix" xml:space="preserve"><value>。点击保存后才会写入账户与凭据。</value></data>
+  <data name="Dialog.TestFailedTitle" xml:space="preserve"><value>连接失败</value></data>
+  <data name="Dialog.TestFailedDefault" xml:space="preserve"><value>测试连接失败。</value></data>
+  <data name="Dialog.TestUnexpectedError" xml:space="preserve"><value>测试连接时发生意外错误，请稍后重试。</value></data>
+  <data name="Dialog.ValidationTestPending" xml:space="preserve"><value>测试尚未完成，请稍候。</value></data>
+  <data name="Dialog.ValidationNameRequired" xml:space="preserve"><value>请输入账户显示名称。</value></data>
+  <data name="Dialog.ValidationKeyRequired" xml:space="preserve"><value>请输入 API Key。</value></data>
+  <data name="Dialog.ValidationThresholdInvalid" xml:space="preserve"><value>阈值金额必须是不小于 0 的有效数字。</value></data>
+  <data name="Dialog.ValidationIntervalInvalid" xml:space="preserve"><value>刷新间隔无效。</value></data>
+  <data name="Notification.InheritGlobal" xml:space="preserve"><value>继承全局</value></data>
+  <data name="Notification.NoRepeat" xml:space="preserve"><value>不重复</value></data>
+  <data name="Notification.Hours6" xml:space="preserve"><value>6 小时</value></data>
+  <data name="Notification.Hours12" xml:space="preserve"><value>12 小时</value></data>
+  <data name="Notification.Hours24" xml:space="preserve"><value>24 小时</value></data>
+  <data name="Notification.Days3" xml:space="preserve"><value>3 天</value></data>
+  <data name="Compact.NotQueried" xml:space="preserve"><value>尚未查询余额</value></data>
+  <data name="Compact.NoAccounts" xml:space="preserve"><value>尚未添加 API 账户</value></data>
+  <data name="Compact.RefreshFailed" xml:space="preserve"><value>刷新失败，请稍后重试。</value></data>
+  <data name="History.Loading" xml:space="preserve"><value>正在加载历史记录…</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>没有可显示的历史记录。</value></data>
+  <data name="History.ClearFailed" xml:space="preserve"><value>清除历史记录失败，请稍后重试。</value></data>
+  <data name="History.Cleared" xml:space="preserve"><value>历史记录已清除。</value></data>
+  <data name="History.ClearTitle" xml:space="preserve"><value>清除历史记录</value></data>
+  <data name="History.ClearConfirm" xml:space="preserve"><value>确定要清除该账户的全部余额历史吗？此操作不可撤销。</value></data>
+  <data name="Data.BackupDescription" xml:space="preserve"><value>便携备份包含账户元数据、Provider 非敏感设置、余额历史、阈值与设置；不包含 API Key 或凭据。</value></data>
+  <data name="Data.ImportPreview" xml:space="preserve"><value>备份可导入：{0} 个账户、{1} 条历史；</value></data>
+  <data name="Data.ImportPreviewProvider" xml:space="preserve"><value>Provider：{0}。导入为安全合并，不包含 API Key。</value></data>
+  <data name="Data.ImportDone" xml:space="preserve"><value>导入完成：新增 {0}、更新 {1}、</value></data>
+  <data name="Data.ImportSkipped" xml:space="preserve"><value>跳过 {0}、失败 {1}；</value></data>
+  <data name="Data.ImportHistory" xml:space="preserve"><value>历史新增 {0} 条、跳过 {1} 条。{2}</value></data>
+  <data name="Settings.NotificationLocalOnly" xml:space="preserve"><value>余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。</value></data>
+  <data name="Settings.LanguageSwitchFailed" xml:space="preserve"><value>语言切换失败，请稍后重试。</value></data>
+  <data name="Notification.Sent" xml:space="preserve"><value>通知已发送。</value></data>
+  <data name="Notification.SendFailed" xml:space="preserve"><value>无法发送测试通知，请稍后重试。</value></data>
+  <data name="Notification.SentDetailed" xml:space="preserve"><value>测试通知已发送。如果未显示，请检查 Windows 通知设置或勿扰模式。</value></data>
+  <data name="Notification.SendFailedDetailed" xml:space="preserve"><value>测试通知发送失败，请检查 Windows 通知设置。</value></data>
+  <data name="Metric.BalanceFormat" xml:space="preserve"><value>{0} 余额 {1}</value></data>
+  <data name="Metric.ValueFormat" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="Metric.UnlimitedFormat" xml:space="preserve"><value>{0}：无限额度</value></data>
+  <data name="Metric.TotalFormat" xml:space="preserve"><value>总额 {0}</value></data>
+  <data name="Metric.GrantedFormat" xml:space="preserve"><value>赠送 {0}</value></data>
+  <data name="Metric.ToppedUpFormat" xml:space="preserve"><value>充值 {0}</value></data>
+  <data name="Metric.CumulativeTopUpFormat" xml:space="preserve"><value>累计充值 {0}</value></data>
+  <data name="Metric.CumulativeUsedFormat" xml:space="preserve"><value>累计使用 {0}</value></data>
+  <data name="Metric.LimitFormat" xml:space="preserve"><value> / 上限 {0}</value></data>
+  <data name="Metric.UsedFormat" xml:space="preserve"><value> · 已用 {0}</value></data>
+  <data name="Metric.BelowThresholdFormat" xml:space="preserve"><value>{0}，已低于阈值 {1}</value></data>
+  <data name="Metric.RecoveredFormat" xml:space="preserve"><value>{0} 余额已恢复至 {1}</value></data>
+  <data name="Metric.RecoveredGenericFormat" xml:space="preserve"><value>{0} 已恢复至 {1}</value></data>
+  <data name="Tray.Refreshing" xml:space="preserve"><value>正在刷新</value></data>
+  <data name="Tray.RecentFailure" xml:space="preserve"><value>最近刷新失败</value></data>
+  <data name="Tray.AutoRefreshRunning" xml:space="preserve"><value>自动刷新：运行中</value></data>
+  <data name="Tray.AutoRefreshStopped" xml:space="preserve"><value>自动刷新：已关闭</value></data>
+  <data name="Tray.LowBalanceNormal" xml:space="preserve"><value>低余额：正常</value></data>
+  <data name="Tray.LowBalanceUnknown" xml:space="preserve"><value>低余额：未知</value></data>
+  <data name="Tray.LowBalanceCountFormat" xml:space="preserve"><value>低余额：{0} 项</value></data>
+  <data name="Tray.MetricsBelowThresholdFormat" xml:space="preserve"><value>{0} 个指标低于阈值</value></data>
+  <data name="Tray.ResidencyEnabled" xml:space="preserve"><value>通知区域图标已启用。隐藏到通知区域后，余额自动刷新将继续运行。选择“退出 ApiMonitor”后才会完全结束程序。</value></data>
+  <data name="Tray.StartupDisabledByUser" xml:space="preserve"><value>登录启动已被你在 Windows 启动应用设置中关闭。可在应用内重新开启。</value></data>
+  <data name="Tray.StartupDisabledByPolicy" xml:space="preserve"><value>登录启动已被组织策略限制，无法在应用内开启。</value></data>
+  <data name="Tray.StartupEnabledByPolicy" xml:space="preserve"><value>登录启动由系统策略启用。</value></data>
+  <data name="Settings.EnableNotificationsOnContent" xml:space="preserve"><value>开启</value></data>
+  <data name="Settings.EnableNotificationsOffContent" xml:space="preserve"><value>关闭</value></data>
+  <data name="Settings.RecoveryNotificationsOnContent" xml:space="preserve"><value>开启</value></data>
+  <data name="Settings.RecoveryNotificationsOffContent" xml:space="preserve"><value>关闭</value></data>
+  <data name="Compact.AlwaysOnTopOnContent" xml:space="preserve"><value>开</value></data>
+  <data name="Compact.AlwaysOnTopOffContent" xml:space="preserve"><value>关</value></data>
+  <data name="Settings.SendTestNotificationContent" xml:space="preserve"><value>发送测试通知</value></data>
+  <data name="Settings.OpenNotificationSettingsContent" xml:space="preserve"><value>打开 Windows 通知设置</value></data>
+  <data name="Settings.StartWithWindowsHeader" xml:space="preserve"><value>登录 Windows 时启动 ApiMonitor</value></data>
+  <data name="Compact.RefreshButton.Content" xml:space="preserve"><value>刷新</value></data>
+  <data name="Compact.AlwaysOnTop.Header" xml:space="preserve"><value>始终置顶</value></data>
+  <data name="Dialog.AccountName" xml:space="preserve"><value>账户显示名称</value></data>
+  <data name="Dialog.AccountNamePlaceholder" xml:space="preserve"><value>例如：我的 DeepSeek 账户</value></data>
+  <data name="Dialog.AccountNotification" xml:space="preserve"><value>该账户通知</value></data>
+  <data name="Dialog.AutoRefresh" xml:space="preserve"><value>自动刷新</value></data>
+  <data name="Dialog.CredentialHint" xml:space="preserve"><value>已保存凭据：留空则继续使用现有 API Key。</value></data>
+  <data name="Dialog.CredentialMode" xml:space="preserve"><value>凭据模式</value></data>
+  <data name="Dialog.CredentialModeChanged" xml:space="preserve"><value>凭据模式已更改，请重新测试连接后才能保存。</value></data>
+  <data name="Dialog.NotificationTitle" xml:space="preserve"><value>通知设置</value></data>
+  <data name="Dialog.RecoveryNotifications" xml:space="preserve"><value>余额恢复提醒</value></data>
+  <data name="Dialog.RefreshInterval" xml:space="preserve"><value>刷新间隔</value></data>
+  <data name="Dialog.RefreshIntervalHint" xml:space="preserve"><value>当前版本仅在应用正在运行时自动刷新。关闭应用后将停止监测。</value></data>
+  <data name="Dialog.RepeatInterval" xml:space="preserve"><value>重复提醒间隔</value></data>
+  <data name="Dialog.ThresholdEmpty" xml:space="preserve"><value>暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各指标低余额阈值。</value></data>
+  <data name="Dialog.ThresholdTitle" xml:space="preserve"><value>低余额阈值</value></data>
+  <data name="Update.NotFound404" xml:space="preserve"><value>未找到发布信息（404）。</value></data>
+  <data name="Update.Forbidden403" xml:space="preserve"><value>访问被限制（403，可能是速率限制）。</value></data>
+  <data name="Update.HttpError" xml:space="preserve"><value>HTTP {0}。</value></data>
+  <data name="Update.IncompleteData" xml:space="preserve"><value>发布信息不完整。</value></data>
+  <data name="Update.Timeout" xml:space="preserve"><value>检查超时（15 秒）。</value></data>
+  <data name="Update.NetworkError" xml:space="preserve"><value>网络错误：{0}</value></data>
+  <data name="History.DialogTitle" xml:space="preserve"><value>余额历史</value></data>
+  <data name="History.EmptyDetailed" xml:space="preserve"><value>暂无历史记录。成功的手动或自动查询会在此显示。</value></data>
+  <data name="History.ClearConfirmDetailed" xml:space="preserve"><value>确定清除该账户全部历史记录？不会删除账户、密钥或当前余额。</value></data>
+  <data name="About.DocReadFailed" xml:space="preserve"><value>无法读取本地文档。</value></data>
+  <data name="About.DocNotFound" xml:space="preserve"><value>本地文档未找到。</value></data>
+  <data name="Notification.MoreBelowThreshold" xml:space="preserve"><value>另有 {0} 项余额低于阈值</value></data>
+  <data name="Threshold.CurrentBalanceFormat" xml:space="preserve"><value>当前余额：{0}</value></data>
+  <data name="Threshold.StatusFormat" xml:space="preserve"><value>状态：{0}</value></data>
+  <data name="Threshold.InvalidAmount" xml:space="preserve"><value>无效金额</value></data>
+  <data name="Threshold.BelowFormat" xml:space="preserve"><value>低于阈值 {0}</value></data>
+  <data name="Provider.OpenRouterDescription" xml:space="preserve"><value>支持普通 API Key（查询密钥剩余额度与周期使用量）与 Management Key（查询账户总 Credits）。</value></data>
+  <data name="Provider.OpenRouterApiKeyMode" xml:space="preserve"><value>普通 API Key</value></data>
+  <data name="Provider.OpenRouterApiKeyHint" xml:space="preserve"><value>只查询该密钥的剩余额度与使用量，不读取账户总 Credits。</value></data>
+  <data name="Provider.OpenRouterMgmtHint" xml:space="preserve"><value>权限高于普通 API Key，仅在需要查询账户总 Credits 时使用。密钥仍只保存在 Windows Credential Locker。</value></data>
+  <data name="Provider.OpenRouterKeyInputHint" xml:space="preserve"><value>sk-or-…（普通 Key）或 sk-or-v1-…（Management Key）</value></data>
+  <data name="Provider.DeepSeekDescription" xml:space="preserve"><value>查询 DeepSeek 账户各币种总余额（CNY/USD 等）。</value></data>
+  <data name="Provider.DeepSeekKeyHint" xml:space="preserve"><value>DeepSeek 平台 API Key，形如 sk-…，仅用于请求官方余额接口。</value></data>
+  <data name="Provider.ErrorNoKey" xml:space="preserve"><value>未提供 API Key。</value></data>
+  <data name="Provider.ErrorTimeout" xml:space="preserve"><value>请求超时（15 秒），请稍后重试。</value></data>
+  <data name="Provider.ErrorNetwork" xml:space="preserve"><value>无法连接 OpenRouter 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorNetworkDeepSeek" xml:space="preserve"><value>无法连接 DeepSeek 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorUnexpected" xml:space="preserve"><value>查询时发生意外错误，请稍后重试。</value></data>
+  <data name="Provider.Error401" xml:space="preserve"><value>API Key 无效或已过期（401）。</value></data>
+  <data name="Provider.Error402" xml:space="preserve"><value>账户余额不足或需要付款（402）。</value></data>
+  <data name="Provider.Error403Credits" xml:space="preserve"><value>访问被拒绝（403）：普通 API Key 无法查询账户 Credits，请使用 Management Key。</value></data>
+  <data name="Provider.Error403" xml:space="preserve"><value>访问被拒绝（403），请检查密钥权限。</value></data>
+  <data name="Provider.Error403DeepSeek" xml:space="preserve"><value>访问被拒绝（403），请检查账户权限。</value></data>
+  <data name="Provider.Error429" xml:space="preserve"><value>请求过于频繁（429），请稍后重试。</value></data>
+  <data name="Provider.ErrorServiceUnavailable" xml:space="preserve"><value>{0} 服务暂时不可用（HTTP {1}）。</value></data>
+  <data name="Provider.ErrorUnexpectedStatus" xml:space="preserve"><value>服务返回了意外的 HTTP 状态码 {0}。</value></data>
+  <data name="Provider.ErrorEmptyContent" xml:space="preserve"><value>接口返回了空内容。</value></data>
+  <data name="Provider.ErrorInvalidJson" xml:space="preserve"><value>接口返回的 JSON 格式无法解析。</value></data>
+  <data name="Provider.ErrorMissingData" xml:space="preserve"><value>接口响应缺少 data 字段。</value></data>
+  <data name="Backup.ErrorTooManyEntries" xml:space="preserve"><value>备份条目数量超出上限。</value></data>
+  <data name="Backup.ErrorPathEntry" xml:space="preserve"><value>备份包含子目录或路径条目：{0}</value></data>
+  <data name="Backup.ErrorInvalidFileName" xml:space="preserve"><value>备份包含非法文件名：{0}</value></data>
+  <data name="Backup.ErrorFileTooLarge" xml:space="preserve"><value>备份单文件超出大小上限：{0}</value></data>
+  <data name="Backup.ErrorTotalTooLarge" xml:space="preserve"><value>备份解压总大小超出上限。</value></data>
+  <data name="Backup.ErrorMissingManifest" xml:space="preserve"><value>备份缺少 manifest.json。</value></data>
+  <data name="Backup.ErrorMissingFile" xml:space="preserve"><value>备份清单包含缺失文件：{0}</value></data>
+  <data name="Backup.ErrorSizeMismatch" xml:space="preserve"><value>备份文件大小不匹配：{0}</value></data>
+  <data name="Backup.ErrorHashMismatch" xml:space="preserve"><value>备份文件校验和不匹配：{0}</value></data>
+  <data name="Backup.ErrorFormatNewer" xml:space="preserve"><value>备份格式版本 {0} 高于当前支持版本。</value></data>
+  <data name="Backup.ErrorContainsSecrets" xml:space="preserve"><value>备份清单标记为包含机密，已拒绝导入。</value></data>
+  <data name="Backup.ErrorUnknownFile" xml:space="preserve"><value>备份清单包含未知文件：{0}</value></data>
+  <data name="Backup.ErrorAccountSchemaNewer" xml:space="preserve"><value>备份账户数据版本高于当前支持版本。</value></data>
+  <data name="Backup.ErrorRecordsSchemaNewer" xml:space="preserve"><value>备份余额数据版本高于当前支持版本。</value></data>
+  <data name="Backup.ErrorInvalidManifest" xml:space="preserve"><value>备份清单无效或不安全。</value></data>
+  <data name="Backup.ErrorEmptyJson" xml:space="preserve"><value>JSON 内容为空。</value></data>
+  <data name="Backup.ErrorJsonParse" xml:space="preserve"><value>JSON 解析失败（{0}）：{1}</value></data>
+  <data name="Account.ErrorUnsupportedProvider" xml:space="preserve"><value>不支持的 Provider。</value></data>
+  <data name="Account.ErrorKeyRequiredForTest" xml:space="preserve"><value>请输入 API Key 后再测试连接。</value></data>
+  <data name="Account.ErrorNameRequired" xml:space="preserve"><value>账户显示名称不能为空。</value></data>
+  <data name="Account.ErrorUnsupportedProviderId" xml:space="preserve"><value>不支持的 Provider: {0}</value></data>
+  <data name="Account.ErrorBusy" xml:space="preserve"><value>该账户正在查询中，请稍候。</value></data>
+  <data name="Account.ErrorNotFound" xml:space="preserve"><value>未找到该账户。</value></data>
+  <data name="Account.ErrorProviderUnsupported" xml:space="preserve"><value>该账户的 Provider 不受支持。</value></data>
+  <data name="Account.ErrorNoSavedKey" xml:space="preserve"><value>该账户没有保存的 API Key。</value></data>
+  <data name="Account.ErrorReadKeyFailed" xml:space="preserve"><value>读取保存的 API Key 失败。</value></data>
+  <data name="Store.AccountSchemaReset" xml:space="preserve"><value>账户数据文件版本不受支持，已重置。</value></data>
+  <data name="Store.AccountSchemaResetBackedUp" xml:space="preserve"><value>账户数据文件版本不受支持，已备份为 {0} 并重置。</value></data>
+  <data name="Store.RecordsSchemaReset" xml:space="preserve"><value>余额记录数据文件版本不受支持，已重置。</value></data>
+  <data name="Store.RecordsSchemaResetBackedUp" xml:space="preserve"><value>余额记录数据文件版本不受支持，已备份为 {0} 并重置。</value></data>
+  <data name="Notify.AccountMissingTitle" xml:space="preserve"><value>账户不存在</value></data>
+  <data name="Notify.AccountMissingMessage" xml:space="preserve"><value>该通知对应的账户已被删除。</value></data>
+  <data name="Insights.TrendChartName" xml:space="preserve"><value>趋势图</value></data>
+  <data name="History.LoadFailed" xml:space="preserve"><value>无法读取历史记录，请稍后重试。</value></data>
+  <data name="Data.NoProviderData" xml:space="preserve"><value>无 Provider 数据</value></data>
+  <data name="Clipboard.DispatcherUnavailable" xml:space="preserve"><value>UI DispatcherQueue 不可用。</value></data>
+  <data name="Provider.ErrorMissingField" xml:space="preserve"><value>接口响应缺少必需字段。</value></data>
+  <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>接口响应缺少必需字段（total_credits）。</value></data>
+  <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} 无法读取，已重置。</value></data>
+  <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} 内容损坏，已备份为 {1} 并重置。</value></data>
 </root>

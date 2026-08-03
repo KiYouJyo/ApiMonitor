@@ -32,7 +32,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
     public ProviderInfo Info { get; } = new(
         ProviderId,
         DisplayName,
-        "支持普通 API Key（查询密钥剩余额度与周期使用量）与 Management Key（查询账户总 Credits）。",
+        L10n.Get("Provider.OpenRouterDescription"),
         SupportsAccountBalance: true,
         SupportsKeyQuota: true,
         SupportedMetricKinds: new[]
@@ -45,16 +45,16 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             new ProviderCredentialOption(
                 ApiKeyMode,
-                "普通 API Key",
-                "只查询该密钥的剩余额度与使用量，不读取账户总 Credits。",
+                L10n.Get("Provider.OpenRouterApiKeyMode"),
+                L10n.Get("Provider.OpenRouterApiKeyHint"),
                 IsDefault: true),
             new ProviderCredentialOption(
                 ManagementKeyMode,
                 "Management Key",
-                "权限高于普通 API Key，仅在需要查询账户总 Credits 时使用。密钥仍只保存在 Windows Credential Locker。",
+                L10n.Get("Provider.OpenRouterMgmtHint"),
                 IsDefault: false),
         },
-        ApiKeyInputHint: "sk-or-…（普通 Key）或 sk-or-v1-…（Management Key）",
+        ApiKeyInputHint: L10n.Get("Provider.OpenRouterKeyInputHint"),
         HelpUrl: "https://openrouter.ai/settings/keys",
         SupportsTestConnection: true);
 
@@ -77,7 +77,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.MissingCredential,
-                "未提供 API Key。");
+                L10n.Get("Provider.ErrorNoKey"));
         }
 
         // 凭据模式是用户明确选择的账户设置；null 按默认普通 Key 处理。
@@ -105,20 +105,20 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Timeout,
-                "请求超时（15 秒），请稍后重试。");
+                L10n.Get("Provider.ErrorTimeout"));
         }
         catch (HttpRequestException)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Network,
-                "无法连接 OpenRouter 服务，请检查网络或 DNS。");
+                L10n.Get("Provider.ErrorNetwork"));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _log?.Error($"OpenRouter 查询发生意外错误: {ex.GetType().Name}");
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unknown,
-                "查询时发生意外错误，请稍后重试。");
+                L10n.Get("Provider.ErrorUnexpected"));
         }
     }
 
@@ -134,14 +134,14 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unauthorized,
-                "API Key 无效或已过期（401）。");
+                L10n.Get("Provider.Error401"));
         }
 
         if (response.StatusCode == (HttpStatusCode)402)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.PaymentRequired,
-                "账户余额不足或需要付款（402）。");
+                L10n.Get("Provider.Error402"));
         }
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
@@ -149,31 +149,31 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
             return useManagementKey
                 ? BalanceQueryResult.Failure(
                     BalanceErrorKind.Forbidden,
-                    "访问被拒绝（403）：普通 API Key 无法查询账户 Credits，请使用 Management Key。")
+                    L10n.Get("Provider.Error403Credits"))
                 : BalanceQueryResult.Failure(
                     BalanceErrorKind.Forbidden,
-                    "访问被拒绝（403），请检查密钥权限。");
+                    L10n.Get("Provider.Error403"));
         }
 
         if (response.StatusCode == (HttpStatusCode)429)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.RateLimited,
-                "请求过于频繁（429），请稍后重试。");
+                L10n.Get("Provider.Error429"));
         }
 
         if ((int)response.StatusCode >= 500)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.ServerError,
-                $"OpenRouter 服务暂时不可用（HTTP {(int)response.StatusCode}）。");
+                L10n.Format("Provider.ErrorServiceUnavailable", (int)response.StatusCode));
         }
 
         if (!response.IsSuccessStatusCode)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.Unknown,
-                $"服务返回了意外的 HTTP 状态码 {(int)response.StatusCode}。");
+                L10n.Format("Provider.ErrorUnexpectedStatus", (int)response.StatusCode));
         }
 
         string body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -181,7 +181,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.EmptyContent,
-                "接口返回了空内容。");
+                L10n.Get("Provider.ErrorEmptyContent"));
         }
 
         return useManagementKey
@@ -200,7 +200,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidJson,
-                "接口返回的 JSON 格式无法解析。");
+                L10n.Get("Provider.ErrorInvalidJson"));
         }
 
         var data = dto?.Data;
@@ -208,7 +208,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidResponse,
-                "接口响应缺少 data 字段。");
+                L10n.Get("Provider.ErrorMissingData"));
         }
 
         decimal? limit = ReadDecimal(data.Limit);
@@ -230,7 +230,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidResponse,
-                "接口响应缺少必需字段。");
+                L10n.Get("Provider.ErrorMissingField"));
         }
 
         var metrics = new List<BalanceMetric>
@@ -286,7 +286,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidJson,
-                "接口返回的 JSON 格式无法解析。");
+                L10n.Get("Provider.ErrorInvalidJson"));
         }
 
         decimal? totalCredits = ReadDecimal(dto?.TotalCredits);
@@ -295,7 +295,7 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.InvalidResponse,
-                "接口响应缺少必需字段（total_credits）。");
+                L10n.Get("Provider.ErrorMissingTotalCredits"));
         }
 
         // remaining_credits = total_credits - total_usage；不要强制把负数钳制为 0。
