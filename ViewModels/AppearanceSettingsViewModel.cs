@@ -54,6 +54,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasStatus;
 
+    /// <summary>启动初始化中：跳过主题/语言切换触发的立即保存，避免启动期并发写盘。</summary>
+    private bool _isInitializing;
+
     public AppearanceSettingsViewModel(
         IAppearanceSettingsStore store,
         IAppearanceService appearance,
@@ -75,6 +78,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        _isInitializing = true;
         try
         {
             var settings = await _store.LoadAsync(cancellationToken);
@@ -93,16 +97,28 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         {
             _log?.Error($"初始化外观设置失败: {ex.GetType().Name}");
         }
+        finally
+        {
+            _isInitializing = false;
+        }
     }
 
     partial void OnSelectedThemeChanged(ThemeOption value)
     {
         _appearance.ApplyTheme(value.Theme);
-        _ = SaveAsync();
+        if (!_isInitializing)
+        {
+            _ = SaveAsync();
+        }
     }
 
     partial void OnSelectedLanguageChanged(LanguageOption value)
     {
+        if (_isInitializing)
+        {
+            return;
+        }
+
         // 语言切换：保存 PrimaryLanguageOverride，提示重启，提供“立即重启/稍后”。
         _ = HandleLanguageChangeAsync(value);
     }
@@ -151,8 +167,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         {
             var settings = new AppearanceSettingsData
             {
-                Theme = SelectedTheme.Theme.ToString(),
-                Language = SelectedLanguage.Language.ToString(),
+                Theme = SelectedTheme?.Theme.ToString() ?? "System",
+                Language = SelectedLanguage?.Language.ToString() ?? "System",
             };
             await _store.SaveAsync(settings, CancellationToken.None);
             // 重启前安全保存：语言偏好由 LanguageService 写 PrimaryLanguageOverride，
@@ -161,7 +177,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _log?.Error($"保存外观设置失败: {ex.GetType().Name}");
+            _log?.Error($"保存外观设置失败: {ex}");
         }
     }
 

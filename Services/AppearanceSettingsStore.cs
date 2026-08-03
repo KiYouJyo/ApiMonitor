@@ -50,6 +50,8 @@ public sealed class JsonAppearanceSettingsStore : IAppearanceSettingsStore
 
     private readonly string _directory;
     private readonly JsonSerializerOptions _options;
+    // 同一文件 Load/Save 串行化，避免并发读写互相锁文件（v0.6.0 修复）。
+    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public JsonAppearanceSettingsStore(string directory)
     {
@@ -64,27 +66,43 @@ public sealed class JsonAppearanceSettingsStore : IAppearanceSettingsStore
 
     public async Task<AppearanceSettingsData> LoadAsync(CancellationToken cancellationToken)
     {
-        var result = await AtomicJsonFile.ReadOrRecoverAsync(
-            _directory,
-            FileName,
-            _options,
-            static () => new AppearanceSettingsData(),
-            cancellationToken);
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            var result = await AtomicJsonFile.ReadOrRecoverAsync(
+                _directory,
+                FileName,
+                _options,
+                static () => new AppearanceSettingsData(),
+                cancellationToken);
 
-        // 只接受已知枚举值；未知/未来值回退默认，避免升级后崩溃。
-        var data = result.Data;
-        data.Theme = Enum.TryParse<AppThemePreference>(data.Theme, ignoreCase: true, out var theme)
-            ? theme.ToString()
-            : nameof(AppThemePreference.System);
-        data.Language = Enum.TryParse<AppLanguagePreference>(data.Language, ignoreCase: true, out var language)
-            ? language.ToString()
-            : nameof(AppLanguagePreference.System);
-        return data;
+            // 只接受已知枚举值；未知/未来值回退默认，避免升级后崩溃。
+            var data = result.Data;
+            data.Theme = Enum.TryParse<AppThemePreference>(data.Theme, ignoreCase: true, out var theme)
+                ? theme.ToString()
+                : nameof(AppThemePreference.System);
+            data.Language = Enum.TryParse<AppLanguagePreference>(data.Language, ignoreCase: true, out var language)
+                ? language.ToString()
+                : nameof(AppLanguagePreference.System);
+            return data;
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 
-    public Task SaveAsync(AppearanceSettingsData settings, CancellationToken cancellationToken)
+    public async Task SaveAsync(AppearanceSettingsData settings, CancellationToken cancellationToken)
     {
-        settings.SchemaVersion = AppearanceSettingsData.CurrentSchemaVersion;
-        return AtomicJsonFile.WriteAsync(_directory, FileName, settings, _options, cancellationToken);
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            settings.SchemaVersion = AppearanceSettingsData.CurrentSchemaVersion;
+            await AtomicJsonFile.WriteAsync(_directory, FileName, settings, _options, cancellationToken);
+        }
+        finally
+        {
+            _gate.Release();
+        }
     }
 }

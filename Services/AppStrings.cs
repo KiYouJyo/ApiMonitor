@@ -8,7 +8,9 @@ public sealed class AppStrings : IAppStrings
 
     public AppStrings()
     {
-        _loader = ResourceLoader.GetForCurrentView("Resources");
+        // GetForViewIndependentUse 在打包与未打包（无 Package Identity）下均可用，
+        // 不依赖当前视图；GetForCurrentView 在未打包调试时会抛 0x80073B27。
+        _loader = ResourceLoader.GetForViewIndependentUse("Resources");
     }
 
     public string Get(string key)

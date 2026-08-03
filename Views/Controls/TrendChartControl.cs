@@ -90,13 +90,13 @@ public sealed class TrendChartControl : UserControl
             Text = "尚无足够的历史数据",
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
         };
 
         _summaryText = new TextBlock
         {
             TextWrapping = TextWrapping.Wrap,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
             FontSize = 12,
         };
 
@@ -166,7 +166,7 @@ public sealed class TrendChartControl : UserControl
             TopPadding + (double)((max - v) / range) * (height - TopPadding - BottomPadding);
 
         // 网格线（ThemeResource 画笔，深色/浅色均可辨认）。
-        var gridBrush = (Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"];
+        var gridBrush = GetThemeBrush("DividerStrokeColorDefaultBrush");
         for (int i = 0; i <= 4; i++)
         {
             double y = TopPadding + i * (height - TopPadding - BottomPadding) / 4;
@@ -186,7 +186,7 @@ public sealed class TrendChartControl : UserControl
             {
                 Text = FormatAxisValue(tickValue),
                 FontSize = 10,
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                Foreground = GetThemeBrush("TextFillColorSecondaryBrush"),
             };
             Canvas.SetLeft(label, 0);
             Canvas.SetTop(label, y - 8);
@@ -200,7 +200,7 @@ public sealed class TrendChartControl : UserControl
         AddTimeLabel(valid[^1].TimeUtc, ToX(valid[^1].TimeUtc), width);
 
         // 折线：只在相邻有效点之间连线（不连接跨越缺失数据的虚假连续线）。
-        var lineBrush = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+        var lineBrush = GetThemeBrush("AccentFillColorDefaultBrush");
         for (int i = 1; i < valid.Count; i++)
         {
             var prev = valid[i - 1];
@@ -230,7 +230,7 @@ public sealed class TrendChartControl : UserControl
         }
 
         // 数据点（可见的小圆点，状态不只靠颜色——辅以点本身）。
-        var dotBrush = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+        var dotBrush = GetThemeBrush("AccentFillColorDefaultBrush");
         for (int i = 0; i < valid.Count; i++)
         {
             var (time, value) = valid[i];
@@ -285,7 +285,7 @@ public sealed class TrendChartControl : UserControl
         {
             Text = timeUtc.ToLocalTime().ToString("MM-dd HH:mm", CultureInfo.CurrentCulture),
             FontSize = 10,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            Foreground = GetThemeBrush("TextFillColorSecondaryBrush"),
         };
         double left = Math.Clamp(x - 30, 0, Math.Max(0, width - 60));
         Canvas.SetLeft(label, left);
@@ -307,5 +307,23 @@ public sealed class TrendChartControl : UserControl
         }
 
         return value.ToString("0.##", CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>安全获取主题画刷；资源缺失时回退灰色，避免 Application.Resources 直取崩溃。</summary>
+    private static Brush GetThemeBrush(string key)
+    {
+        try
+        {
+            if (Application.Current?.Resources.TryGetValue(key, out var value) == true && value is Brush brush)
+            {
+                return brush;
+            }
+        }
+        catch
+        {
+            // 回退。
+        }
+
+        return new SolidColorBrush(Microsoft.UI.Colors.Gray);
     }
 }
