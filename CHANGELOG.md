@@ -2,12 +2,17 @@
 
 ## Unreleased
 
-- Completed the internal rename to ApiMonitor
-- Replaced the legacy package identity
-- Replaced the development signing identity
-- Removed legacy local-data and credential migration
-- Added the MIT License
-- Improved repository maintenance and security configuration
+## [0.3.0] - 2026-08-03
+
+- 完成内部名称、包身份和开发签名身份的统一
+- 新增紧凑余额窗口
+- 支持始终置顶
+- 支持账户与币种选择
+- 主窗口和紧凑窗口状态同步
+- 保存窗口位置、尺寸和置顶设置
+- 多显示器与屏幕外位置恢复
+- MIT License 与仓库维护完善
+- 不再兼容旧包身份和旧本地数据（v0.2.0 无法原地升级；账户、余额历史与 API Key 不迁移）
 
 ## v0.2.0
 

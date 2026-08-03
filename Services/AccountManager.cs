@@ -25,6 +25,8 @@ public sealed class AccountManager : IAccountManager
 
     public event EventHandler<AccountRefreshCompletedEventArgs>? RefreshCompleted;
 
+    public event EventHandler? AccountsChanged;
+
     public AccountManager(
         IAccountStore accountStore,
         IBalanceSnapshotStore snapshotStore,
@@ -105,6 +107,7 @@ public sealed class AccountManager : IAccountManager
         }
 
         _log.Info($"已加载 {_accounts.Count} 个账户。");
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
         return _accounts;
     }
 
@@ -258,6 +261,7 @@ public sealed class AccountManager : IAccountManager
 
         await PersistAsync(cancellationToken);
         _log.Info($"已保存账户 {account.AccountId}。");
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
         return account;
     }
 
@@ -272,6 +276,7 @@ public sealed class AccountManager : IAccountManager
 
         await PersistAsync(cancellationToken);
         _log.Info($"已删除账户 {accountId} 及其凭据、余额快照与历史记录。");
+        AccountsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task<BalanceQueryResult> RefreshAccountAsync(

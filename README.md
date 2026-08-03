@@ -7,18 +7,16 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
-- Current release: **v0.2.0**
+- Current release: **v0.3.0**
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
 
-## Development status
+## Upgrading from v0.2.0
 
-- **v0.2.0** is the current formal release.
-- `main` is preparing **v0.3.0**, which will introduce the compact always-on-top balance window.
 - **v0.3.0 uses a new, complete ApiMonitor package identity** (package name and publisher). The v0.2.0 sideload package will **not** upgrade in place to v0.3.0.
-- When installing a v0.3.0 build, remove the old v0.2.0 test package first.
-- Local data from v0.2.0 is not migrated; v0.3.0 starts with fresh local data and credentials.
+- When installing v0.3.0, uninstall the old v0.2.0 test package first.
+- Local accounts, balance history, and Credential Locker API keys from v0.2.0 are **not** migrated automatically; add your accounts and API keys again after installing v0.3.0.
 
 ## Features
 
@@ -29,6 +27,10 @@
 - Automatic refresh while the app is running
 - Manual refresh and one-click secure copy of the API key
 - Local snapshot restore after restart
+- Compact always-on-top balance window (single instance per app)
+- Account and currency selection in the compact window
+- Live balance and refresh-state synchronization between the main and compact windows
+- Persistent compact-window position, size, and always-on-top state
 
 ## Security and privacy design
 
@@ -36,6 +38,7 @@
 - API keys are only sent to the corresponding provider's official endpoint (currently the DeepSeek balance API).
 - Account metadata, balance snapshots, history, and settings are stored only in the local app data directory.
 - Automatic refresh only runs while the app is running; there is no tray resident and no system notification in this version.
+- The compact window shows the same local account and snapshot data; it does not upload anything extra.
 - Copying an API key writes it to the Windows clipboard temporarily, and the app attempts to clear it after about 30 seconds (without clearing anything you copy afterwards).
 - No telemetry, ads, or crash uploads.
 
@@ -49,10 +52,12 @@
 
 The recommended way is the **full test package** (`.zip`) from the Release assets:
 
-1. Download `ApiMonitor_0.2.0.0_x64_Test.zip`.
+1. Download `ApiMonitor_0.3.0.0_x64_Test.zip`.
 2. Verify the SHA-256 checksum against `SHA256SUMS.txt`.
-3. Install the included public certificate (`ApiMonitor_0.2.0.0_x64.cer`) into **Local Machine > Trusted People**.
+3. Install the included public certificate (`ApiMonitorDev.cer`) into **Local Machine > Trusted People**.
 4. Run `Add-AppDevPackage.ps1` (or install the `.msix` with `Add-AppxPackage`).
+
+If you previously installed a v0.2.0 test package, uninstall it first (`Get-AppxPackage -Name ApiMonitor | Remove-AppxPackage`) so the new package installs cleanly.
 
 > The GitHub release is signed with a self-signed developer certificate. Only install certificates you trust and only from the official repository. The Microsoft Store version will be signed and distributed by Microsoft.
 
@@ -87,10 +92,11 @@ ApiMonitor.slnx
 ApiMonitor.csproj          Main WinUI 3 app project (x64)
 App.xaml / MainWindow.xaml Application and main window
 Views/                    Main page, account editor dialog, history dialog
+Views/CompactWindow       Compact always-on-top balance window
 ViewModels/               MVVM view models
 Models/                   Domain models
 Providers/                Balance providers (DeepSeek) and registry
-Services/                 Storage, secrets, refresh, history, thresholds, clipboard
+Services/                 Storage, secrets, refresh, history, thresholds, clipboard, window management
 tests/ApiMonitor.Tests/   xUnit test suite
 .github/workflows/ci.yml  CI workflow
 ```
@@ -99,6 +105,7 @@ tests/ApiMonitor.Tests/   xUnit test suite
 
 - Automatic refresh only runs while the app is open; closing the window stops monitoring.
 - No tray icon, no system notifications, and no background tasks in this version.
+- Closing the last window exits the app; the app does not keep running in the background.
 - Only the DeepSeek provider is available.
 - The GitHub release is self-signed; a proper store signature comes with the Microsoft Store distribution.
 
