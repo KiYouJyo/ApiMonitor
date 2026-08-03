@@ -28,4 +28,4 @@ jobs:
         run: dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 
       - name: Build Release x64
-        run: dotnet build ApiMonitor.slnx -c Release -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+        run: dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:RuntimeIdentifier=win-x64
