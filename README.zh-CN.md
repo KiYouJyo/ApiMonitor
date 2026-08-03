@@ -6,18 +6,16 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前正式版本：**v0.2.0**
+- 当前正式版本：**v0.3.0**
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store
 - 许可证：[MIT](LICENSE)
 
-## 开发状态
+## 从 v0.2.0 升级说明
 
-- **v0.2.0** 是当前正式 Release。
-- `main` 正在准备 **v0.3.0**，将新增紧凑置顶余额窗口。
-- **v0.3.0 将使用全新的完整 ApiMonitor 包身份**（包名与发布者）。v0.2.0 侧载包**不会原地升级**到 v0.3.0。
+- **v0.3.0 使用全新的完整 ApiMonitor 包身份**（包名与发布者）。v0.2.0 侧载包**不会原地升级**到 v0.3.0。
 - 安装 v0.3.0 构建前，请先卸载旧的 v0.2.0 测试包。
-- 不迁移 v0.2.0 本机数据；v0.3.0 将以全新本地数据与凭据启动。
+- v0.2.0 的本地账户、余额历史和 Credential Locker API Key **不会自动迁移**；安装 v0.3.0 后需要重新添加账户与 API Key。
 
 ## 主要功能
 
@@ -28,6 +26,10 @@
 - 应用运行期间自动刷新
 - 手动刷新与一键安全复制 API Key
 - 重启后恢复本地余额快照
+- 紧凑置顶余额窗口（整个应用仅一个实例）
+- 紧凑窗口内切换账户与币种
+- 主窗口与紧凑窗口余额及刷新状态实时同步
+- 持久化紧凑窗口的位置、尺寸与置顶状态
 
 ## 安全与隐私设计
 
@@ -35,6 +37,7 @@
 - API Key 只发送给对应 Provider 的官方接口（当前为 DeepSeek 官方余额接口）。
 - 账户元数据、余额快照、历史记录和设置仅保存在本机应用数据目录。
 - 自动刷新只在应用运行期间执行；本版本没有托盘驻留和系统通知。
+- 紧凑窗口只展示本机已有的账户与快照数据，不会额外上传任何内容。
 - 复制 API Key 会短暂写入 Windows 剪贴板，应用约 30 秒后尝试安全清理（不会清除你之后复制的新内容）。
 - 无遥测、广告和崩溃上传。
 
@@ -48,10 +51,12 @@
 
 推荐使用 Release 资产中的**完整测试包**（`.zip`）：
 
-1. 下载 `ApiMonitor_0.2.0.0_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.3.0.0_x64_Test.zip`。
 2. 使用 `SHA256SUMS.txt` 核验 SHA-256 校验和。
-3. 将随附的公开证书（`ApiMonitor_0.2.0.0_x64.cer`）安装到 **本地计算机 > 受信任人**。
+3. 将随附的公开证书（`ApiMonitorDev.cer`）安装到 **本地计算机 > 受信任人**。
 4. 运行 `Add-AppDevPackage.ps1`（或用 `Add-AppxPackage` 安装 `.msix`）。
+
+如果之前安装过 v0.2.0 测试包，请先卸载（`Get-AppxPackage -Name ApiMonitor | Remove-AppxPackage`），再安装新包。
 
 > GitHub Release 使用自签名开发证书签名。请只安装你信任且来自官方仓库的证书。Microsoft Store 版本将由微软签名和分发。
 
@@ -86,10 +91,11 @@ ApiMonitor.slnx
 ApiMonitor.csproj          主 WinUI 3 应用项目（x64）
 App.xaml / MainWindow.xaml 应用与主窗口
 Views/                     主页面、账户编辑对话框、历史记录对话框
+Views/CompactWindow        紧凑置顶余额窗口
 ViewModels/                MVVM 视图模型
 Models/                    领域模型
 Providers/                 余额 Provider（DeepSeek）与注册表
-Services/                  存储、密钥、刷新、历史、阈值、剪贴板服务
+Services/                  存储、密钥、刷新、历史、阈值、剪贴板、窗口管理服务
 tests/ApiMonitor.Tests/    xUnit 测试套件
 .github/workflows/ci.yml   CI 工作流
 ```
@@ -98,6 +104,7 @@ tests/ApiMonitor.Tests/    xUnit 测试套件
 
 - 自动刷新只在应用打开时运行；关闭窗口即停止监测。
 - 本版本没有托盘图标、系统通知和后台任务。
+- 关闭最后一个窗口后应用退出，不会后台驻留。
 - 当前仅支持 DeepSeek Provider。
 - GitHub Release 为自签名；正式商店签名随 Microsoft Store 分发提供。
 

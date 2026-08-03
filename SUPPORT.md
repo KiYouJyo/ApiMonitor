@@ -4,7 +4,17 @@
 
 ### Self-signed certificate
 
-GitHub releases are signed with a self-signed developer certificate. Install the public certificate (`ApiMonitor_0.2.0.0_x64.cer`) into **Local Machine > Trusted People** before installing the MSIX. Only install certificates you trust and only from the official repository.
+GitHub releases are signed with a self-signed developer certificate. Install the public certificate (`ApiMonitorDev.cer`) into **Local Machine > Trusted People** before installing the MSIX. Only install certificates you trust and only from the official repository.
+
+### Upgrading from v0.2.0 to v0.3.0
+
+v0.3.0 uses a new package identity and does not upgrade over a v0.2.0 sideload package. Accounts, balance history, and Credential Locker API keys are not migrated.
+
+1. Uninstall the old test package: `Get-AppxPackage -Name ApiMonitor | Remove-AppxPackage`.
+2. Install the new package with `Add-AppDevPackage.ps1` (or `Add-AppxPackage -Path <file>.msix`).
+3. Add your accounts and API keys again inside the app.
+
+Never paste real API keys into issues or logs during this process.
 
 ### Windows App Runtime
 
