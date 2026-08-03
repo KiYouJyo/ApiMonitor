@@ -1,17 +1,21 @@
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
-/// <summary>账户卡片视图模型，持有刷新/编辑/删除命令与展示状态。</summary>
+/// <summary>账户卡片视图模型，持有刷新/复制/编辑/删除/历史命令与展示状态。</summary>
 public sealed partial class AccountListItemViewModel : ObservableObject
 {
     private readonly Func<Task> _refreshAsync;
     private readonly Func<Task> _editAsync;
     private readonly Func<Task> _deleteAsync;
     private readonly Func<Task> _copyAsync;
+    private readonly Func<Task> _historyAsync;
+
+    private IReadOnlyList<BalanceAmount> _latestBalances = Array.Empty<BalanceAmount>();
 
     public ApiAccount Account { get; }
 
@@ -21,11 +25,42 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public bool HasStoredCredential => Account.HasCredential;
 
+    /// <summary>当前最新余额（供编辑对话框设置阈值）。</summary>
+    public IReadOnlyList<BalanceAmount> LatestBalancesForEditor => _latestBalances;
+
+    public bool AutoRefreshEnabled => Account.Monitoring.AutoRefreshEnabled;
+
+    public string AutoRefreshStatusText => AutoRefreshEnabled ? "自动刷新：已开启" : "自动刷新：已关闭";
+
+    public string RefreshIntervalText => $"刷新间隔：{Account.Monitoring.RefreshIntervalMinutes} 分钟";
+
+    public string NextRefreshText
+    {
+        get
+        {
+            if (!AutoRefreshEnabled)
+            {
+                return "下次刷新：自动刷新已关闭";
+            }
+
+            return Account.Monitoring.NextRefreshAtUtc is { } next
+                ? "下次刷新：" + FormatTime(next)
+                : "下次刷新：尚未查询";
+        }
+    }
+
+    public string ThresholdSummaryText { get; private set; } = "尚无余额数据";
+
+    public bool IsLowBalance { get; private set; }
+
     [ObservableProperty]
     private bool _isRefreshing;
 
     [ObservableProperty]
     private bool _isCopying;
+
+    [ObservableProperty]
+    private bool _isHistoryOpen;
 
     [ObservableProperty]
     private bool _isAvailable;
@@ -59,6 +94,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     public IAsyncRelayCommand CopyKeyCommand { get; }
 
+    public IAsyncRelayCommand HistoryCommand { get; }
+
     public AccountListItemViewModel(
         ApiAccount account,
         string providerDisplayName,
@@ -66,7 +103,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         Func<Task> refreshAsync,
         Func<Task> editAsync,
         Func<Task> deleteAsync,
-        Func<Task> copyAsync)
+        Func<Task> copyAsync,
+        Func<Task> historyAsync)
     {
         Account = account;
         ProviderDisplayName = providerDisplayName;
@@ -74,6 +112,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         _editAsync = editAsync;
         _deleteAsync = deleteAsync;
         _copyAsync = copyAsync;
+        _historyAsync = historyAsync;
 
         AvailabilityText = "不可用";
         LastSuccessText = "尚未成功更新";
@@ -88,6 +127,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         CopyKeyCommand = new AsyncRelayCommand(
             () => _copyAsync(),
             () => !IsCopying && Account.HasCredential);
+        HistoryCommand = new AsyncRelayCommand(
+            () => _historyAsync(),
+            () => !IsHistoryOpen);
 
         if (record?.LastSuccessfulSnapshot is { } snapshot)
         {
@@ -110,6 +152,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     partial void OnIsCopyingChanged(bool value) =>
         CopyKeyCommand.NotifyCanExecuteChanged();
 
+    partial void OnIsHistoryOpenChanged(bool value) =>
+        HistoryCommand.NotifyCanExecuteChanged();
+
     partial void OnLastSuccessTextChanged(string value) =>
         OnPropertyChanged(nameof(LastSuccessLine));
 
@@ -123,13 +168,16 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         AvailabilityText = snapshot.IsAvailable ? "可用" : "不可用";
         LastSuccessText = FormatTime(snapshot.RetrievedAt);
         LastErrorText = string.Empty;
+        _latestBalances = snapshot.Balances;
         BalanceLines = snapshot.Balances
             .Select(b => new BalanceLine(
                 b.Currency,
+                b.TotalBalance,
                 BalanceFormatter.Format(b.TotalBalance),
                 BalanceFormatter.Format(b.GrantedBalance),
                 BalanceFormatter.Format(b.ToppedUpBalance)))
             .ToList();
+        RecomputeThresholdSummary();
     }
 
     public void ApplyError(BalanceQueryError? error)
@@ -139,6 +187,63 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         {
             AvailabilityText = "不可用";
         }
+    }
+
+    /// <summary>查询完成后从最新账户/记录状态刷新卡片显示（含监控与阈值）。</summary>
+    public void RefreshDisplay()
+    {
+        OnPropertyChanged(nameof(AutoRefreshStatusText));
+        OnPropertyChanged(nameof(RefreshIntervalText));
+        OnPropertyChanged(nameof(NextRefreshText));
+        RecomputeThresholdSummary();
+        OnPropertyChanged(nameof(AvailabilityText));
+        OnPropertyChanged(nameof(LastSuccessLine));
+    }
+
+    private void RecomputeThresholdSummary()
+    {
+        if (!HasSnapshot || _latestBalances.Count == 0)
+        {
+            ThresholdSummaryText = "尚无余额数据";
+            IsLowBalance = false;
+            OnPropertyChanged(nameof(ThresholdSummaryText));
+            OnPropertyChanged(nameof(IsLowBalance));
+            return;
+        }
+
+        var rules = Account.Monitoring.Thresholds;
+        var below = new List<(string Currency, decimal Threshold)>();
+
+        foreach (var balance in _latestBalances)
+        {
+            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
+            if (ThresholdEvaluator.Evaluate(balance, rule) == ThresholdStatus.BelowThreshold)
+            {
+                below.Add((balance.Currency, rule!.ThresholdAmount));
+            }
+        }
+
+        if (below.Count == 0)
+        {
+            bool anyEnabledRule = rules.Any(r =>
+                r.IsEnabled && _latestBalances.Any(b => b.Currency == r.Currency));
+            ThresholdSummaryText = anyEnabledRule ? "余额正常" : "未启用提醒";
+            IsLowBalance = false;
+        }
+        else if (below.Count == 1)
+        {
+            ThresholdSummaryText =
+                $"{below[0].Currency} 余额低于阈值 {BalanceFormatter.Format(below[0].Threshold)}";
+            IsLowBalance = true;
+        }
+        else
+        {
+            ThresholdSummaryText = $"{below.Count} 个币种低于阈值";
+            IsLowBalance = true;
+        }
+
+        OnPropertyChanged(nameof(ThresholdSummaryText));
+        OnPropertyChanged(nameof(IsLowBalance));
     }
 
     private static string FormatTime(DateTimeOffset value) =>

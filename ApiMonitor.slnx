@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/tests/">
+    <Project Path="tests/ApiMonitor.Tests/ApiMonitor.Tests.csproj" />
+  </Folder>
+  <Project Path="ApiMonitor.csproj" />
+</Solution>

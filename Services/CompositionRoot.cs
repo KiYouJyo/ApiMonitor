@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.ViewModels;
+using ApiMonitor.Providers;
+using ApiMonitor.ViewModels;
 using Microsoft.UI.Dispatching;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 清晰的组合根：集中创建服务、Provider 注册表与 ViewModel，
@@ -16,12 +16,15 @@ public sealed class CompositionRoot
 
     public DialogService DialogService { get; }
 
+    public MonitoringScheduler MonitoringScheduler { get; }
+
     public CompositionRoot(DispatcherQueue dispatcherQueue)
     {
         string dataDirectory = AppPaths.GetLocalDataDirectory();
         Directory.CreateDirectory(dataDirectory);
 
         Log = new AppLog(dataDirectory);
+        var time = TimeProvider.System;
 
         var http = new HttpRequestService(TimeSpan.FromSeconds(15));
         var deepSeek = new DeepSeekBalanceProvider(http, Log);
@@ -37,9 +40,22 @@ public sealed class CompositionRoot
             snapshotStore,
             secretStore,
             registry,
-            Log);
+            Log,
+            time);
 
         DialogService = new DialogService(accountManager, Log);
-        MainViewModel = new MainViewModel(accountManager, DialogService, Log, clipboard);
+        MonitoringScheduler = new MonitoringScheduler(accountManager, time, Log);
+        MainViewModel = new MainViewModel(
+            accountManager,
+            DialogService,
+            Log,
+            clipboard,
+            new UiThreadInvoker(dispatcherQueue));
+    }
+
+    public void Shutdown()
+    {
+        MonitoringScheduler.Stop();
+        MainViewModel.Shutdown();
     }
 }

@@ -1,8 +1,8 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
-public interface IBalanceSnapshotStore
+public interface IBalanceSnapshotStore : IBalanceHistoryStore
 {
     Task<BalanceRecordsLoadResult> LoadAsync(CancellationToken cancellationToken);
 

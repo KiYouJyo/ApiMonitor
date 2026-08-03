@@ -1,13 +1,14 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
-namespace ApiBalanceMonitor;
+namespace ApiMonitor;
 
 public partial class App : Application
 {
     private MainWindow? _window;
     private CompositionRoot? _compositionRoot;
+    private readonly CancellationTokenSource _lifetime = new();
 
     public App()
     {
@@ -25,7 +26,13 @@ public partial class App : Application
         // Resolve the XamlRoot lazily at show time; it may still be null right after Activate.
         _compositionRoot.DialogService.Attach(() => _window.RootPage.XamlRoot);
 
-        _ = _compositionRoot.MainViewModel.InitializeAsync();
+        _ = InitializeAndStartAsync();
+    }
+
+    private async Task InitializeAndStartAsync()
+    {
+        await _compositionRoot!.MainViewModel.InitializeAsync();
+        _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);
     }
 
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

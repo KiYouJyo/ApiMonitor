@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 一个 API 账户的普通元数据。API Key 永不保存在此模型中，
@@ -17,4 +17,7 @@ public sealed class ApiAccount
     public required DateTimeOffset CreatedAtUtc { get; init; }
 
     public required DateTimeOffset UpdatedAtUtc { get; init; }
+
+    /// <summary>自动刷新与阈值设置（v0.2.0 起持久化）。</summary>
+    public MonitoringSettings Monitoring { get; set; } = new();
 }

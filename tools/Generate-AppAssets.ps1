@@ -58,7 +58,7 @@ $format = New-Object System.Drawing.StringFormat
 $format.Alignment = [System.Drawing.StringAlignment]::Center
 $format.LineAlignment = [System.Drawing.StringAlignment]::Center
 $rect = New-Object System.Drawing.RectangleF(0, 0, 620, 300)
-$graphics.DrawString('ApiBalanceMonitor', $font, [System.Drawing.Brushes]::White, $rect, $format)
+$graphics.DrawString('ApiMonitor', $font, [System.Drawing.Brushes]::White, $rect, $format)
 $graphics.Dispose()
 $font.Dispose()
 $format.Dispose()
@@ -81,7 +81,7 @@ $graphics.Dispose()
 $font.Dispose()
 
 $icon = [System.Drawing.Icon]::FromHandle($iconBitmap.GetHicon())
-$stream = [System.IO.File]::Create((Join-Path $assetsDir 'ApiBalanceMonitor.ico'))
+$stream = [System.IO.File]::Create((Join-Path $assetsDir 'ApiMonitor.ico'))
 $icon.Save($stream)
 $stream.Dispose()
 $iconBitmap.Dispose()

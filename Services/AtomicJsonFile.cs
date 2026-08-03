@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// JSON 文件的原子写入与容错读取：写入采用“临时文件 + 替换”，

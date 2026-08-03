@@ -1,11 +1,12 @@
-using ApiBalanceMonitor.Helpers;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers;
-using ApiBalanceMonitor.Services;
+using System.Collections.ObjectModel;
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+using ApiMonitor.Providers;
+using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ApiBalanceMonitor.ViewModels;
+namespace ApiMonitor.ViewModels;
 
 /// <summary>添加/编辑账户对话框的 ViewModel（测试连接只预览结果，保存才写入）。</summary>
 public sealed partial class AccountEditorViewModel : ObservableObject
@@ -14,6 +15,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     private readonly AccountEditorContext _context;
 
     public IReadOnlyList<ProviderInfo> Providers => _context.Providers;
+
+    public IReadOnlyList<int> RefreshIntervals => MonitoringIntervals.Options;
 
     public bool IsEditing => _context.AccountId is not null;
 
@@ -55,10 +58,28 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     [ObservableProperty]
     private string _validationMessage = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    private bool _autoRefreshEnabled = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    private int _refreshIntervalMinutes = MonitoringIntervals.DefaultMinutes;
+
+    public ObservableCollection<ThresholdEditorItem> ThresholdItems { get; } = new();
+
+    /// <summary>尚无任何币种余额时显示提示，避免阈值区空白。</summary>
+    public bool ShowThresholdEmptyHint => ThresholdItems.Count == 0;
+
+    public bool ThresholdsValid => ThresholdItems.All(i =>
+        string.IsNullOrWhiteSpace(i.ThresholdText) || i.TryParseAmount(out _));
+
     public bool CanSave =>
         !IsTesting
         && !string.IsNullOrWhiteSpace(DisplayName)
-        && (!string.IsNullOrWhiteSpace(ApiKey) || (IsEditing && HasStoredCredential));
+        && (!string.IsNullOrWhiteSpace(ApiKey) || (IsEditing && HasStoredCredential))
+        && ThresholdsValid
+        && MonitoringIntervals.Options.Contains(RefreshIntervalMinutes);
 
     public bool CanTest =>
         !IsTesting
@@ -82,6 +103,24 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         TestTitle = string.Empty;
         TestResultText = string.Empty;
         ValidationMessage = string.Empty;
+
+        AutoRefreshEnabled = context.InitialMonitoring.AutoRefreshEnabled;
+        RefreshIntervalMinutes = context.InitialMonitoring.RefreshIntervalMinutes;
+
+        var rules = context.InitialMonitoring.Thresholds;
+        foreach (var balance in context.CurrentBalances)
+        {
+            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
+            var item = new ThresholdEditorItem(balance.Currency, balance.TotalBalance, rule);
+            item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
+            ThresholdItems.Add(item);
+        }
+
+        ThresholdItems.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ShowThresholdEmptyHint));
+            OnPropertyChanged(nameof(CanSave));
+        };
     }
 
     partial void OnDisplayNameChanged(string value) =>
@@ -120,6 +159,9 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                         snapshot.Balances.Select(b =>
                             $"{b.Currency} 总余额 {BalanceFormatter.Format(b.TotalBalance)}"))
                         + "。点击保存后才会写入账户与凭据。";
+
+                // 把接口返回的币种余额同步到阈值区，让添加流程也能直接配置阈值。
+                ApplyTestBalances(snapshot.Balances);
             }
             else
             {
@@ -166,14 +208,56 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             return false;
         }
 
+        if (!ThresholdsValid)
+        {
+            ShowValidation("阈值金额必须是不小于 0 的有效数字。");
+            return false;
+        }
+
+        if (!MonitoringIntervals.Options.Contains(RefreshIntervalMinutes))
+        {
+            ShowValidation("刷新间隔无效。");
+            return false;
+        }
+
+        var now = DateTimeOffset.UtcNow;
         result = new AccountEditorResult
         {
             SaveRequested = true,
             ProviderId = SelectedProviderId,
             DisplayName = DisplayName.Trim(),
             ApiKey = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
+            Monitoring = new MonitoringSettings
+            {
+                AutoRefreshEnabled = AutoRefreshEnabled,
+                RefreshIntervalMinutes = RefreshIntervalMinutes,
+                Thresholds = ThresholdItems
+                    .Select(i => i.BuildRule(now))
+                    .Where(r => r is not null)
+                    .Cast<BalanceThresholdRule>()
+                    .ToList(),
+            },
         };
         return true;
+    }
+
+    private void ApplyTestBalances(IReadOnlyList<BalanceAmount> balances)
+    {
+        var rules = _context.InitialMonitoring.Thresholds;
+        foreach (var balance in balances)
+        {
+            var existing = ThresholdItems.FirstOrDefault(i => i.Currency == balance.Currency);
+            if (existing is not null)
+            {
+                existing.CurrentTotal = balance.TotalBalance;
+                continue;
+            }
+
+            var rule = rules.FirstOrDefault(r => r.Currency == balance.Currency);
+            var item = new ThresholdEditorItem(balance.Currency, balance.TotalBalance, rule);
+            item.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanSave));
+            ThresholdItems.Add(item);
+        }
     }
 
     private void ShowValidation(string message)

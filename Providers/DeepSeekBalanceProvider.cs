@@ -2,11 +2,11 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using ApiBalanceMonitor.Models;
-using ApiBalanceMonitor.Providers.Dto;
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Models;
+using ApiMonitor.Providers.Dto;
+using ApiMonitor.Services;
 
-namespace ApiBalanceMonitor.Providers;
+namespace ApiMonitor.Providers;
 
 /// <summary>
 /// 真实的 DeepSeek 余额查询实现。

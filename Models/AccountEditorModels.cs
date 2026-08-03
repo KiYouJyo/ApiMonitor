@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Providers;
+using ApiMonitor.Providers;
 
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// 打开账户编辑对话框所需的上下文。Provider 列表来自注册表，
@@ -17,6 +17,12 @@ public sealed class AccountEditorContext
     public string? InitialDisplayName { get; init; }
 
     public bool HasStoredCredential { get; init; }
+
+    /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
+    public required MonitoringSettings InitialMonitoring { get; init; }
+
+    /// <summary>当前快照的各币种余额，用于阈值设置与状态展示。</summary>
+    public required IReadOnlyList<BalanceAmount> CurrentBalances { get; init; }
 }
 
 /// <summary>
@@ -31,4 +37,6 @@ public sealed class AccountEditorResult
     public string DisplayName { get; set; } = string.Empty;
 
     public string? ApiKey { get; set; }
+
+    public MonitoringSettings Monitoring { get; set; } = new();
 }

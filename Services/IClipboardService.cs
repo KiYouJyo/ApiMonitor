@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 敏感文本剪贴板服务抽象。写入后可安排延迟清理；

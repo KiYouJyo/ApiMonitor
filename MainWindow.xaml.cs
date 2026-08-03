@@ -1,7 +1,7 @@
-using ApiBalanceMonitor.Services;
+using ApiMonitor.Services;
 using Microsoft.UI.Xaml;
 
-namespace ApiBalanceMonitor;
+namespace ApiMonitor;
 
 public sealed partial class MainWindow : Window
 {
@@ -11,7 +11,7 @@ public sealed partial class MainWindow : Window
     {
         _compositionRoot = compositionRoot;
         InitializeComponent();
-        Title = "ApiBalanceMonitor";
+        Title = "ApiMonitor";
         Closed += OnWindowClosed;
     }
 
@@ -20,7 +20,7 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
     {
-        // 应用退出时取消所有在途异步操作。
-        _compositionRoot.MainViewModel.Shutdown();
+        // 应用退出时停止调度并取消所有在途异步操作。
+        _compositionRoot.Shutdown();
     }
 }

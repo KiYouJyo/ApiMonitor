@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a problem with ApiMonitor
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before submitting:** never paste real API keys (`sk-...`), Credential Locker data, or LocalState dumps. Check any logs for secrets before attaching them.
+  - type: input
+    id: version
+    attributes:
+      label: ApiMonitor version
+      description: e.g. v0.2.0 (shown on the main page)
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and architecture
+      description: e.g. Windows 11 24H2, x64
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem and the steps to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs (redacted)
+      description: Only include logs after removing anything that could be a secret.

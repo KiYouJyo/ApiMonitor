@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 延迟清理协调器：等待指定时间后读取剪贴板，仅当内容未变化时清除。

@@ -1,7 +1,7 @@
 using Microsoft.UI.Dispatching;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// Windows 剪贴板实现。密钥只存在于调用内存与系统剪贴板，

@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>
 /// 剪贴板清理判定：仅当当前内容仍等于刚复制的文本时才允许清除，

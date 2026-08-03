@@ -1,0 +1,88 @@
+<ContentDialog
+    x:Class="ApiMonitor.Views.BalanceHistoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:ApiMonitor.ViewModels"
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    Title="余额历史"
+    CloseButtonText="关闭"
+    DefaultButton="Close">
+
+    <ContentDialog.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+    </ContentDialog.Resources>
+
+    <StackPanel Spacing="12" MinWidth="480" MaxWidth="680">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <ProgressRing Width="28" Height="28" IsActive="{Binding IsLoading}" />
+            <TextBlock
+                Text="正在加载历史记录…"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                VerticalAlignment="Center"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </StackPanel>
+
+        <TextBlock
+            Text="暂无历史记录。成功的手动或自动查询会在此显示。"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            Visibility="{Binding HasItems, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+
+        <ListView
+            MaxHeight="380"
+            SelectionMode="None"
+            ItemsSource="{Binding Items}"
+            Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:BalanceHistoryDisplayItem">
+                    <Border
+                        Margin="0,0,0,8"
+                        Padding="12,8"
+                        CornerRadius="6"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="{x:Bind TimeText}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Bind SourceText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{x:Bind AvailabilityText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{x:Bind BalanceLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock Text="{x:Bind}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <InfoBar
+            IsOpen="{Binding HasStatus}"
+            Severity="Informational"
+            Message="{Binding StatusMessage}" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="刷新列表" Command="{Binding RefreshCommand}" />
+            <Button Content="清除历史" Command="{Binding BeginClearCommand}" />
+        </StackPanel>
+
+        <StackPanel
+            Orientation="Horizontal"
+            Spacing="8"
+            Visibility="{Binding IsConfirmingClear, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock
+                Text="确定清除该账户全部历史记录？不会删除账户、密钥或当前余额。"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                VerticalAlignment="Center" />
+            <Button Content="确认清除" Command="{Binding ConfirmClearCommand}" />
+            <Button Content="取消" Command="{Binding CancelClearCommand}" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

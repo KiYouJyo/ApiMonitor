@@ -1,4 +1,4 @@
-namespace ApiBalanceMonitor.Models;
+namespace ApiMonitor.Models;
 
 /// <summary>
 /// Provider 查询结果：要么成功返回快照，要么返回可理解的错误分类。
@@ -49,6 +49,7 @@ public enum BalanceErrorKind
     ServerError,
     EmptyContent,
     InvalidJson,
+    Busy,
     NotSupported,
     MissingCredential,
     AccountNotFound,

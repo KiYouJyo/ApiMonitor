@@ -47,6 +47,26 @@ BundleArtifacts/
 # Local packaging working files
 packaging/output/
 packaging/**/*.log
+packaging/tmp_*/
+
+# User and local data
+LocalState/
+*.json
+!packaging/**/*.json
+
+# Secrets and credentials
+*.pfx
+*.p12
+*.key
+*.pvk
+*.cer
+*.crt
+*.pem
+!packaging/**/*.cer
+
+# Logs and local app data
+app.log
+*.log
 
 # Publish output
 publish/

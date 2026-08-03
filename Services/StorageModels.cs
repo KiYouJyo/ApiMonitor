@@ -1,6 +1,6 @@
-using ApiBalanceMonitor.Models;
+using ApiMonitor.Models;
 
-namespace ApiBalanceMonitor.Services;
+namespace ApiMonitor.Services;
 
 /// <summary>账户数据文件（accounts.json）的序列化模型。</summary>
 public sealed class AccountsFileData
@@ -19,6 +19,33 @@ public sealed class AccountFileEntry
     public string DisplayName { get; set; } = string.Empty;
 
     public bool HasCredential { get; set; }
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+
+    /// <summary>v0.2.0 起持久化；v0.1.0 文件迁移后写入默认值。</summary>
+    public MonitoringFileEntry? Monitoring { get; set; }
+}
+
+public sealed class MonitoringFileEntry
+{
+    public bool AutoRefreshEnabled { get; set; } = true;
+
+    public int RefreshIntervalMinutes { get; set; } = MonitoringIntervals.DefaultMinutes;
+
+    public DateTimeOffset? NextRefreshAtUtc { get; set; }
+
+    public List<ThresholdFileEntry> Thresholds { get; set; } = new();
+}
+
+public sealed class ThresholdFileEntry
+{
+    public string Currency { get; set; } = string.Empty;
+
+    public bool IsEnabled { get; set; }
+
+    public decimal ThresholdAmount { get; set; }
 
     public DateTimeOffset CreatedAtUtc { get; set; }
 
@@ -44,6 +71,9 @@ public sealed class BalanceRecordFileEntry
     public DateTimeOffset? LastQuerySuccessAt { get; set; }
 
     public SnapshotFileEntry? LastSuccessfulSnapshot { get; set; }
+
+    /// <summary>v0.2.0 起的余额历史（按时间倒序）。</summary>
+    public List<HistoryFileEntry> History { get; set; } = new();
 }
 
 public sealed class SnapshotFileEntry
@@ -55,6 +85,23 @@ public sealed class SnapshotFileEntry
     public bool IsAvailable { get; set; }
 
     public DateTimeOffset RetrievedAt { get; set; }
+
+    public List<BalanceAmountFileEntry> Balances { get; set; } = new();
+}
+
+public sealed class HistoryFileEntry
+{
+    public string Id { get; set; } = string.Empty;
+
+    public string AccountId { get; set; } = string.Empty;
+
+    public string ProviderId { get; set; } = string.Empty;
+
+    public DateTimeOffset SucceededAtUtc { get; set; }
+
+    public string Source { get; set; } = nameof(BalanceQuerySource.Manual);
+
+    public bool IsAvailable { get; set; }
 
     public List<BalanceAmountFileEntry> Balances { get; set; } = new();
 }
@@ -72,8 +119,29 @@ public sealed class BalanceAmountFileEntry
 
 internal static class StorageMapper
 {
-    public static ApiAccount ToAccount(AccountFileEntry entry) =>
-        new()
+    public static ApiAccount ToAccount(AccountFileEntry entry)
+    {
+        MonitoringSettings monitoring = entry.Monitoring is { } m
+            ? new MonitoringSettings
+            {
+                AutoRefreshEnabled = m.AutoRefreshEnabled,
+                RefreshIntervalMinutes = m.RefreshIntervalMinutes,
+                NextRefreshAtUtc = m.NextRefreshAtUtc,
+                Thresholds = m.Thresholds
+                    .Where(t => !string.IsNullOrWhiteSpace(t.Currency))
+                    .Select(t => new BalanceThresholdRule
+                    {
+                        Currency = t.Currency,
+                        IsEnabled = t.IsEnabled,
+                        ThresholdAmount = t.ThresholdAmount,
+                        CreatedAtUtc = t.CreatedAtUtc,
+                        UpdatedAtUtc = t.UpdatedAtUtc,
+                    })
+                    .ToList(),
+            }
+            : new MonitoringSettings();
+
+        return new ApiAccount
         {
             AccountId = entry.AccountId,
             ProviderId = entry.ProviderId,
@@ -81,7 +149,9 @@ internal static class StorageMapper
             HasCredential = entry.HasCredential,
             CreatedAtUtc = entry.CreatedAtUtc,
             UpdatedAtUtc = entry.UpdatedAtUtc,
+            Monitoring = monitoring,
         };
+    }
 
     public static AccountFileEntry ToEntry(ApiAccount account) =>
         new()
@@ -92,6 +162,22 @@ internal static class StorageMapper
             HasCredential = account.HasCredential,
             CreatedAtUtc = account.CreatedAtUtc,
             UpdatedAtUtc = account.UpdatedAtUtc,
+            Monitoring = new MonitoringFileEntry
+            {
+                AutoRefreshEnabled = account.Monitoring.AutoRefreshEnabled,
+                RefreshIntervalMinutes = account.Monitoring.RefreshIntervalMinutes,
+                NextRefreshAtUtc = account.Monitoring.NextRefreshAtUtc,
+                Thresholds = account.Monitoring.Thresholds
+                    .Select(t => new ThresholdFileEntry
+                    {
+                        Currency = t.Currency,
+                        IsEnabled = t.IsEnabled,
+                        ThresholdAmount = t.ThresholdAmount,
+                        CreatedAtUtc = t.CreatedAtUtc,
+                        UpdatedAtUtc = t.UpdatedAtUtc,
+                    })
+                    .ToList(),
+            },
         };
 
     public static AccountBalanceRecord ToRecord(BalanceRecordFileEntry entry) =>
@@ -104,6 +190,12 @@ internal static class StorageMapper
             LastSuccessfulSnapshot = entry.LastSuccessfulSnapshot is { } snapshot
                 ? ToSnapshot(snapshot)
                 : null,
+            History = entry.History
+                .Where(h => !string.IsNullOrWhiteSpace(h.Id))
+                .Select(ToHistoryEntry)
+                .OrderByDescending(h => h.SucceededAtUtc)
+                .ThenBy(h => h.Id)
+                .ToList(),
         };
 
     public static BalanceRecordFileEntry ToEntry(AccountBalanceRecord record) =>
@@ -116,6 +208,11 @@ internal static class StorageMapper
             LastSuccessfulSnapshot = record.LastSuccessfulSnapshot is { } snapshot
                 ? ToSnapshotEntry(snapshot)
                 : null,
+            History = record.History
+                .OrderByDescending(h => h.SucceededAtUtc)
+                .ThenBy(h => h.Id)
+                .Select(ToHistoryFileEntry)
+                .ToList(),
         };
 
     public static BalanceSnapshot ToSnapshot(SnapshotFileEntry entry) =>
@@ -126,13 +223,7 @@ internal static class StorageMapper
             IsAvailable = entry.IsAvailable,
             RetrievedAt = entry.RetrievedAt,
             Balances = entry.Balances
-                .Select(b => new BalanceAmount
-                {
-                    Currency = b.Currency,
-                    TotalBalance = b.TotalBalance,
-                    GrantedBalance = b.GrantedBalance,
-                    ToppedUpBalance = b.ToppedUpBalance,
-                })
+                .Select(ToBalanceAmount)
                 .ToList(),
         };
 
@@ -144,13 +235,51 @@ internal static class StorageMapper
             IsAvailable = snapshot.IsAvailable,
             RetrievedAt = snapshot.RetrievedAt,
             Balances = snapshot.Balances
-                .Select(b => new BalanceAmountFileEntry
-                {
-                    Currency = b.Currency,
-                    TotalBalance = b.TotalBalance,
-                    GrantedBalance = b.GrantedBalance,
-                    ToppedUpBalance = b.ToppedUpBalance,
-                })
+                .Select(ToBalanceAmountFileEntry)
                 .ToList(),
+        };
+
+    public static BalanceHistoryEntry ToHistoryEntry(HistoryFileEntry entry) =>
+        new()
+        {
+            Id = entry.Id,
+            AccountId = entry.AccountId,
+            ProviderId = entry.ProviderId,
+            SucceededAtUtc = entry.SucceededAtUtc,
+            Source = Enum.TryParse<BalanceQuerySource>(entry.Source, ignoreCase: true, out var source)
+                ? source
+                : BalanceQuerySource.Manual,
+            IsAvailable = entry.IsAvailable,
+            Balances = entry.Balances.Select(ToBalanceAmount).ToList(),
+        };
+
+    public static HistoryFileEntry ToHistoryFileEntry(BalanceHistoryEntry entry) =>
+        new()
+        {
+            Id = entry.Id,
+            AccountId = entry.AccountId,
+            ProviderId = entry.ProviderId,
+            SucceededAtUtc = entry.SucceededAtUtc,
+            Source = entry.Source.ToString(),
+            IsAvailable = entry.IsAvailable,
+            Balances = entry.Balances.Select(ToBalanceAmountFileEntry).ToList(),
+        };
+
+    public static BalanceAmount ToBalanceAmount(BalanceAmountFileEntry entry) =>
+        new()
+        {
+            Currency = entry.Currency,
+            TotalBalance = entry.TotalBalance,
+            GrantedBalance = entry.GrantedBalance,
+            ToppedUpBalance = entry.ToppedUpBalance,
+        };
+
+    public static BalanceAmountFileEntry ToBalanceAmountFileEntry(BalanceAmount balance) =>
+        new()
+        {
+            Currency = balance.Currency,
+            TotalBalance = balance.TotalBalance,
+            GrantedBalance = balance.GrantedBalance,
+            ToppedUpBalance = balance.ToppedUpBalance,
         };
 }
