@@ -6,7 +6,7 @@ namespace ApiMonitor.Services;
 
 /// <summary>
 /// 托盘与启动设置（tray-settings.json）的持久化实现。
-/// v0.4.0 新增，schemaVersion 为 4（设置体系从 3 升级到 4）；
+/// v0.4.0 新增，schemaVersion 为 4；v0.5.0 升级到 5（保留已知字段）；
 /// v0.3.1 没有本文件时返回默认值；文件损坏时备份并恢复默认值，
 /// 不影响账户、历史、阈值、紧凑窗口设置与凭据。
 /// </summary>
@@ -15,10 +15,10 @@ public sealed class JsonTraySettingsStore : ITraySettingsStore
     public const string FileName = "tray-settings.json";
 
     /// <summary>
-    /// 当前设置版本。设置体系从 v0.3.x 的 3 升级到 4：
-    /// 低于 4 或缺失一律补齐为当前版本并原子写回。
+    /// 当前设置版本。设置体系从 v0.3.x 的 3 → v0.4.0 的 4 → v0.5.0 的 5：
+    /// 低于 5 或缺失一律补齐为当前版本并原子写回。
     /// </summary>
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     private readonly string _directory;
     private readonly JsonSerializerOptions _options;

@@ -1,5 +1,6 @@
 using ApiMonitor.Models;
 using ApiMonitor.Tests.TestDoubles;
+using ApiMonitor.Tests.TestHelpers;
 using ApiMonitor.ViewModels;
 using Xunit;
 
@@ -18,7 +19,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = editing ? "Test" : string.Empty,
             HasStoredCredential = hasCredential,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = Array.Empty<BalanceAmount>(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
         };
     }
 
@@ -91,10 +92,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = "Test",
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = new[]
-            {
-                new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m },
-            },
+            CurrentMetrics = new[] { TestMetrics.Cny(10m) },
         };
         var vm = new AccountEditorViewModel(manager, context);
         vm.ApiKey = "sk-test-only-not-real";
@@ -118,10 +116,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = "Test",
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = new[]
-            {
-                new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m },
-            },
+            CurrentMetrics = new[] { TestMetrics.Cny(10m) },
         };
         var vm = new AccountEditorViewModel(manager, context);
         vm.ApiKey = "sk-test-only-not-real";
@@ -131,7 +126,8 @@ public sealed class AccountEditorViewModelTests
 
         Assert.True(vm.TryBuildResult(out var result));
         var rule = Assert.Single(result!.Monitoring.Thresholds);
-        Assert.Equal("CNY", rule.Currency);
+        Assert.Equal("deepseek:CNY:total", rule.MetricId);
+        Assert.Equal("CNY", rule.Unit);
         Assert.True(rule.IsEnabled);
         Assert.Equal(20.50m, rule.ThresholdAmount);
     }
@@ -147,10 +143,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = "Test",
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = new[]
-            {
-                new BalanceAmount { Currency = "USD", TotalBalance = 5m, GrantedBalance = 0m, ToppedUpBalance = 5m },
-            },
+            CurrentMetrics = new[] { TestMetrics.Usd(5m) },
         };
         var vm = new AccountEditorViewModel(manager, context);
         vm.ApiKey = "sk-test-only-not-real";
@@ -175,13 +168,14 @@ public sealed class AccountEditorViewModelTests
         {
             RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
             {
+                SnapshotId = "snap-1",
                 AccountId = "test",
                 ProviderId = "deepseek",
                 RetrievedAt = DateTimeOffset.UtcNow,
-                Balances = new[]
+                Metrics = new[]
                 {
-                    new BalanceAmount { Currency = "CNY", TotalBalance = 10.5m },
-                    new BalanceAmount { Currency = "USD", TotalBalance = 2.25m },
+                    TestMetrics.Cny(10.5m),
+                    TestMetrics.Usd(2.25m),
                 },
             }),
         };
@@ -193,8 +187,8 @@ public sealed class AccountEditorViewModelTests
 
         Assert.False(vm.ShowThresholdEmptyHint);
         Assert.Equal(2, vm.ThresholdItems.Count);
-        Assert.Equal(10.5m, vm.ThresholdItems.Single(i => i.Currency == "CNY").CurrentTotal);
-        Assert.Equal(2.25m, vm.ThresholdItems.Single(i => i.Currency == "USD").CurrentTotal);
+        Assert.Equal(10.5m, vm.ThresholdItems.Single(i => i.MetricId == "deepseek:CNY:total").CurrentAmount);
+        Assert.Equal(2.25m, vm.ThresholdItems.Single(i => i.MetricId == "deepseek:USD:total").CurrentAmount);
     }
 
     [Fact]
@@ -204,12 +198,13 @@ public sealed class AccountEditorViewModelTests
         {
             RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
             {
+                SnapshotId = "snap-2",
                 AccountId = "test",
                 ProviderId = "deepseek",
                 RetrievedAt = DateTimeOffset.UtcNow,
-                Balances = new[]
+                Metrics = new[]
                 {
-                    new BalanceAmount { Currency = "CNY", TotalBalance = 20m },
+                    TestMetrics.Cny(20m),
                 },
             }),
         };
@@ -220,10 +215,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = "Test",
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = new[]
-            {
-                new BalanceAmount { Currency = "CNY", TotalBalance = 10m },
-            },
+            CurrentMetrics = new[] { TestMetrics.Cny(10m) },
         };
         var vm = new AccountEditorViewModel(manager, context);
         vm.ApiKey = "sk-test-only-not-real";
@@ -231,7 +223,7 @@ public sealed class AccountEditorViewModelTests
         await vm.TestCommand.ExecuteAsync(null);
 
         var item = Assert.Single(vm.ThresholdItems);
-        Assert.Equal(20m, item.CurrentTotal);
+        Assert.Equal(20m, item.CurrentAmount);
         Assert.Equal("当前余额：20.00", item.CurrentBalanceLine);
     }
 
@@ -249,10 +241,7 @@ public sealed class AccountEditorViewModelTests
             InitialDisplayName = "Test",
             HasStoredCredential = false,
             InitialMonitoring = new MonitoringSettings(),
-            CurrentBalances = new[]
-            {
-                new BalanceAmount { Currency = "CNY", TotalBalance = 10m },
-            },
+            CurrentMetrics = new[] { TestMetrics.Cny(10m) },
         };
         var vm = new AccountEditorViewModel(manager, context);
         vm.ApiKey = "sk-test-only-not-real";
@@ -260,7 +249,7 @@ public sealed class AccountEditorViewModelTests
         await vm.TestCommand.ExecuteAsync(null);
 
         var item = Assert.Single(vm.ThresholdItems);
-        Assert.Equal(10m, item.CurrentTotal);
+        Assert.Equal(10m, item.CurrentAmount);
         Assert.False(vm.ShowThresholdEmptyHint);
     }
 
@@ -271,10 +260,11 @@ public sealed class AccountEditorViewModelTests
         {
             RefreshResult = BalanceQueryResult.Success(new BalanceSnapshot
             {
+                SnapshotId = "snap-3",
                 AccountId = "test",
                 ProviderId = "deepseek",
                 RetrievedAt = DateTimeOffset.UtcNow,
-                Balances = Array.Empty<BalanceAmount>(),
+                Metrics = Array.Empty<BalanceMetric>(),
             }),
         };
         var vm = new AccountEditorViewModel(manager, CreateContext());

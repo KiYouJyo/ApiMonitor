@@ -1,32 +1,27 @@
+using ApiMonitor.Helpers;
+using ApiMonitor.Models;
+
 namespace ApiMonitor.ViewModels;
 
-/// <summary>账户卡片中单行币种余额的展示模型。</summary>
+/// <summary>账户卡片中单个指标余额的展示模型（基于通用 BalanceMetric）。</summary>
 public sealed class BalanceLine
 {
-    public string Currency { get; }
+    public string MetricId { get; }
 
-    public decimal Total { get; }
+    public string DisplayName { get; }
 
-    public string TotalText { get; }
+    public string Unit { get; }
 
-    public string GrantedText { get; }
+    public string MainAmountText { get; }
 
-    public string ToppedUpText { get; }
+    public string LineText { get; }
 
-    public string LineText =>
-        $"{Currency} · 总额 {TotalText} · 赠送 {GrantedText} · 充值 {ToppedUpText}";
-
-    public BalanceLine(
-        string currency,
-        decimal total,
-        string totalText,
-        string grantedText,
-        string toppedUpText)
+    public BalanceLine(BalanceMetric metric)
     {
-        Currency = currency;
-        Total = total;
-        TotalText = totalText;
-        GrantedText = grantedText;
-        ToppedUpText = toppedUpText;
+        MetricId = metric.MetricId;
+        DisplayName = metric.DisplayName;
+        Unit = metric.Unit;
+        MainAmountText = BalanceMetricText.FormatAmount(BalanceMetricText.MainAmount(metric));
+        LineText = BalanceMetricText.BuildLineText(metric);
     }
 }

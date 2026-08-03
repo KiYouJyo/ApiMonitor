@@ -44,6 +44,12 @@ public sealed class CompositionRoot
 
     public ISingleInstanceService SingleInstanceService { get; }
 
+    /// <summary>通知协调器（评估 + 展示 + 状态持久化）。</summary>
+    public NotificationCoordinator NotificationCoordinator { get; }
+
+    /// <summary>通知激活路由（打开账户 / 暂停 / 测试）。</summary>
+    public NotificationActivationRouter NotificationActivationRouter { get; }
+
     /// <summary>主窗口关闭行为控制器（AttachMainWindow 后可用）。</summary>
     public WindowCloseBehaviorController? WindowCloseController { get; private set; }
 
@@ -51,7 +57,10 @@ public sealed class CompositionRoot
 
     private Action _closeMainWindow = () => { };
 
-    public CompositionRoot(DispatcherQueue dispatcherQueue, ISingleInstanceService singleInstanceService)
+    public CompositionRoot(
+        DispatcherQueue dispatcherQueue,
+        ISingleInstanceService singleInstanceService,
+        IAppNotificationService notificationService)
     {
         string dataDirectory = AppPaths.GetLocalDataDirectory();
         Directory.CreateDirectory(dataDirectory);
@@ -61,12 +70,15 @@ public sealed class CompositionRoot
 
         var http = new HttpRequestService(TimeSpan.FromSeconds(15));
         var deepSeek = new DeepSeekBalanceProvider(http, Log);
-        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek });
+        var openRouter = new OpenRouterBalanceProvider(http, Log);
+        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek, openRouter });
 
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);
         var snapshotStore = new JsonBalanceSnapshotStore(dataDirectory);
         var compactWindowSettingsStore = new CompactWindowSettingsStore(dataDirectory);
+        var notificationSettingsStore = new JsonNotificationSettingsStore(dataDirectory);
+        var notificationStateStore = new JsonNotificationStateStore(dataDirectory);
         var clipboard = new WindowsClipboardService(dispatcherQueue, Log);
         var uiThreadInvoker = new UiThreadInvoker(dispatcherQueue);
         var displayAreas = new DisplayAreaProvider();
@@ -101,13 +113,41 @@ public sealed class CompositionRoot
             return new WinUICompactWindowHost(window);
         });
 
+        // ------------------------------------------------------------------
+        // v0.5.0：低余额通知（评估、展示、暂停、删除清理）。
+        // 通知协调器在 MainViewModel 之前创建，供账户卡片读取暂停状态摘要。
+        // ------------------------------------------------------------------
+        var notificationCoordinator = new NotificationCoordinator(
+            accountManager,
+            notificationStateStore,
+            notificationSettingsStore,
+            new NotificationPolicyEvaluator(),
+            notificationService,
+            Log,
+            time);
+        NotificationCoordinator = notificationCoordinator;
+
         MainViewModel = new MainViewModel(
             accountManager,
             DialogService,
             Log,
             clipboard,
             uiThreadInvoker,
-            () => CompactWindowService.OpenOrActivate());
+            () => CompactWindowService.OpenOrActivate(),
+            (accountId, ct) => notificationCoordinator.GetSnoozedUntilAsync(accountId, ct));
+
+        accountManager.RefreshCompleted += (_, e) =>
+            _ = NotificationCoordinator.HandleRefreshCompletedAsync(e, CancellationToken.None);
+        accountManager.AccountDeleted += (_, e) =>
+            _ = NotificationCoordinator.RemoveAccountAsync(e.AccountId, CancellationToken.None);
+
+        NotificationActivationRouter = new NotificationActivationRouter(
+            accountManager,
+            NotificationCoordinator,
+            () => _showMainWindow(),
+            () => MainViewModel.NavigateTo(AppPageKind.Home),
+            accountId => MainViewModel.FocusAccount(accountId),
+            (title, message) => MainViewModel.ShowPlainMessage(title, message));
 
         // ------------------------------------------------------------------
         // v0.4.0：托盘驻留、登录启动与退出协调。
@@ -129,7 +169,12 @@ public sealed class CompositionRoot
             TraySettingsStore,
             () => MainViewModel.Shutdown(),
             () => _closeMainWindow(),
-            () => Application.Current.Exit(),
+            () =>
+            {
+                // 应用退出时注销通知（正在退出时忽略新的通知动作）。
+                notificationService.Unregister();
+                Application.Current.Exit();
+            },
             Log);
 
         trayRef = new TrayIconService(
@@ -152,6 +197,24 @@ public sealed class CompositionRoot
             StartupTaskService,
             ExitCoordinator,
             Log);
+
+        MainViewModel.NotificationSettings = new NotificationSettingsViewModel(
+            notificationSettingsStore,
+            NotificationCoordinator.ShowTestNotification,
+            OpenWindowsNotificationSettings,
+            Log);
+    }
+
+    private static void OpenWindowsNotificationSettings()
+    {
+        try
+        {
+            _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:notifications"));
+        }
+        catch
+        {
+            // 打开系统设置失败不影响应用。
+        }
     }
 
     /// <summary>App 创建主窗口后调用：登记生命周期并绑定“打开/关闭主窗口”回调。</summary>

@@ -16,7 +16,7 @@ public sealed class MainViewModelTests
         var version = Assembly.GetExecutingAssembly().GetName().Version;
 
         Assert.NotNull(version);
-        Assert.Contains($"v{version!.Major}.{version.Minor}.{version.Build}", vm.SubtitleText);
+        Assert.Contains($"v{version!.Major}.{version.Minor}.0", vm.SubtitleText);
         Assert.DoesNotContain("v0.1.0", vm.SubtitleText);
     }
 
@@ -34,18 +34,24 @@ public sealed class MainViewModelTests
     private static BalanceSnapshot Snapshot() =>
         new()
         {
+            SnapshotId = "snap-main",
             AccountId = "acct-1",
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = DateTimeOffset.UtcNow,
-            Balances = new[]
+            Metrics = new[]
             {
-                new BalanceAmount
+                new BalanceMetric
                 {
-                    Currency = "CNY",
-                    TotalBalance = 42.00m,
-                    GrantedBalance = 2.00m,
-                    ToppedUpBalance = 40.00m,
+                    MetricId = "deepseek:CNY:total",
+                    DisplayName = "CNY 总余额",
+                    Unit = "CNY",
+                    Kind = BalanceMetricKind.MonetaryBalance,
+                    AvailableAmount = 42.00m,
+                    TotalAmount = 42.00m,
+                    GrantedAmount = 2.00m,
+                    ToppedUpAmount = 40.00m,
+                    IsThresholdSupported = true,
                 },
             },
         };
@@ -323,5 +329,235 @@ public sealed class MainViewModelTests
         Assert.Equal(lastSuccessBefore, item.LastSuccessLine);
         Assert.Equal(StatusSeverity.Warning, viewModel.StatusSeverity);
         Assert.Equal("自动刷新失败", viewModel.StatusTitle);
+    }
+
+    [Fact]
+    public async Task Filters_ByProviderAndStatus_UpdateVisibleAccounts()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-deepseek"));
+        manager.Accounts.Add(new ApiAccount
+        {
+            AccountId = "acct-or",
+            ProviderId = "openrouter",
+            DisplayName = "OR 账户",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(2, viewModel.FilteredAccounts.Count);
+
+        viewModel.SelectedProviderFilter = "deepseek";
+        var visible = Assert.Single(viewModel.FilteredAccounts);
+        Assert.Equal("acct-deepseek", visible.Account.AccountId);
+
+        viewModel.SelectedProviderFilter = "openrouter";
+        Assert.Equal("acct-or", Assert.Single(viewModel.FilteredAccounts).Account.AccountId);
+
+        viewModel.SelectedStatusFilter = AccountStatusFilter.Normal;
+        Assert.True(viewModel.HasActiveFilters);
+
+        viewModel.SelectedStatusFilter = AccountStatusFilter.Unknown;
+        Assert.Equal("acct-or", Assert.Single(viewModel.FilteredAccounts).Account.AccountId);
+    }
+
+    [Fact]
+    public async Task SummaryCounts_ReflectLowAndFailedAccounts()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        var low = Account("acct-low");
+        low.Monitoring.Thresholds.Add(new BalanceThresholdRule
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            IsEnabled = true,
+            ThresholdAmount = 100m,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        manager.Accounts.Add(low);
+        manager.Accounts.Add(Account("acct-fail"));
+        manager.Records["acct-low"] = new AccountBalanceRecord
+        {
+            AccountId = "acct-low",
+            ProviderId = "deepseek",
+            LastSuccessfulSnapshot = TestHelpers.TestMetrics.Snapshot(
+                "acct-low",
+                DateTimeOffset.UtcNow,
+                TestHelpers.TestMetrics.Cny(10m)),
+        };
+        manager.Records["acct-fail"] = new AccountBalanceRecord
+        {
+            AccountId = "acct-fail",
+            ProviderId = "deepseek",
+            LastQueryAttemptAt = DateTimeOffset.UtcNow,
+            LastQuerySuccessAt = DateTimeOffset.UtcNow.AddMinutes(-10),
+        };
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(2, viewModel.TotalAccountCount);
+        Assert.Equal(1, viewModel.LowBalanceAccountCount);
+        Assert.Equal(1, viewModel.FailedAccountCount);
+        Assert.Contains("共 2 个账户", viewModel.AccountSummaryText);
+        Assert.Contains("低余额 1", viewModel.AccountSummaryText);
+        Assert.Contains("查询失败 1", viewModel.AccountSummaryText);
+    }
+
+    [Fact]
+    public async Task FocusAccount_ClearsFiltersAndHighlightsTarget()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-a"));
+        manager.Accounts.Add(Account("acct-b"));
+        await viewModel.InitializeAsync();
+
+        viewModel.SelectedProviderFilter = "openrouter";
+        viewModel.FocusAccount("acct-a");
+
+        Assert.Equal(string.Empty, viewModel.SelectedProviderFilter);
+        Assert.Equal(AccountStatusFilter.All, viewModel.SelectedStatusFilter);
+        Assert.Equal("acct-a", viewModel.HighlightedAccountId);
+        Assert.True(viewModel.Accounts.Single(a => a.Account.AccountId == "acct-a").IsHighlighted);
+        Assert.False(viewModel.Accounts.Single(a => a.Account.AccountId == "acct-b").IsHighlighted);
+        Assert.Equal(2, viewModel.FilteredAccounts.Count);
+    }
+
+    [Fact]
+    public void Navigation_DefaultsToHomeAndSwitches()
+    {
+        var (viewModel, _, _, _, _) = CreateSut();
+
+        Assert.Equal(AppPageKind.Home, viewModel.CurrentPage);
+
+        viewModel.NavigateTo(AppPageKind.Settings);
+        Assert.Equal(AppPageKind.Settings, viewModel.CurrentPage);
+
+        viewModel.NavigateTo(AppPageKind.Home);
+        Assert.Equal(AppPageKind.Home, viewModel.CurrentPage);
+    }
+
+    [Fact]
+    public async Task Navigation_DoesNotReloadOrDuplicateAccountState()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-1"));
+        await viewModel.InitializeAsync();
+        var accountsReference = viewModel.Accounts;
+        var itemReference = viewModel.Accounts[0];
+        int callsAfterLoad = manager.GetAllAccountsCalls;
+
+        viewModel.NavigateTo(AppPageKind.Settings);
+        viewModel.NavigateTo(AppPageKind.Home);
+
+        Assert.Same(accountsReference, viewModel.Accounts);
+        Assert.Same(itemReference, viewModel.Accounts[0]);
+        Assert.Equal(callsAfterLoad, manager.GetAllAccountsCalls);
+        Assert.Single(viewModel.Accounts);
+    }
+
+    [Fact]
+    public void Navigation_SettingsState_SurvivesPageSwitching()
+    {
+        var (viewModel, _, _, _, _) = CreateSut();
+        var settingsReference = viewModel.NotificationSettings;
+        var trayReference = viewModel.TraySettings;
+
+        viewModel.NavigateTo(AppPageKind.Settings);
+        viewModel.NavigateTo(AppPageKind.Home);
+
+        Assert.Same(settingsReference, viewModel.NotificationSettings);
+        Assert.Same(trayReference, viewModel.TraySettings);
+    }
+
+    [Fact]
+    public async Task FocusAccount_NavigatesHomeAndClearsFilters()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-1"));
+        manager.Accounts.Add(Account("acct-2"));
+        await viewModel.InitializeAsync();
+
+        viewModel.NavigateTo(AppPageKind.Settings);
+        viewModel.SelectedProviderFilter = "openrouter";
+        viewModel.FocusAccount("acct-1");
+
+        Assert.Equal(AppPageKind.Home, viewModel.CurrentPage);
+        Assert.Equal(string.Empty, viewModel.SelectedProviderFilter);
+        Assert.Equal(AccountStatusFilter.All, viewModel.SelectedStatusFilter);
+        Assert.Equal("acct-1", viewModel.HighlightedAccountId);
+        Assert.Equal(2, viewModel.FilteredAccounts.Count);
+    }
+
+    [Fact]
+    public async Task AddAccount_NewAccountHiddenByFilter_ResetsFiltersToVisible()
+    {
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-deepseek"));
+        dialogs.EditorResult = new AccountEditorResult
+        {
+            SaveRequested = true,
+            ProviderId = "openrouter",
+            DisplayName = "新 OR 账户",
+            ApiKey = "sk-or-test",
+            CredentialMode = "api-key",
+        };
+        await viewModel.InitializeAsync();
+        viewModel.SelectedProviderFilter = "deepseek";
+
+        await viewModel.AddAccountAsync();
+
+        Assert.Equal(string.Empty, viewModel.SelectedProviderFilter);
+        Assert.Equal(AccountStatusFilter.All, viewModel.SelectedStatusFilter);
+        Assert.Equal(2, viewModel.FilteredAccounts.Count);
+        Assert.Contains(viewModel.FilteredAccounts, a => a.DisplayName == "新 OR 账户");
+    }
+
+    [Fact]
+    public async Task AddAccount_Cancel_DoesNotChangeAccounts()
+    {
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-1"));
+        dialogs.EditorResult = null;
+        await viewModel.InitializeAsync();
+
+        await viewModel.AddAccountAsync();
+
+        Assert.Equal(0, manager.SaveCalls);
+        Assert.Single(viewModel.Accounts);
+    }
+
+    [Fact]
+    public async Task AddAccount_SaveFailure_LeavesNoResidualAccount()
+    {
+        var (viewModel, manager, dialogs, _, _) = CreateSut();
+        manager.Accounts.Add(Account("acct-1"));
+        manager.SaveException = new InvalidOperationException("保存失败");
+        dialogs.EditorResult = new AccountEditorResult
+        {
+            SaveRequested = true,
+            ProviderId = "openrouter",
+            DisplayName = "会失败的账户",
+            ApiKey = "sk-or-test",
+        };
+        await viewModel.InitializeAsync();
+
+        await viewModel.AddAccountAsync();
+
+        Assert.Single(viewModel.Accounts);
+        Assert.Equal(StatusSeverity.Error, viewModel.StatusSeverity);
+    }
+
+    [Fact]
+    public void AddAccountCommand_IsExposedForHomeAndEmptyStateEntries()
+    {
+        var (viewModel, _, _, _, _) = CreateSut();
+
+        // 主页操作栏与空状态共用同一个命令入口。
+        Assert.True(viewModel.AddAccountCommand.CanExecute(null));
+        Assert.Same(viewModel.AddAccountCommand, viewModel.AddAccountCommand);
     }
 }

@@ -9,14 +9,16 @@ public partial class App : Application
     private MainWindow? _window;
     private CompositionRoot? _compositionRoot;
     private readonly ISingleInstanceService _singleInstance;
+    private readonly IAppNotificationService _notificationService;
     private readonly CancellationTokenSource _lifetime = new();
     private DispatcherQueue? _uiQueue;
 
-    public App(ISingleInstanceService singleInstance)
+    public App(ISingleInstanceService singleInstance, IAppNotificationService notificationService)
     {
         InitializeComponent();
         UnhandledException += OnUnhandledException;
         _singleInstance = singleInstance;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -24,19 +26,20 @@ public partial class App : Application
     /// 该方法不会运行）。真实启动路径使用带 ISingleInstanceService 的构造函数。
     /// </summary>
     public App()
-        : this(new SingleInstanceService())
+        : this(new SingleInstanceService(), new AppNotificationService())
     {
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         _uiQueue = DispatcherQueue.GetForCurrentThread();
-        _compositionRoot = new CompositionRoot(_uiQueue, _singleInstance);
+        _compositionRoot = new CompositionRoot(_uiQueue, _singleInstance, _notificationService);
 
         // 单实例：后续激活事件在初始化完成前订阅，避免错过重定向。
         // 先订阅 AppInstance.Activated（原生激活通道），再订阅业务事件转发。
         _singleInstance.SubscribeActivationEvents();
         _singleInstance.Activated += OnActivated;
+        _notificationService.Activated += OnNotificationActivated;
 
         // 读取 StartupTask 系统状态缓存（不信任本地布尔值）。
         _ = _compositionRoot.StartupTaskService.RefreshStatusAsync(_lifetime.Token);
@@ -77,26 +80,40 @@ public partial class App : Application
     private async Task InitializeAndStartAsync()
     {
         await _compositionRoot!.MainViewModel.InitializeAsync();
+        await _compositionRoot.NotificationCoordinator.InitializeAsync(_lifetime.Token);
 
         if (_compositionRoot.MainViewModel.TraySettings is { } traySettings)
         {
             await traySettings.InitializeAsync();
         }
 
+        if (_compositionRoot.MainViewModel.NotificationSettings is { } notificationSettings)
+        {
+            await notificationSettings.InitializeAsync();
+        }
+
         _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);
+
+        // 冷启动通知点击：主窗口已就绪后再处理初始激活参数。
+        if (_notificationService.DrainInitialPayload() is { } initialPayload)
+        {
+            _ = _compositionRoot.NotificationActivationRouter.HandleAsync(initialPayload, _lifetime.Token);
+        }
     }
 
     /// <summary>
     /// 主实例收到后续激活：普通启动重定向 → 显示并激活主窗口；
-    /// 登录启动重定向 → 已在托盘驻留，忽略；退出中 → 安全忽略。
-    /// AppInstance.Activated 事件可能在非 UI 线程触发，必须调度到 UI 线程操作窗口。
+    /// 登录启动重定向 → 已在托盘驻留，忽略；通知激活 → 转发给通知服务；
+    /// 退出中 → 安全忽略。AppInstance.Activated 事件可能在非 UI 线程触发。
     /// </summary>
-    private void OnActivated(AppActivationKind2 kind)
+    private void OnActivated(AppActivationKind2 kind, Microsoft.Windows.AppLifecycle.AppActivationArguments? args)
     {
-        _uiQueue?.TryEnqueue(() => HandleActivation(kind));
+        _uiQueue?.TryEnqueue(() => HandleActivation(kind, args));
     }
 
-    private void HandleActivation(AppActivationKind2 kind)
+    private void HandleActivation(
+        AppActivationKind2 kind,
+        Microsoft.Windows.AppLifecycle.AppActivationArguments? args)
     {
         // TryEnqueue 是异步调度，执行时需重新校验状态。
         if (_compositionRoot is null
@@ -106,10 +123,29 @@ public partial class App : Application
             return;
         }
 
+        if (kind == AppActivationKind2.Notification)
+        {
+            _notificationService.HandleAppInstanceActivation(args);
+            return;
+        }
+
         if (kind == AppActivationKind2.Launch)
         {
             _window.Show();
         }
+    }
+
+    private void OnNotificationActivated(object? sender, NotificationActivationPayload payload)
+    {
+        _uiQueue?.TryEnqueue(() =>
+        {
+            if (_compositionRoot is null || _compositionRoot.ExitCoordinator.IsExiting)
+            {
+                return;
+            }
+
+            _ = _compositionRoot.NotificationActivationRouter.HandleAsync(payload, _lifetime.Token);
+        });
     }
 
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

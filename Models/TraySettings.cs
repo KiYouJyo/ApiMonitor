@@ -39,10 +39,10 @@ public enum StartupTaskStatus
 public sealed class TraySettings
 {
     /// <summary>
-    /// v0.4.0 设置文件版本（独立于账户/余额/紧凑窗口文件）。
-    /// 从 3 升级到 4：v0.3.1 没有本文件时使用默认值。
+    /// v0.5.0 设置文件版本（独立于账户/余额/紧凑窗口/通知设置文件）。
+    /// 从 4 升级到 5：v0.4.0 文件保留全部已知字段。
     /// </summary>
-    public int SchemaVersion { get; set; } = 4;
+    public int SchemaVersion { get; set; } = 5;
 
     /// <summary>关闭主窗口时的行为，默认隐藏到通知区域。</summary>
     public MainWindowCloseBehavior MainWindowCloseBehavior { get; set; } = MainWindowCloseBehavior.HideToTray;

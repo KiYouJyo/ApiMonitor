@@ -8,7 +8,7 @@ ApiMonitor uses the following major third-party components. Licenses are referen
 
 | Component | Purpose | Project / License |
 | --- | --- | --- |
-| Windows App SDK (WinUI 3) | UI framework and runtime | https://github.com/microsoft/WindowsAppSDK · MIT |
+| Windows App SDK (WinUI 3, AppNotification API) | UI framework, app notifications and runtime | https://github.com/microsoft/WindowsAppSDK · MIT |
 | Windows SDK / .NET for Windows | .NET 10 Windows-targeted runtime and projections | https://github.com/dotnet/winrt · MIT |
 | CommunityToolkit.Mvvm | MVVM toolkit (ObservableObject, RelayCommand) | https://github.com/CommunityToolkit/dotnet · MIT |
 | xUnit | Test framework | https://github.com/xunit/xunit · Apache-2.0 |

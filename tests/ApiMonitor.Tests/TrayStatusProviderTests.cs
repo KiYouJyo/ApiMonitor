@@ -11,7 +11,7 @@ namespace ApiMonitor.Tests;
 /// </summary>
 public sealed class TrayStatusProviderTests
 {
-    private static ApiAccount Account(string id, string currency, decimal threshold, bool enabled) =>
+    private static ApiAccount Account(string id, decimal threshold, bool enabled) =>
         new()
         {
             AccountId = id,
@@ -28,7 +28,9 @@ public sealed class TrayStatusProviderTests
                 {
                     new()
                     {
-                        Currency = currency,
+                        MetricId = "deepseek:CNY:total",
+                        DisplayName = "CNY 总余额",
+                        Unit = "CNY",
                         IsEnabled = enabled,
                         ThresholdAmount = threshold,
                         CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -50,13 +52,23 @@ public sealed class TrayStatusProviderTests
         {
             record.LastSuccessfulSnapshot = new BalanceSnapshot
             {
+                SnapshotId = Guid.NewGuid().ToString("N"),
                 AccountId = id,
                 ProviderId = "deepseek",
                 IsAvailable = true,
                 RetrievedAt = DateTimeOffset.UtcNow,
-                Balances = new List<BalanceAmount>
+                Metrics = new List<BalanceMetric>
                 {
-                    new() { Currency = "CNY", TotalBalance = t },
+                    new()
+                    {
+                        MetricId = "deepseek:CNY:total",
+                        DisplayName = "CNY 总余额",
+                        Unit = "CNY",
+                        Kind = BalanceMetricKind.MonetaryBalance,
+                        AvailableAmount = t,
+                        TotalAmount = t,
+                        IsThresholdSupported = true,
+                    },
                 },
             };
         }
@@ -68,7 +80,7 @@ public sealed class TrayStatusProviderTests
     public async Task NormalBalance_ShowsNormalTooltip()
     {
         var manager = new FakeAccountManager();
-        manager.Accounts.Add(Account("a1", "CNY", 10m, enabled: true));
+        manager.Accounts.Add(Account("a1", 10m, enabled: true));
         manager.Records["a1"] = Record("a1", total: 100m, attempt: DateTimeOffset.UtcNow, success: DateTimeOffset.UtcNow);
 
         var snapshot = await new TrayStatusProvider(manager).GetStatusAsync(CancellationToken.None);
@@ -81,14 +93,14 @@ public sealed class TrayStatusProviderTests
     public async Task MultipleLowBalanceRules_ShowAggregateCount()
     {
         var manager = new FakeAccountManager();
-        manager.Accounts.Add(Account("a1", "CNY", 100m, enabled: true));
-        manager.Accounts.Add(Account("a2", "CNY", 50m, enabled: true));
+        manager.Accounts.Add(Account("a1", 100m, enabled: true));
+        manager.Accounts.Add(Account("a2", 50m, enabled: true));
         manager.Records["a1"] = Record("a1", total: 5m, attempt: DateTimeOffset.UtcNow, success: DateTimeOffset.UtcNow);
         manager.Records["a2"] = Record("a2", total: 3m, attempt: DateTimeOffset.UtcNow, success: DateTimeOffset.UtcNow);
 
         var snapshot = await new TrayStatusProvider(manager).GetStatusAsync(CancellationToken.None);
 
-        Assert.Equal("ApiMonitor — 2 个币种低于阈值", snapshot.TooltipText);
+        Assert.Equal("ApiMonitor — 2 个指标低于阈值", snapshot.TooltipText);
         Assert.Equal(2, snapshot.LowBalanceRuleCount);
     }
 
@@ -96,7 +108,7 @@ public sealed class TrayStatusProviderTests
     public async Task NoSnapshot_ShowsUnknownNotLowBalance()
     {
         var manager = new FakeAccountManager();
-        manager.Accounts.Add(Account("a1", "CNY", 100m, enabled: true));
+        manager.Accounts.Add(Account("a1", 100m, enabled: true));
         manager.Records["a1"] = Record("a1", total: null, attempt: null, success: null);
 
         var snapshot = await new TrayStatusProvider(manager).GetStatusAsync(CancellationToken.None);
@@ -109,7 +121,7 @@ public sealed class TrayStatusProviderTests
     public async Task FailedRefresh_KeepsLastSuccessfulState()
     {
         var manager = new FakeAccountManager();
-        manager.Accounts.Add(Account("a1", "CNY", 10m, enabled: true));
+        manager.Accounts.Add(Account("a1", 10m, enabled: true));
         // 最近一次尝试失败：attempt > success，但 LastSuccessfulSnapshot 仍保留旧值。
         manager.Records["a1"] = Record(
             "a1",
@@ -128,7 +140,7 @@ public sealed class TrayStatusProviderTests
     public async Task Refreshing_ShowsRefreshingStatus()
     {
         var manager = new FakeAccountManager();
-        manager.Accounts.Add(Account("a1", "CNY", 10m, enabled: true));
+        manager.Accounts.Add(Account("a1", 10m, enabled: true));
         manager.Records["a1"] = Record("a1", total: 100m, attempt: DateTimeOffset.UtcNow, success: DateTimeOffset.UtcNow);
         manager.ActiveRefreshCount = 1;
 

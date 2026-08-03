@@ -5,6 +5,7 @@
     ApiMonitor_<Version>_x64_Test\
       Install.cmd / Install.ps1
       Uninstall.cmd / Uninstall.ps1
+      SafeLocalStateBackup.ps1       (备份/恢复函数库，供 Install.ps1 dot-source)
       INSTALL.md / UNINSTALL.md
       ApiMonitor_<Version>_x64.msix      (signed, passed via -MsixPath)
       ApiMonitorDev.cer                  (public certificate only)
@@ -12,7 +13,9 @@
       Dependencies\x64\Microsoft.WindowsAppRuntime.2.msix
 
   Then writes ApiMonitor_<Version>_x64_Test.zip plus a release-root
-  SHA256SUMS.txt covering the MSIX and the zip (same layout as v0.3.0).
+  SHA256SUMS.txt covering the MSIX and the zip.
+  Since v0.5.0 the stage folder is created directly under the output
+  directory (packaging\output\ApiMonitor_<Version>_x64_Test).
 
   The script never copies private keys (PFX/P12), LocalState, Credential Locker
   content, user JSON, logs, Debug builds, or source caches.
@@ -20,7 +23,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$Version = '0.4.0.0',
+    [string]$Version = '0.5.0.1',
     [Parameter(Mandatory = $true)][string]$MsixPath,
     [string]$CertificateThumbprint = '545198E3BC78BE49BDF861C3EA6863FFD285689F',
     [string]$RuntimeSdkVersion = '2.3.1',
@@ -35,7 +38,7 @@ if (-not $OutputDirectory) {
     $OutputDirectory = Join-Path $repoRoot 'packaging\output'
 }
 
-$releaseDir = Join-Path $OutputDirectory ("release-" + $Version)
+$releaseDir = $OutputDirectory
 $stageName = ('ApiMonitor_{0}_x64_Test' -f $Version)
 $stageDir = Join-Path $releaseDir $stageName
 $msixName = ('ApiMonitor_{0}_x64.msix' -f $Version)
@@ -79,6 +82,13 @@ foreach ($name in @('Install.cmd', 'Install.ps1', 'Uninstall.cmd', 'Uninstall.ps
     Copy-Item -LiteralPath $src -Destination (Join-Path $resolvedStage $name)
 }
 Write-Step '已复制安装器脚本与文档。'
+
+# 备份/恢复函数库（与 Install.ps1 同目录，供其 dot-source）。
+$backupTool = Join-Path $repoRoot 'packaging\tools\SafeLocalStateBackup.ps1'
+if (-not (Test-Path -LiteralPath $backupTool)) {
+    throw '缺少 SafeLocalStateBackup.ps1 备份工具。'
+}
+Copy-Item -LiteralPath $backupTool -Destination (Join-Path $resolvedStage 'SafeLocalStateBackup.ps1')
 
 # ---------------------------------------------------------------------------
 # 3. Copy the signed MSIX.
@@ -155,13 +165,23 @@ $internalLines = @(
 # ---------------------------------------------------------------------------
 $forbiddenPatterns = @('\.pfx$', '\.p12$', '\.pvk$', '\.key$', 'LocalState', 'CredentialsBackup', '\.log$')
 $forbidden = @(Get-ChildItem -LiteralPath $resolvedStage -Recurse -File |
-    Where-Object { $name = $_.Name; $patternHit = $false; foreach ($p in $forbiddenPatterns) { if ($name -match $p) { $patternHit = $true; break } }; $patternHit })
+    Where-Object {
+        $name = $_.Name
+        # 备份工具文件名包含 LocalState 字样，属于预期必需文件，不在禁止清单内。
+        if ($name -eq 'SafeLocalStateBackup.ps1') { return $false }
+        $patternHit = $false
+        foreach ($p in $forbiddenPatterns) {
+            if ($name -match $p) { $patternHit = $true; break }
+        }
+        $patternHit
+    })
 if ($forbidden.Count -gt 0) {
     throw ('打包内容包含禁止文件：{0}' -f (($forbidden | ForEach-Object { $_.Name }) -join '、'))
 }
 
 $requiredFiles = @(
     'Install.cmd', 'Install.ps1', 'Uninstall.cmd', 'Uninstall.ps1',
+    'SafeLocalStateBackup.ps1',
     $msixName, 'ApiMonitorDev.cer', 'SHA256SUMS.txt', 'INSTALL.md', 'UNINSTALL.md'
 )
 foreach ($required in $requiredFiles) {

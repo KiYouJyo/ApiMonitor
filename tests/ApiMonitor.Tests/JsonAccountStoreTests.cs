@@ -58,7 +58,7 @@ public sealed class JsonAccountStoreTests
         string content = await File.ReadAllTextAsync(Path.Combine(temp.Path, "accounts.json"));
 
         Assert.Contains("schemaVersion", content);
-        Assert.Contains("2", content);
+        Assert.Contains("3", content);
     }
 
     [Fact]

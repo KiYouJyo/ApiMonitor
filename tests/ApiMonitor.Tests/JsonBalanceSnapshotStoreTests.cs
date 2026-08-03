@@ -16,25 +16,35 @@ public sealed class JsonBalanceSnapshotStoreTests
             LastQuerySuccessAt = new DateTimeOffset(2026, 8, 2, 3, 0, 5, TimeSpan.Zero),
             LastSuccessfulSnapshot = new BalanceSnapshot
             {
+                SnapshotId = "snap-1",
                 AccountId = "acct-1",
                 ProviderId = "deepseek",
                 IsAvailable = true,
                 RetrievedAt = new DateTimeOffset(2026, 8, 2, 3, 0, 5, TimeSpan.Zero),
-                Balances = new[]
+                Metrics = new[]
                 {
-                    new BalanceAmount
+                    new BalanceMetric
                     {
-                        Currency = "CNY",
-                        TotalBalance = 110.00m,
-                        GrantedBalance = 10.00m,
-                        ToppedUpBalance = 100.00m,
+                        MetricId = "deepseek:CNY:total",
+                        DisplayName = "CNY 总余额",
+                        Unit = "CNY",
+                        Kind = BalanceMetricKind.MonetaryBalance,
+                        AvailableAmount = 110.00m,
+                        TotalAmount = 110.00m,
+                        GrantedAmount = 10.00m,
+                        ToppedUpAmount = 100.00m,
+                        IsThresholdSupported = true,
                     },
-                    new BalanceAmount
+                    new BalanceMetric
                     {
-                        Currency = "USD",
-                        TotalBalance = 5.50m,
-                        GrantedBalance = 0m,
-                        ToppedUpBalance = 5.50m,
+                        MetricId = "deepseek:USD:total",
+                        DisplayName = "USD 总余额",
+                        Unit = "USD",
+                        Kind = BalanceMetricKind.MonetaryBalance,
+                        AvailableAmount = 5.50m,
+                        TotalAmount = 5.50m,
+                        ToppedUpAmount = 5.50m,
+                        IsThresholdSupported = true,
                     },
                 },
             },
@@ -57,9 +67,9 @@ public sealed class JsonBalanceSnapshotStoreTests
 
         var snapshot = Assert.IsType<BalanceSnapshot>(record.LastSuccessfulSnapshot);
         Assert.True(snapshot.IsAvailable);
-        Assert.Equal(2, snapshot.Balances.Count);
-        Assert.Contains(snapshot.Balances, b => b.Currency == "CNY" && b.TotalBalance == 110.00m);
-        Assert.Contains(snapshot.Balances, b => b.Currency == "USD" && b.ToppedUpBalance == 5.50m);
+        Assert.Equal(2, snapshot.Metrics.Count);
+        Assert.Contains(snapshot.Metrics, b => b.MetricId == "deepseek:CNY:total" && b.AvailableAmount == 110.00m);
+        Assert.Contains(snapshot.Metrics, b => b.MetricId == "deepseek:USD:total" && b.ToppedUpAmount == 5.50m);
     }
 
     [Fact]

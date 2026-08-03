@@ -9,6 +9,9 @@ public enum AppActivationKind2
 
     StartupTask,
 
+    /// <summary>AppNotification 激活（通知点击/按钮动作，冷启动或第二实例重定向）。</summary>
+    Notification,
+
     Other,
 }
 
@@ -33,8 +36,8 @@ public interface ISingleInstanceService
     /// </summary>
     bool RedirectIfDuplicate();
 
-    /// <summary>主实例收到后续激活时触发（普通启动重定向、登录启动重定向等）。</summary>
-    event Action<AppActivationKind2>? Activated;
+    /// <summary>主实例收到后续激活时触发（普通启动重定向、登录启动重定向、通知激活等）。</summary>
+    event Action<AppActivationKind2, AppActivationArguments?>? Activated;
 
     /// <summary>主实例订阅激活事件（在初始化完成前调用）。</summary>
     void SubscribeActivationEvents();
@@ -56,7 +59,7 @@ public sealed class SingleInstanceService : ISingleInstanceService
 
     public bool IsMainInstance => _mainInstance.IsCurrent;
 
-    public event Action<AppActivationKind2>? Activated;
+    public event Action<AppActivationKind2, AppActivationArguments?>? Activated;
 
     public AppActivationKind2 GetInitialActivationKind()
     {
@@ -98,7 +101,7 @@ public sealed class SingleInstanceService : ISingleInstanceService
 
     private void OnActivated(object? sender, AppActivationArguments args)
     {
-        Activated?.Invoke(ToKind(args));
+        Activated?.Invoke(ToKind(args), args);
     }
 
     private static AppActivationKind2 ToKind(AppActivationArguments? args)
@@ -112,6 +115,7 @@ public sealed class SingleInstanceService : ISingleInstanceService
         {
             ExtendedActivationKind.Launch => AppActivationKind2.Launch,
             ExtendedActivationKind.StartupTask => AppActivationKind2.StartupTask,
+            ExtendedActivationKind.AppNotification => AppActivationKind2.Notification,
             _ => AppActivationKind2.Other,
         };
     }

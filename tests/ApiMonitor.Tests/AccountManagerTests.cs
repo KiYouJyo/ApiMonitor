@@ -40,6 +40,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "我的 DeepSeek",
             "sk-real-looking-key-123",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -59,6 +60,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -74,10 +76,10 @@ public sealed class AccountManagerTests
         Assert.NotNull(loaded.LastQueryAttemptAt);
         Assert.NotNull(loaded.LastQuerySuccessAt);
         Assert.NotNull(loaded.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, loaded.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, loaded.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
         var history = Assert.Single(loaded.History);
         Assert.Equal(BalanceQuerySource.Manual, history.Source);
-        Assert.Equal("CNY", history.Balances[0].Currency);
+        Assert.Equal("deepseek:CNY:total", history.Metrics[0].MetricId);
 
         string json = await File.ReadAllTextAsync(Path.Combine(temp.Path, "balance-records.json"));
         Assert.Contains("lastSuccessfulSnapshot", json);
@@ -96,6 +98,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -128,6 +131,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -146,6 +150,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -167,6 +172,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -198,6 +204,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -211,6 +218,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             newApiKey: null,
+            credentialMode: null,
             monitoring,
             CancellationToken.None);
 
@@ -226,6 +234,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
         await manager.RefreshAccountAsync(account.AccountId, BalanceQuerySource.Manual, CancellationToken.None);
@@ -248,6 +257,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -271,6 +281,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
         time.AdvanceMinutes(31);
@@ -290,6 +301,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-key",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
         await manager.RefreshAccountAsync(account.AccountId, BalanceQuerySource.Manual, CancellationToken.None);
@@ -310,6 +322,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             newApiKey: null,
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 
@@ -347,6 +360,7 @@ public sealed class AccountManagerTests
             "deepseek",
             "Test",
             "sk-test-only-not-real",
+            null,
             DefaultMonitoring(),
             CancellationToken.None);
 

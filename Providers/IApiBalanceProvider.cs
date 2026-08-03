@@ -12,6 +12,9 @@ public interface IApiBalanceProvider
 
     string DisplayName { get; }
 
+    /// <summary>Provider 能力元数据（注册表与“添加账户”页面动态读取）。</summary>
+    ProviderInfo Info { get; }
+
     Task<BalanceQueryResult> QueryBalanceAsync(
         ApiAccount account,
         string apiKey,

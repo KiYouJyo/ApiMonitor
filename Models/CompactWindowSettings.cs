@@ -14,7 +14,10 @@ public sealed class CompactWindowSettings
     /// <summary>最后选择的账户 ID（持久化主键，不使用显示名称）。</summary>
     public string? SelectedAccountId { get; set; }
 
-    /// <summary>最后选择的币种。</summary>
+    /// <summary>最后选择的指标 ID（v0.5.0）。</summary>
+    public string? SelectedMetricId { get; set; }
+
+    /// <summary>v0.4.0 遗留的最后选择币种；v0.5.0 起仅用于迁移读取。</summary>
     public string? SelectedCurrency { get; set; }
 
     public double Width { get; set; } = 360;

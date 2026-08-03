@@ -49,17 +49,21 @@ public sealed class CompactWindowViewModelTests
     {
         var snapshot = new BalanceSnapshot
         {
+            SnapshotId = Guid.NewGuid().ToString("N"),
             AccountId = accountId,
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = new DateTimeOffset(2026, 8, 3, 8, 0, 0, TimeSpan.Zero),
-            Balances = balances
-                .Select(b => new BalanceAmount
+            Metrics = balances
+                .Select(b => new BalanceMetric
                 {
-                    Currency = b.Currency,
-                    TotalBalance = b.Total,
-                    GrantedBalance = 0,
-                    ToppedUpBalance = 0,
+                    MetricId = $"deepseek:{b.Currency}:total",
+                    DisplayName = $"{b.Currency} 总余额",
+                    Unit = b.Currency,
+                    Kind = BalanceMetricKind.MonetaryBalance,
+                    AvailableAmount = b.Total,
+                    TotalAmount = b.Total,
+                    IsThresholdSupported = true,
                 })
                 .ToList(),
         };
@@ -77,17 +81,21 @@ public sealed class CompactWindowViewModelTests
     private static BalanceQueryResult SuccessResult(string accountId, params (string Currency, decimal Total)[] balances) =>
         BalanceQueryResult.Success(new BalanceSnapshot
         {
+            SnapshotId = Guid.NewGuid().ToString("N"),
             AccountId = accountId,
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = DateTimeOffset.UtcNow,
-            Balances = balances
-                .Select(b => new BalanceAmount
+            Metrics = balances
+                .Select(b => new BalanceMetric
                 {
-                    Currency = b.Currency,
-                    TotalBalance = b.Total,
-                    GrantedBalance = 0,
-                    ToppedUpBalance = 0,
+                    MetricId = $"deepseek:{b.Currency}:total",
+                    DisplayName = $"{b.Currency} 总余额",
+                    Unit = b.Currency,
+                    Kind = BalanceMetricKind.MonetaryBalance,
+                    AvailableAmount = b.Total,
+                    TotalAmount = b.Total,
+                    IsThresholdSupported = true,
                 })
                 .ToList(),
         });
@@ -143,7 +151,8 @@ public sealed class CompactWindowViewModelTests
         await h.ViewModel.InitializeAsync(CancellationToken.None);
 
         Assert.Equal("acct-a", h.ViewModel.SelectedAccount?.AccountId);
-        Assert.Equal("CNY", h.ViewModel.SelectedCurrency);
+        Assert.Equal("deepseek:CNY:total", h.ViewModel.SelectedMetric?.MetricId);
+        Assert.Equal("CNY 总余额", h.ViewModel.SelectedMetric?.DisplayName);
         Assert.Equal("123.45", h.ViewModel.BalanceText);
         Assert.Equal("未知", h.ViewModel.StatusText);
         Assert.True(h.ViewModel.HasAccounts);
@@ -162,14 +171,14 @@ public sealed class CompactWindowViewModelTests
         await store.SaveAsync(new CompactWindowSettings
         {
             SelectedAccountId = "acct-b",
-            SelectedCurrency = "USD",
+            SelectedMetricId = "deepseek:USD:total",
             IsAlwaysOnTop = true,
         }, CancellationToken.None);
 
         await h.ViewModel.InitializeAsync(CancellationToken.None);
 
         Assert.Equal("acct-b", h.ViewModel.SelectedAccount?.AccountId);
-        Assert.Equal("USD", h.ViewModel.SelectedCurrency);
+        Assert.Equal("deepseek:USD:total", h.ViewModel.SelectedMetric?.MetricId);
     }
 
     [Fact]
@@ -196,13 +205,13 @@ public sealed class CompactWindowViewModelTests
 
         await WaitUntilAsync(() =>
             h.ViewModel.SelectedAccount?.AccountId == "acct-b"
-            && h.ViewModel.SelectedCurrency == "USD");
+            && h.ViewModel.SelectedMetric?.MetricId == "deepseek:USD:total");
         Assert.Equal("acct-b", h.ViewModel.SelectedAccount?.AccountId);
-        Assert.Equal("USD", h.ViewModel.SelectedCurrency);
+        Assert.Equal("deepseek:USD:total", h.ViewModel.SelectedMetric?.MetricId);
     }
 
     [Fact]
-    public async Task MissingCurrency_FallsBackToFirstAvailable()
+    public async Task MissingMetric_FallsBackToFirstAvailable()
     {
         using var h = new Harness();
         h.Manager.Accounts.Add(Account("acct-a", "A账户"));
@@ -211,12 +220,12 @@ public sealed class CompactWindowViewModelTests
         await store.SaveAsync(new CompactWindowSettings
         {
             SelectedAccountId = "acct-a",
-            SelectedCurrency = "USD",
+            SelectedMetricId = "deepseek:USD:total",
         }, CancellationToken.None);
 
         await h.ViewModel.InitializeAsync(CancellationToken.None);
 
-        Assert.Equal("CNY", h.ViewModel.SelectedCurrency);
+        Assert.Equal("deepseek:CNY:total", h.ViewModel.SelectedMetric?.MetricId);
     }
 
     [Fact]
@@ -295,7 +304,9 @@ public sealed class CompactWindowViewModelTests
             {
                 new()
                 {
-                    Currency = "CNY",
+                    MetricId = "deepseek:CNY:total",
+                    DisplayName = "CNY 总余额",
+                    Unit = "CNY",
                     IsEnabled = true,
                     ThresholdAmount = 100m,
                     CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -318,7 +329,9 @@ public sealed class CompactWindowViewModelTests
                 {
                     new()
                     {
-                        Currency = "CNY",
+                        MetricId = "deepseek:CNY:total",
+                        DisplayName = "CNY 总余额",
+                        Unit = "CNY",
                         IsEnabled = true,
                         ThresholdAmount = 10m,
                         CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -370,7 +383,7 @@ public sealed class CompactWindowViewModelTests
     }
 
     [Fact]
-    public async Task RefreshWithNewCurrency_UpdatesCurrencyList()
+    public async Task RefreshWithNewMetric_UpdatesMetricList()
     {
         using var h = new Harness();
         h.Manager.Accounts.Add(Account("acct-a", "A账户"));
@@ -383,8 +396,9 @@ public sealed class CompactWindowViewModelTests
             SuccessResult("acct-a", ("CNY", 1m), ("EUR", 2m)),
             BalanceQuerySource.Automatic);
 
-        await WaitUntilAsync(() => h.ViewModel.CurrencyOptions.Contains("EUR"));
-        Assert.Contains("EUR", h.ViewModel.CurrencyOptions);
+        await WaitUntilAsync(() =>
+            h.ViewModel.MetricOptions.Any(m => m.MetricId == "deepseek:EUR:total"));
+        Assert.Contains(h.ViewModel.MetricOptions, m => m.MetricId == "deepseek:EUR:total");
     }
 
     [Fact]

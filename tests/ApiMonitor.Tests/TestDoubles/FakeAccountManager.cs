@@ -12,7 +12,28 @@ public sealed class FakeAccountManager : IAccountManager
 
     public event EventHandler? AccountsChanged;
 
-    public List<ProviderInfo> ProviderList { get; } = new() { new ProviderInfo("deepseek", "DeepSeek") };
+    public event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
+
+    public void RaiseAccountDeleted(string accountId) =>
+        AccountDeleted?.Invoke(this, new AccountDeletedEventArgs { AccountId = accountId });
+
+    public List<ProviderInfo> ProviderList { get; } = new()
+    {
+        new ProviderInfo(
+            "deepseek",
+            "DeepSeek",
+            "测试 Provider",
+            SupportsAccountBalance: true,
+            SupportsKeyQuota: false,
+            SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
+            CredentialOptions: new[]
+            {
+                new ProviderCredentialOption("api-key", "API Key", "普通密钥", IsDefault: true),
+            },
+            ApiKeyInputHint: "sk-…",
+            HelpUrl: "https://example.test/",
+            SupportsTestConnection: true),
+    };
 
     public List<ApiAccount> Accounts { get; } = new();
 
@@ -22,6 +43,11 @@ public sealed class FakeAccountManager : IAccountManager
 
     public BalanceQueryResult RefreshResult { get; set; } =
         BalanceQueryResult.Failure(BalanceErrorKind.Unknown, "未配置测试结果");
+
+    /// <summary>SaveAccountAsync 抛出的异常（模拟保存失败）。</summary>
+    public Exception? SaveException { get; set; }
+
+    public int GetAllAccountsCalls { get; private set; }
 
     public string? ApiKeyResult { get; set; }
 
@@ -92,6 +118,7 @@ public sealed class FakeAccountManager : IAccountManager
     public Task<IReadOnlyList<ApiAccount>> GetAllAccountsAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        GetAllAccountsCalls++;
         return Task.FromResult<IReadOnlyList<ApiAccount>>(Accounts.ToList());
     }
 
@@ -115,6 +142,7 @@ public sealed class FakeAccountManager : IAccountManager
 
     public Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken) =>
@@ -125,9 +153,16 @@ public sealed class FakeAccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AccountNotificationSettings? notification = null)
     {
+        if (SaveException is not null)
+        {
+            throw SaveException;
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
         SaveCalls++;
         string id = accountId ?? $"acct-{SaveCalls}";
@@ -139,6 +174,7 @@ public sealed class FakeAccountManager : IAccountManager
             HasCredential = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
             Monitoring = monitoring,
         };
         Accounts.RemoveAll(a => a.AccountId == id);

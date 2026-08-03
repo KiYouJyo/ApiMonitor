@@ -42,7 +42,7 @@ public static class TrayStatusText
         string state = !hasAnySnapshot
             ? NoData
             : lowBalanceRuleCount > 0
-                ? $"{lowBalanceRuleCount} 个币种低于阈值"
+                ? $"{lowBalanceRuleCount} 个指标低于阈值"
                 : Normal;
 
         if (isRefreshing)
@@ -95,8 +95,8 @@ public sealed class TrayStatusProvider : ITrayStatusProvider
 
                 foreach (var rule in account.Monitoring.Thresholds)
                 {
-                    var latest = snapshot?.Balances.FirstOrDefault(b =>
-                        string.Equals(b.Currency, rule.Currency, StringComparison.OrdinalIgnoreCase));
+                    var latest = snapshot?.Metrics.FirstOrDefault(m =>
+                        string.Equals(m.MetricId, rule.MetricId, StringComparison.OrdinalIgnoreCase));
                     var status = ThresholdEvaluator.Evaluate(latest, rule);
                     if (status == ThresholdStatus.BelowThreshold)
                     {

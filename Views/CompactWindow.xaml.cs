@@ -135,7 +135,8 @@ public sealed partial class CompactWindow : Window
             var settings = await _settingsStore.LoadAsync(CancellationToken.None);
             settings.IsAlwaysOnTop = _viewModel.IsAlwaysOnTop;
             settings.SelectedAccountId = _viewModel.SelectedAccount?.AccountId;
-            settings.SelectedCurrency = _viewModel.SelectedCurrency;
+            settings.SelectedMetricId = _viewModel.SelectedMetric?.MetricId;
+            settings.SelectedCurrency = null;
             settings.Width = AppWindow.Size.Width;
             settings.Height = AppWindow.Size.Height;
             settings.X = AppWindow.Position.X;

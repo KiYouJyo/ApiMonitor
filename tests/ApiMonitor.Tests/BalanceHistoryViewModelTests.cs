@@ -16,14 +16,19 @@ public sealed class BalanceHistoryViewModelTests
             SucceededAtUtc = at,
             Source = source,
             IsAvailable = true,
-            Balances = new[]
+            Metrics = new[]
             {
-                new BalanceAmount
+                new BalanceMetric
                 {
-                    Currency = "CNY",
-                    TotalBalance = 100m,
-                    GrantedBalance = 10m,
-                    ToppedUpBalance = 90m,
+                    MetricId = "deepseek:CNY:total",
+                    DisplayName = "CNY 总余额",
+                    Unit = "CNY",
+                    Kind = BalanceMetricKind.MonetaryBalance,
+                    AvailableAmount = 100m,
+                    TotalAmount = 100m,
+                    GrantedAmount = 10m,
+                    ToppedUpAmount = 90m,
+                    IsThresholdSupported = true,
                 },
             },
         };

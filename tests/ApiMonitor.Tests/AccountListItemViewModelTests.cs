@@ -17,14 +17,39 @@ public sealed class AccountListItemViewModelTests
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         };
 
-    private static BalanceSnapshot Snapshot(DateTimeOffset retrievedAt, params BalanceAmount[] balances) =>
+    private static BalanceMetric CnyMetric(decimal total) =>
         new()
         {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = total,
+            TotalAmount = total,
+            IsThresholdSupported = true,
+        };
+
+    private static BalanceMetric UsdMetric(decimal total) =>
+        new()
+        {
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = total,
+            TotalAmount = total,
+            IsThresholdSupported = true,
+        };
+
+    private static BalanceSnapshot Snapshot(DateTimeOffset retrievedAt, params BalanceMetric[] metrics) =>
+        new()
+        {
+            SnapshotId = Guid.NewGuid().ToString("N"),
             AccountId = "acct-1",
             ProviderId = "deepseek",
             IsAvailable = true,
             RetrievedAt = retrievedAt,
-            Balances = balances,
+            Metrics = metrics,
         };
 
     private static AccountListItemViewModel CreateItem(
@@ -134,7 +159,7 @@ public sealed class AccountListItemViewModelTests
     [Fact]
     public void ThresholdSummary_BelowEqualDisabledAndUnknown()
     {
-        var cny = new BalanceAmount { Currency = "CNY", TotalBalance = 10m, GrantedBalance = 0m, ToppedUpBalance = 10m };
+        var cny = CnyMetric(10m);
         var item = CreateItem();
 
         // 无数据
@@ -148,24 +173,20 @@ public sealed class AccountListItemViewModelTests
         // 低于阈值
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 20m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         });
         item.RefreshDisplay();
-        Assert.Equal("CNY 余额低于阈值 20.00", item.ThresholdSummaryText);
+        Assert.Equal("CNY 总余额 低于阈值 20.00", item.ThresholdSummaryText);
         Assert.True(item.IsLowBalance);
 
         // 等于阈值 → 正常
-        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, new BalanceAmount
-        {
-            Currency = "CNY",
-            TotalBalance = 20m,
-            GrantedBalance = 0m,
-            ToppedUpBalance = 20m,
-        }));
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, CnyMetric(20m)));
         Assert.Equal("余额正常", item.ThresholdSummaryText);
         Assert.False(item.IsLowBalance);
     }
@@ -176,11 +197,13 @@ public sealed class AccountListItemViewModelTests
         var item = CreateItem();
         item.ApplySnapshot(Snapshot(
             DateTimeOffset.UtcNow,
-            new BalanceAmount { Currency = "CNY", TotalBalance = 5m, GrantedBalance = 0m, ToppedUpBalance = 5m },
-            new BalanceAmount { Currency = "USD", TotalBalance = 1m, GrantedBalance = 0m, ToppedUpBalance = 1m }));
+            CnyMetric(5m),
+            UsdMetric(1m)));
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 20m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -188,7 +211,9 @@ public sealed class AccountListItemViewModelTests
         });
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "USD",
+            MetricId = "deepseek:USD:total",
+            DisplayName = "USD 总余额",
+            Unit = "USD",
             IsEnabled = true,
             ThresholdAmount = 10m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
@@ -197,7 +222,7 @@ public sealed class AccountListItemViewModelTests
 
         item.RefreshDisplay();
 
-        Assert.Equal("2 个币种低于阈值", item.ThresholdSummaryText);
+        Assert.Equal("2 个指标低于阈值", item.ThresholdSummaryText);
         Assert.True(item.IsLowBalance);
     }
 
@@ -205,26 +230,211 @@ public sealed class AccountListItemViewModelTests
     public void ThresholdRuleChange_RecomputesWithoutQuery()
     {
         var item = CreateItem();
-        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, new BalanceAmount
-        {
-            Currency = "CNY",
-            TotalBalance = 30m,
-            GrantedBalance = 0m,
-            ToppedUpBalance = 30m,
-        }));
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, CnyMetric(30m)));
         item.Account.Monitoring.Thresholds.Add(new BalanceThresholdRule
         {
-            Currency = "CNY",
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
             IsEnabled = true,
             ThresholdAmount = 50m,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
         });
         item.RefreshDisplay();
-        Assert.Equal("CNY 余额低于阈值 50.00", item.ThresholdSummaryText);
+        Assert.Equal("CNY 总余额 低于阈值 50.00", item.ThresholdSummaryText);
 
         item.Account.Monitoring.Thresholds[0].ThresholdAmount = 10m;
         item.RefreshDisplay();
         Assert.Equal("余额正常", item.ThresholdSummaryText);
+    }
+
+    [Fact]
+    public void DeepSeekCard_ShowsFullCurrencyMetrics()
+    {
+        var metric = new BalanceMetric
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 110.00m,
+            TotalAmount = 110.00m,
+            GrantedAmount = 10.00m,
+            ToppedUpAmount = 100.00m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, metric));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Equal("CNY · 总额 110.00 · 赠送 10.00 · 充值 100.00", line.LineText);
+    }
+
+    [Fact]
+    public void OpenRouterApiKeyCard_ShowsQuotaAndUsageMetrics()
+    {
+        var quota = new BalanceMetric
+        {
+            MetricId = "openrouter:key:quota-remaining",
+            DisplayName = "密钥剩余额度",
+            Unit = "credits",
+            Kind = BalanceMetricKind.KeyQuota,
+            AvailableAmount = 4.25m,
+            TotalAmount = 10.00m,
+            IsThresholdSupported = true,
+        };
+        var usage = new BalanceMetric
+        {
+            MetricId = "openrouter:key:usage-total",
+            DisplayName = "累计使用量",
+            Unit = "credits",
+            Kind = BalanceMetricKind.Usage,
+            UsedAmount = 5.75m,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, quota, usage));
+
+        Assert.Equal(2, item.BalanceLines.Count);
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("密钥剩余额度 4.25"));
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("上限 10.00"));
+        Assert.Contains(item.BalanceLines, l => l.LineText.Contains("累计使用量 5.75"));
+    }
+
+    [Fact]
+    public void OpenRouterManagementCard_ShowsCreditsMetrics()
+    {
+        var credits = new BalanceMetric
+        {
+            MetricId = "openrouter:credits:remaining",
+            DisplayName = "剩余 Credits",
+            Unit = "credits",
+            Kind = BalanceMetricKind.PlatformCredits,
+            AvailableAmount = 4.25m,
+            TotalAmount = 10.00m,
+            UsedAmount = 5.75m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, credits));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Equal("剩余 Credits 4.25 · 累计充值 10.00 · 累计使用 5.75", line.LineText);
+    }
+
+    [Fact]
+    public void NullGrantedAndToppedUp_ShowUnknownNotZero()
+    {
+        var metric = new BalanceMetric
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            Kind = BalanceMetricKind.MonetaryBalance,
+            AvailableAmount = 88.00m,
+            TotalAmount = 88.00m,
+            IsThresholdSupported = true,
+        };
+        var item = CreateItem();
+
+        item.ApplySnapshot(Snapshot(DateTimeOffset.UtcNow, metric));
+
+        var line = Assert.Single(item.BalanceLines);
+        Assert.Contains("赠送 未知", line.LineText);
+        Assert.Contains("充值 未知", line.LineText);
+        Assert.DoesNotContain("赠送 0.00", line.LineText);
+    }
+
+    [Fact]
+    public void CredentialModeText_ReflectsProviderAndMode()
+    {
+        var deepseek = CreateItem();
+        Assert.Equal(string.Empty, deepseek.CredentialModeText);
+        Assert.False(deepseek.HasCredentialModeText);
+
+        var orKey = CreateItem(AccountWithProvider("openrouter", "api-key"));
+        Assert.Equal("普通 API Key", orKey.CredentialModeText);
+        Assert.True(orKey.HasCredentialModeText);
+
+        var orMgmt = CreateItem(AccountWithProvider("openrouter", "management-key"));
+        Assert.Equal("Management Key", orMgmt.CredentialModeText);
+    }
+
+    [Fact]
+    public void NotificationsEnabledText_ReflectsTriState()
+    {
+        var inherited = CreateItem();
+        Assert.Equal("通知：继承全局", inherited.NotificationsEnabledText);
+
+        var enabled = Account();
+        enabled.Notification.NotificationsEnabled = true;
+        Assert.Equal("通知：开启", CreateItem(enabled).NotificationsEnabledText);
+
+        var disabled = Account();
+        disabled.Notification.NotificationsEnabled = false;
+        Assert.Equal("通知：关闭", CreateItem(disabled).NotificationsEnabledText);
+    }
+
+    [Fact]
+    public void SnoozeSummaryText_DrivesHasSnooze()
+    {
+        var item = CreateItem();
+
+        Assert.False(item.HasSnooze);
+
+        item.SnoozeSummaryText = "暂停提醒至 2026-08-04 08:00";
+        Assert.True(item.HasSnooze);
+
+        item.SnoozeSummaryText = string.Empty;
+        Assert.False(item.HasSnooze);
+    }
+
+    [Fact]
+    public void RefreshCommand_IsBoundToAccountId()
+    {
+        var captured = new List<string>();
+        var account = new ApiAccount
+        {
+            AccountId = "acct-bound",
+            ProviderId = "deepseek",
+            DisplayName = "绑定测试",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+        };
+        var item = new AccountListItemViewModel(
+            account,
+            "DeepSeek",
+            null,
+            () =>
+            {
+                captured.Add("acct-bound");
+                return Task.CompletedTask;
+            },
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask);
+
+        item.RefreshCommand.Execute(null);
+
+        Assert.Equal("acct-bound", Assert.Single(captured));
+    }
+
+    private static ApiAccount AccountWithProvider(string providerId, string? credentialMode)
+    {
+        return new ApiAccount
+        {
+            AccountId = "acct-" + providerId,
+            ProviderId = providerId,
+            DisplayName = providerId + " 账户",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
+        };
     }
 }

@@ -46,9 +46,9 @@ public sealed class RefreshAllTests
     {
         var http = FakeHttpRequestService.Returning(SuccessBody);
         var (manager, _) = CreateManager(http);
-        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", new MonitoringSettings(), CancellationToken.None);
-        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", new MonitoringSettings(), CancellationToken.None);
-        await manager.SaveAccountAsync("a3", "deepseek", "C", null, new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", null, new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", null, new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a3", "deepseek", "C", null, null, new MonitoringSettings(), CancellationToken.None);
 
         await manager.RefreshAllAccountsAsync(BalanceQuerySource.Manual, CancellationToken.None);
         await Task.Delay(1500); // 等待错峰 fire-and-forget 完成。
@@ -74,8 +74,8 @@ public sealed class RefreshAllTests
                 : Ok());
         });
         var (manager, _) = CreateManager(http);
-        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", new MonitoringSettings(), CancellationToken.None);
-        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", null, new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", null, new MonitoringSettings(), CancellationToken.None);
 
         await manager.RefreshAllAccountsAsync(BalanceQuerySource.Manual, CancellationToken.None);
         await Task.Delay(1500);
@@ -84,7 +84,7 @@ public sealed class RefreshAllTests
         var r2 = await manager.GetRecordAsync("a2", CancellationToken.None);
         Assert.Null(r1!.LastSuccessfulSnapshot);
         Assert.NotNull(r2!.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, r2.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, r2.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public sealed class RefreshAllTests
     {
         var http = FakeHttpRequestService.Returning(SuccessBody);
         var (manager, _) = CreateManager(http);
-        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", null, new MonitoringSettings(), CancellationToken.None);
 
         // 第一次成功，建立旧快照。
         await manager.RefreshAccountAsync("a1", BalanceQuerySource.Manual, CancellationToken.None);
@@ -105,7 +105,7 @@ public sealed class RefreshAllTests
 
         var record = await manager.GetRecordAsync("a1", CancellationToken.None);
         Assert.NotNull(record!.LastSuccessfulSnapshot);
-        Assert.Equal(9.90m, record.LastSuccessfulSnapshot!.Balances[0].TotalBalance);
+        Assert.Equal(9.90m, record.LastSuccessfulSnapshot!.Metrics[0].AvailableAmount);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public sealed class RefreshAllTests
     {
         var http = FakeHttpRequestService.Returning(SuccessBody);
         var (manager, _) = CreateManager(http);
-        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", new MonitoringSettings(), CancellationToken.None);
-        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a1", "deepseek", "A", "key-1", null, new MonitoringSettings(), CancellationToken.None);
+        await manager.SaveAccountAsync("a2", "deepseek", "B", "key-2", null, new MonitoringSettings(), CancellationToken.None);
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(300);

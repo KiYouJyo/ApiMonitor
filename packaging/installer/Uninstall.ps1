@@ -1,6 +1,6 @@
 ﻿#requires -Version 5.1
 <#
-  ApiMonitor v0.4.0 uninstaller
+  ApiMonitor v0.5.0 uninstaller
   =============================
   Double-click entry: Uninstall.cmd -> this script (Windows PowerShell 5.1).
 
@@ -124,6 +124,8 @@ function Get-InstallerExitCode {
         'AbortedByUser'          { return 12 }
         'CertCleanupBlocked'     { return 13 }
         'CertCleanupFailed'      { return 14 }
+        'SameVersionBlocked'     { return 15 }
+        'DestructiveBackupFailed' { return 16 }
         default                  { return 1 }
     }
 }
@@ -332,7 +334,7 @@ function Invoke-Uninstall {
     # Graceful close, then ask before forcing.
     $close = Invoke-GracefulClose $Ops
     if (-not $close.Ok) {
-        Write-UninstallerLog 'ApiMonitor 正在运行且无法通过关闭窗口退出（v0.4.0 关闭主窗口仅隐藏到通知区域）。请先从通知区域托盘菜单选择“退出 ApiMonitor”。' 'WARN'
+        Write-UninstallerLog 'ApiMonitor 正在运行且无法通过关闭窗口退出（v0.5.0 关闭主窗口仅隐藏到通知区域）。请先从通知区域托盘菜单选择“退出 ApiMonitor”。' 'WARN'
         $answer = Read-Host 'ApiMonitor 正在运行且无法正常关闭，是否强制结束进程以继续卸载？[Y/N]（默认 Y）'
         if ($answer -ne '' -and $answer -notmatch '^(y|Y|是)$') {
             Write-UninstallerLog '用户取消卸载。' 'WARN'

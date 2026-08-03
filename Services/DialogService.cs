@@ -51,7 +51,10 @@ public sealed class DialogService : IDialogService
         }
     }
 
-    public async Task<bool> ConfirmDeleteAsync(string accountName, CancellationToken cancellationToken)
+    public async Task<bool> ConfirmDeleteAsync(
+        string accountName,
+        string providerDisplayName,
+        CancellationToken cancellationToken)
     {
         var xamlRoot = _xamlRootProvider?.Invoke();
         if (xamlRoot is null)
@@ -63,8 +66,10 @@ public sealed class DialogService : IDialogService
         var dialog = new ContentDialog
         {
             Title = "删除账户",
-            Content = $"确定要删除账户“{accountName}”吗？其保存的 API Key 与本地余额快照也会一并删除。",
-            PrimaryButtonText = "删除",
+            Content = $"确定要删除账户“{accountName}”（{providerDisplayName}）吗？\n\n" +
+                "删除后，该账户的凭据、余额历史、阈值、通知设置与活动通知将一并删除。\n" +
+                "此操作不可撤销。",
+            PrimaryButtonText = "删除账户",
             CloseButtonText = "取消",
             DefaultButton = ContentDialogButton.Close,
         };

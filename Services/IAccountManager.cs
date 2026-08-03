@@ -17,6 +17,9 @@ public interface IAccountManager
     /// <summary>账户集合变化时触发（加载、保存、删除后）。</summary>
     event EventHandler? AccountsChanged;
 
+    /// <summary>账户删除后触发（凭据、历史、阈值、通知状态清理的时机）。</summary>
+    event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
+
     IReadOnlyList<ProviderInfo> Providers { get; }
 
     IReadOnlyList<string> RecoveryMessages { get; }
@@ -36,6 +39,7 @@ public interface IAccountManager
 
     Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken);
@@ -45,8 +49,10 @@ public interface IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        AccountNotificationSettings? notification = null);
 
     Task DeleteAccountAsync(string accountId, CancellationToken cancellationToken);
 

@@ -2,6 +2,53 @@
 
 ## [Unreleased]
 
+## [0.5.0.1] - 2026-08-03（v0.5.0 验收候选修订包；修复安装/备份安全）
+
+- 禁止同版本破坏性替换：已安装版本与待安装版本相同时默认停止（退出码 15），绝不自动卸载/重置包/删除 LocalState/操作 Credential Locker
+- 新增统一 LocalState 备份/校验/恢复工具（packaging/tools/SafeLocalStateBackup.ps1）：动态解析 Package Family、逐项 -LiteralPath 复制、数量/字节/哈希/JSON/非零/清单全量校验
+- 破坏性重装仅在显式参数 -ForceDestructiveReinstall + 人工确认后执行，且必须先行通过备份校验（备份失败停止，退出码 16）
+- 升级前尽力备份 LocalState；备份失败不阻塞安全的标准 MSIX 原地升级
+- 候选包版本策略：MSIX 使用 0.5.0.1（后续 0.5.0.2/0.5.0.3…），应用界面与 GitHub 版本仍为 v0.5.0
+- Install.ps1/Uninstall.ps1 退出码表补充 15/16；Installer 测试新增 39 项断言
+
+## [0.5.0-UI] - 2026-08-03（验收前主界面信息架构修正，仍在 0.5.0.0）
+
+- 主窗口改为 NavigationView 导航外壳：主页（账户仪表盘）与独立设置页
+- 恢复醒目的“添加账户”入口（顶部主按钮 + 空状态“添加第一个账户”）
+- 账户卡片恢复完整信息展示（指标/监测状态/通知状态/统一操作栏），修复卡片过矮裁切
+- 汇总与筛选框增加明确标签；通知激活强制回到主页并定位账户
+- 删除账户确认包含 Provider、删除范围与不可撤销提示
+
+## [0.5.0] - 2026-08-03
+
+### Added
+
+- 通用余额指标模型（BalanceMetric）：货币余额、平台 Credits、密钥额度、累计/周期使用量统一表示；未知数值为 null，无限额度不误触发低余额提醒
+- 多账户管理：同一 Provider 可添加多个账户；主界面账户总数/低余额/查询失败汇总、Provider 与状态筛选、刷新全部账户
+- OpenRouter Provider：普通 API Key（/api/v1/key）与 Management Key（/api/v1/credits）两种凭据模式，剩余 Credits = 总充值 − 总使用（负数不钳制）；凭据模式为账户非敏感设置，密钥仍只进 Credential Locker
+- Windows 通知中心低余额提醒（AppNotification）：首次低余额、重复提醒冷却（不重复/6h/12h/24h/3d）、余额恢复提醒、暂停提醒 24 小时、快照去重、多指标合并、稳定 Tag 替换、测试通知
+- 全局与每账户通知设置：升级后全局系统提醒默认关闭；已有 DeepSeek 阈值保留
+- 通知注册与单实例激活整合：先绑定 NotificationInvoked 再 Register；通知点击打开/定位对应账户，第二实例重定向，退出时 Unregister
+- 数据迁移：账户/余额文件升级到通用指标结构（账户 schema 2→3、余额记录 schema 2→3、设置体系 tray-settings 4→5），迁移前备份旧文件且幂等
+- 安装与卸载工具升级到 0.5.0.0，支持 v0.4.0 原地升级，安装脚本不自动开启通知与登录启动
+
+### Changed
+
+- 余额快照与历史记录改用稳定 MetricId；阈值规则按 MetricId 关联
+- Package.appxmanifest 增加 windows.toastNotificationActivation 与 comServer 扩展（AppNotification 激活）
+- 主界面、紧凑窗口、托盘状态与通知状态共用同一套阈值计算
+
+### Fixed
+
+- 修复了升级后凭据模式变化会误要求重新测试连接的问题
+
+### Security
+
+- 通知参数只包含 action/accountId/providerId/metricId 非敏感标识；通知内容不含 API Key
+- OpenRouter Management Key 权限说明与 403 提示；`limit_remaining=null` 显示为无限额度而非 0
+
+## [0.4.0] - 2026-08-03
+
 ## [0.4.0] - 2026-08-03
 
 ### Added

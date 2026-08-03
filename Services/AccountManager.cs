@@ -29,6 +29,8 @@ public sealed class AccountManager : IAccountManager
 
     public event EventHandler? AccountsChanged;
 
+    public event EventHandler<AccountDeletedEventArgs>? AccountDeleted;
+
     public AccountManager(
         IAccountStore accountStore,
         IBalanceSnapshotStore snapshotStore,
@@ -49,8 +51,7 @@ public sealed class AccountManager : IAccountManager
 
     public bool HasActiveRefresh => Volatile.Read(ref _activeRefreshCount) > 0;
 
-    public IReadOnlyList<ProviderInfo> Providers =>
-        _registry.All.Select(p => new ProviderInfo(p.ProviderId, p.DisplayName)).ToList();
+    public IReadOnlyList<ProviderInfo> Providers => _registry.Infos;
 
     private DateTimeOffset NowUtc => _time.GetUtcNow();
 
@@ -144,6 +145,7 @@ public sealed class AccountManager : IAccountManager
 
     public async Task<BalanceQueryResult> TestConnectionAsync(
         string providerId,
+        string? credentialMode,
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken)
@@ -177,6 +179,7 @@ public sealed class AccountManager : IAccountManager
             HasCredential = false,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CredentialMode = credentialMode,
         };
 
         return await provider.QueryBalanceAsync(probe, key, cancellationToken);
@@ -187,8 +190,10 @@ public sealed class AccountManager : IAccountManager
         string providerId,
         string displayName,
         string? newApiKey,
+        string? credentialMode,
         MonitoringSettings monitoring,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AccountNotificationSettings? notification = null)
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
@@ -214,10 +219,12 @@ public sealed class AccountManager : IAccountManager
         }
 
         var thresholds = monitoring.Thresholds
-            .Where(t => !string.IsNullOrWhiteSpace(t.Currency))
+            .Where(t => !string.IsNullOrWhiteSpace(t.MetricId))
             .Select(t => new BalanceThresholdRule
             {
-                Currency = t.Currency,
+                MetricId = t.MetricId,
+                DisplayName = t.DisplayName,
+                Unit = t.Unit,
                 IsEnabled = t.IsEnabled,
                 ThresholdAmount = t.ThresholdAmount,
                 CreatedAtUtc = t.CreatedAtUtc,
@@ -235,6 +242,7 @@ public sealed class AccountManager : IAccountManager
             HasCredential = hasCredential,
             CreatedAtUtc = existing?.CreatedAtUtc ?? now,
             UpdatedAtUtc = now,
+            CredentialMode = string.IsNullOrWhiteSpace(credentialMode) ? null : credentialMode.Trim(),
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = monitoring.AutoRefreshEnabled,
@@ -242,6 +250,7 @@ public sealed class AccountManager : IAccountManager
                 NextRefreshAtUtc = next,
                 Thresholds = thresholds,
             },
+            Notification = notification ?? existing?.Notification ?? new AccountNotificationSettings(),
         };
 
         if (existing is null)
@@ -280,6 +289,7 @@ public sealed class AccountManager : IAccountManager
 
         await PersistAsync(cancellationToken);
         _log.Info($"已删除账户 {accountId} 及其凭据、余额快照与历史记录。");
+        AccountDeleted?.Invoke(this, new AccountDeletedEventArgs { AccountId = accountId });
         AccountsChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -366,7 +376,7 @@ public sealed class AccountManager : IAccountManager
                             SucceededAtUtc = snapshot.RetrievedAt,
                             Source = source,
                             IsAvailable = snapshot.IsAvailable,
-                            Balances = snapshot.Balances,
+                            Metrics = snapshot.Metrics,
                         });
                         record.History = HistoryRetention.Apply(record.History, NowUtc).ToList();
                     }

@@ -369,6 +369,32 @@
                 DisplayMemberPath="DisplayName"
                 SelectedValuePath="ProviderId"
                 SelectedValue="{Binding SelectedProviderId, Mode=TwoWay}" />
+            <TextBlock
+                Text="{Binding ProviderDescription}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+            <RadioButtons
+                Header="凭据模式"
+                ItemsSource="{Binding CredentialOptions}"
+                SelectedIndex="{Binding CredentialModeIndex, Mode=TwoWay}"
+                Visibility="{Binding ShowCredentialModeSelector, Converter={StaticResource BoolToVisibilityConverter}}">
+                <RadioButtons.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                            <TextBlock
+                                Text="{Binding Description}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </RadioButtons.ItemTemplate>
+            </RadioButtons>
+            <TextBlock
+                Text="凭据模式已更改，请重新测试连接后才能保存。"
+                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                TextWrapping="Wrap"
+                Visibility="{Binding ModeChangedRequiresRetest, Converter={StaticResource BoolToVisibilityConverter}}" />
             <TextBox
                 Header="账户显示名称"
                 Text="{Binding DisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -376,7 +402,7 @@
             <PasswordBox
                 Header="API Key"
                 PasswordChanged="OnApiKeyPasswordChanged"
-                PlaceholderText="sk-…" />
+                PlaceholderText="{Binding ApiKeyInputHint}" />
             <TextBlock
                 Text="已保存凭据：留空则继续使用现有 API Key。"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -415,10 +441,14 @@
                             Margin="0,4"
                             ColumnDefinitions="Auto,*,Auto,Auto"
                             ColumnSpacing="12">
-                            <TextBlock
-                                Text="{x:Bind Currency}"
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    Text="{x:Bind DisplayName}"
+                                    FontWeight="SemiBold" />
+                                <TextBlock
+                                    Text="{x:Bind Unit}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
                             <ToggleSwitch
                                 Grid.Column="1"
                                 IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
@@ -440,10 +470,34 @@
             </ItemsControl>
 
             <TextBlock
-                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各币种低余额阈值。"
+                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各指标低余额阈值。"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap"
                 Visibility="{Binding ShowThresholdEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <TextBlock Text="通知设置" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <ComboBox
+                Header="该账户通知"
+                ItemsSource="{Binding NotificationEnabledOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding NotificationEnabledIndex, Mode=TwoWay}" />
+            <ComboBox
+                Header="重复提醒间隔"
+                ItemsSource="{Binding NotificationRepeatOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding RepeatIntervalIndex, Mode=TwoWay}" />
+            <ComboBox
+                Header="余额恢复提醒"
+                ItemsSource="{Binding RecoveryOptions}"
+                DisplayMemberPath="Label"
+                SelectedValuePath="Value"
+                SelectedIndex="{Binding RecoveryEnabledIndex, Mode=TwoWay}" />
+            <TextBlock
+                Text="余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
 
             <TextBlock
                 Text="{Binding ValidationMessage}"
