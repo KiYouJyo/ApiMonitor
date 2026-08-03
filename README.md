@@ -1,58 +1,112 @@
-# ApiBalanceMonitor
+# ApiMonitor
 
-ApiBalanceMonitor 是一个独立的 WinUI 3 桌面应用，用于查询并记录用户自己的 API 账户余额。
+[简体中文](README.zh-CN.md)
 
-当前版本 `v0.1.0`（阶段一）：
+**ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It currently supports DeepSeek balance queries.
 
-- 支持 DeepSeek 官方余额接口（`GET https://api.deepseek.com/user/balance`）
-- API Key 通过 Windows Credential Locker（`PasswordVault`）安全保存
-- 普通配置与最近余额快照以 JSON 保存在应用专属本地目录
-- 简洁的 Windows 11 Fluent 主界面：无账户引导、账户卡片、手动刷新、编辑、删除
-- 添加/编辑账户对话框内置“测试连接”，测试成功只预览结果，点击保存才写入账户与凭据
-- 独立 xUnit 测试项目，覆盖 Provider 解析、注册表、本地持久化与 ViewModel 状态
+- Current version: **v0.2.0**
+- Runtime: .NET 10 / Windows App SDK 2.x, x64
+- Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 
-## 技术栈
+## Features
 
-- C# / .NET 10（`net10.0-windows10.0.26100.0`）
-- WinUI 3 / Windows App SDK 2.3.1
-- 单项目 MSIX 打包（x64）
-- `System.Text.Json`、`HttpClient`
-- CommunityToolkit.Mvvm 8.4.0（轻量 MVVM：`ObservableObject`、`AsyncRelayCommand`）
+- Add, edit, and delete API accounts
+- Check balances for one or more currencies (currently DeepSeek: CNY / USD)
+- Local balance history with retention
+- Per-currency low-balance threshold rules
+- Automatic refresh while the app is running
+- Manual refresh and one-click secure copy of the API key
+- Local snapshot restore after restart
 
-## 项目结构
+## Security and privacy design
 
-```text
-ApiBalanceMonitor.csproj     # 主应用（单项目 MSIX）
-Models/                      # 领域模型（账户、余额快照、查询结果）
-Providers/                   # IApiBalanceProvider、DeepSeek、注册表
-Services/                    # 凭据/账户/快照存储、HTTP、组合根、对话框
-ViewModels/                  # MainViewModel、AccountEditorViewModel 等
-Views/                       # MainPage、AccountEditorDialog、转换器
-tests/ApiBalanceMonitor.Tests/  # xUnit 测试
-```
+- API keys are stored in the **Windows Credential Locker**, never in JSON, logs, or diagnostics.
+- API keys are only sent to the corresponding provider's official endpoint (currently the DeepSeek balance API).
+- Account metadata, balance snapshots, history, and settings are stored only in the local app data directory.
+- Automatic refresh only runs while the app is running; there is no tray resident and no system notification in this version.
+- Copying an API key writes it to the Windows clipboard temporarily, and the app attempts to clear it after about 30 seconds (without clearing anything you copy afterwards).
+- No telemetry, ads, or crash uploads.
 
-## 构建与测试
+## System requirements
+
+- Windows 10 version 1809 (build 17763) or later; Windows 11 recommended
+- x64
+- Windows App Runtime 2.3.1 or later
+
+## Installation
+
+The recommended way is the **full test package** (`.zip`) from the Release assets:
+
+1. Download `ApiMonitor_0.2.0.0_x64_Test.zip`.
+2. Verify the SHA-256 checksum against `SHA256SUMS.txt`.
+3. Install the included public certificate (`ApiMonitor_0.2.0.0_x64.cer`) into **Local Machine > Trusted People**.
+4. Run `Add-AppDevPackage.ps1` (or install the `.msix` with `Add-AppxPackage`).
+
+> The GitHub release is signed with a self-signed developer certificate. Only install certificates you trust and only from the official repository. The Microsoft Store version will be signed and distributed by Microsoft.
+
+See [SUPPORT.md](SUPPORT.md) for common installation issues.
+
+## Building from source
+
+Prerequisites:
+
+- Visual Studio 2026 (or newer) with the Windows App SDK / WinUI 3 workload, or the .NET 10 SDK plus the Windows SDK
+- Developer mode enabled on Windows (for MSIX sideloading)
 
 ```powershell
-dotnet restore ApiBalanceMonitor.slnx -p:Configuration=Release -p:Platform=x64
-dotnet test ApiBalanceMonitor.slnx -c Release -p:Platform=x64 --no-restore
-dotnet build ApiBalanceMonitor.slnx -c Debug -p:Platform=x64 --no-restore
-dotnet build ApiBalanceMonitor.slnx -c Release -p:Platform=x64 --no-restore
+# Restore and build Debug x64
+dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64
+
+# Run all tests
+dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug
+
+# Build Release x64
+dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 ```
 
-输出目录：`bin/<Configuration>/net10.0-windows10.0.26100.0/win-x64`。
+The project uses the single-project MSIX tooling; the package identity and publisher are kept stable for compatible updates.
 
-## 隐私
+## Project structure
 
-详见 [PRIVACY.md](PRIVACY.md)。API Key 只保存在 Windows 安全凭据存储中，
-不写入 JSON、日志或任何导出数据。
+```text
+ApiMonitor.slnx
+ApiMonitor.csproj          Main WinUI 3 app project (x64)
+App.xaml / MainWindow.xaml Application and main window
+Views/                    Main page, account editor dialog, history dialog
+ViewModels/               MVVM view models
+Models/                   Domain models
+Providers/                Balance providers (DeepSeek) and registry
+Services/                 Storage, secrets, refresh, history, thresholds, clipboard
+tests/ApiMonitor.Tests/   xUnit test suite
+.github/workflows/ci.yml  CI workflow
+```
 
-## 人工验收要点（v0.1.0）
+## Current limitations
 
-1. 无账户时显示用途说明、隐私说明与“添加 DeepSeek 账户”按钮。
-2. 添加账户：输入名称与 API Key，先“测试连接”看到币种与总余额，再保存。
-3. 编辑已有账户：不回填 API Key，显示“已保存凭据”，留空则沿用原密钥。
-4. 手动刷新显示进度环，成功后更新币种余额与最近成功时间。
-5. 删除账户时同时删除凭据与本地余额快照。
-6. 重启应用后账户与最近余额快照仍存在。
-7. 关闭应用后无后台进程残留（阶段一不含托盘/后台/通知）。
+- Automatic refresh only runs while the app is open; closing the window stops monitoring.
+- No tray icon, no system notifications, and no background tasks in this version.
+- Only the DeepSeek provider is available.
+- The GitHub release is self-signed; a proper store signature comes with the Microsoft Store distribution.
+
+## Roadmap
+
+- Additional balance providers
+- Tray residency and system notifications
+- Microsoft Store release
+- Localization improvements
+
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md).
+
+## Reporting security issues
+
+See [SECURITY.md](SECURITY.md). Please use GitHub Private Vulnerability Reporting and never paste real API keys into issues.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Support
+
+See [SUPPORT.md](SUPPORT.md). For bugs or feature requests, open an [issue](https://github.com/KiYouJyo/ApiMonitor/issues).
