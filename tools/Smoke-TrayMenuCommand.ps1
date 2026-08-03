@@ -58,7 +58,9 @@ function Expand-Overflow {
 }
 
 # Hide main window first (close to tray), so "open" visibly restores it.
-$ls = Join-Path $env:LOCALAPPDATA 'Packages\ApiMonitor_cx0n152q1hsh2\LocalState'
+$pkg = Get-AppxPackage -Name ApiMonitor -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $pkg) { Write-Host 'FAIL: ApiMonitor package not installed'; exit 1 }
+$ls = Join-Path $env:LOCALAPPDATA ('Packages\' + $pkg.PackageFamilyName + '\LocalState')
 $s = @{ schemaVersion = 4; mainWindowCloseBehavior = 0; showFirstCloseExplanation = $false; startWithWindows = $false; trayFeatureEnabled = $true }
 [System.IO.File]::WriteAllText((Join-Path $ls 'tray-settings.json'), ($s | ConvertTo-Json), (New-Object System.Text.UTF8Encoding($false)))
 $p = Get-Process -Name ApiMonitor -ErrorAction SilentlyContinue

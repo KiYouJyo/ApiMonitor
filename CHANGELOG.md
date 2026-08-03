@@ -1,20 +1,35 @@
 # Changelog
 
+## [Unreleased]
+
 ## [0.4.0] - 2026-08-03
 
-- 新增通知区域托盘图标（Win32 Shell_NotifyIconW，NOTIFYICON_VERSION_4，稳定 GUID，独立隐藏消息窗口）
-- 左键单击托盘图标打开/激活主窗口；右键弹出原生菜单（打开 ApiMonitor / 打开紧凑窗口 / 刷新全部账户 / 自动刷新状态 / 低余额状态 / 登录时启动 / 退出 ApiMonitor）
-- 关闭主窗口默认隐藏到通知区域（设置可选“退出 ApiMonitor”）；首次隐藏前显示一次说明，可选择“不再提示”并持久化
-- 全应用单实例：第二次启动重定向激活到已有进程并干净退出（AppInstance，固定实例键 `ApiMonitor.MainInstance`）
-- 可选的“登录 Windows 时启动”（MSIX StartupTask，`ApiMonitorStartup`，默认关闭；系统状态为权威来源，不写 Run 键/启动文件夹/计划任务）
-- 登录启动仅驻留通知区域并启动自动刷新，不弹出主窗口、不抢占焦点
-- Explorer 重启后通过 TaskbarCreated 消息自动恢复托盘图标，不重复注册、不重启进程
-- 托盘 Tooltip 随余额状态更新（正常 / N 个币种低于阈值 / 尚无余额数据 / 正在刷新 / 最近刷新失败），不包含 API Key
-- 统一退出协调器：退出流程幂等，停止调度、取消在途请求、保存设置、删除托盘图标后进程干净退出
-- 设置 schemaVersion 从 3 升级到 4（新增 tray-settings.json，v0.3.1 无此文件时使用默认值，迁移幂等）
-- 新增多尺寸托盘 ICO（16/20/24/32/48/256，沿用蓝底白 A 意象）
-- v0.3.1 可原地升级到 v0.4.0，保留账户、余额历史、阈值、紧凑窗口设置与 Credential Locker 凭据
-- 更新 PRIVACY、SUPPORT、README 与安装/卸载文档
+### Added
+
+- Native Windows notification-area icon (Shell_NotifyIconW, NOTIFYICON_VERSION_4, stable GUID, dedicated hidden message window)
+- Close-to-tray behavior: closing the main window hides it to the notification area (configurable to exit instead)
+- Tray menu for opening the main and compact windows, refreshing all accounts, toggling sign-in startup and exiting
+- Single-instance activation: a second launch redirects to and activates the existing instance
+- Optional start at Windows sign-in (MSIX StartupTask, off by default; sign-in startup stays in the tray only)
+- Explorer restart recovery: the tray icon reappears automatically after Explorer restarts
+- Tray Tooltip balance-status summary (normal / low-balance count / no data / refreshing / recent failure), without API keys
+- Persistent notification-area and startup settings (tray-settings.json, schema 3 → 4)
+- Multi-size tray icon (16/20/24/32/48/256)
+- In-place upgrade from v0.3.1 preserving accounts, balance history, thresholds, compact-window settings and Credential Locker keys
+
+### Fixed
+
+- Fixed the tray context menu appearing near the upper-left corner
+- Corrected NOTIFYICON_VERSION_4 callback parsing (event in LOWORD(lParam), icon ID in HIWORD(lParam), cursor anchor from GetCursorPos / wParam)
+- Positioned the context menu near the cursor or the notification icon, with monitor-aware expansion direction
+- Fixed reopening a hidden main window from the tray menu
+
+### Changed
+
+- Application lifecycle now remains active while the tray icon is running
+- Closing the final visible window no longer necessarily exits the application
+- Explicit exit now performs centralized cleanup (scheduler, in-flight requests, settings, tray icon, windows)
+- Settings schema upgraded for tray and startup preferences
 
 ## [0.3.1] - 2026-08-03
 
