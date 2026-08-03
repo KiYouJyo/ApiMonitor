@@ -470,7 +470,7 @@
             </ItemsControl>
 
             <TextBlock
-                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各币种低余额阈值。"
+                Text="暂无余额数据。保存账户并完成首次余额查询，或点击“测试连接”获取余额后，可在此设置各指标低余额阈值。"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap"
                 Visibility="{Binding ShowThresholdEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}" />

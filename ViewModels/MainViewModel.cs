@@ -77,7 +77,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>主界面副标题，版本号取自程序集元数据，避免与包版本脱节。</summary>
     public string SubtitleText { get; } =
-        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，当前支持 DeepSeek）。";
+        $"查询并记录你自己的 API 账户余额（v{GetAppVersion()}，支持 DeepSeek 与 OpenRouter）。";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]

@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem ApiMonitor v0.4.0 one-click uninstaller.
+rem ApiMonitor 00.4.0 one-click uninstaller.
 
 set "EXITCODE=0"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Uninstall.ps1"

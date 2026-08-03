@@ -10,6 +10,10 @@ Since v0.3.1, `Install.cmd` performs all certificate steps automatically. The pu
 
 v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds, compact-window settings, and Credential Locker API keys are preserved. Just run `Install.cmd` again. The installer never enables the "start with Windows" startup task automatically.
 
+### Upgrading v0.4.0 to v0.5.0
+
+v0.5.0 upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, compact-window settings, tray settings, and sign-in startup preferences are preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the generic metric model. The installer never enables notifications or sign-in startup automatically; global system alerts are **off by default** until you turn them on.
+
 ### Upgrading v0.3.0 to v0.3.1
 
 v0.3.1 upgraded in place over v0.3.0 (historical release line).
@@ -37,6 +41,41 @@ Starting with v0.4.0 the app stays resident in the notification area:
 - **How to re-enable it in Windows startup settings?** Toggle it on inside the app, or enable `ApiMonitor` in **Settings → Apps → Startup**.
 - The tray Tooltip shows a short balance summary (normal / low balance count / no data / refreshing). It never shows API keys or balance details.
 
+## Windows notification-center (low-balance) alerts
+
+Starting with v0.5.0, low-balance and recovery alerts use the Windows App SDK AppNotification API. Alerts are generated **locally by the running ApiMonitor process**; there is no cloud push.
+
+### Alerts do not appear
+
+- **Check that the alert is enabled**: open the main window → **余额提醒** section → enable **启用余额系统提醒** (off by default after upgrade), and make sure the account's own notification setting is not **关闭**.
+- **Check the threshold**: the alert fires only when a successful query produces a balance below an enabled threshold for that metric. Historical snapshots from before the app started never trigger alerts.
+- **Check Windows notification settings**: open **Settings → System → Notifications** (or press the **打开 Windows 通知设置** button in the app) and make sure notifications for ApiMonitor are allowed, **Focus assist / Do not disturb** is not blocking them, and the **勿扰/专注助手** hours are not active. ApiMonitor cannot bypass Windows notification settings and does not change them automatically.
+- **Use the test notification**: the **发送测试通知** button sends a clearly labeled test notification without querying any API, changing threshold state, or writing balance history. If it does not appear, the cause is almost always a Windows-side setting (see above).
+- **Quiet hours / Focus assist**: Windows may suppress notifications during Focus assist hours or when notifications are set to "Do not disturb". Check the action center.
+- **App must be running**: alerts are only produced from queries made while ApiMonitor is running. Sign-in startup and tray residency keep it monitoring; choosing "退出 ApiMonitor" stops all queries and new alerts.
+- If the notification appeared once and a low balance persists, the repeat interval (default 24 hours) prevents frequent repeats; choose a shorter interval or **暂停提醒 24 小时** behavior in the account's notification settings.
+
+### "暂停提醒 24 小时" button
+
+The button snoozes that account/metric for 24 hours without opening the app window, keeps the low-balance state, and does not clear the alert. Recovery alerts can still be sent according to your settings.
+
+## OpenRouter credential modes
+
+- **普通 API Key** (API Key mode) queries `https://openrouter.ai/api/v1/key`: it shows key quota remaining/limit and total/daily/weekly/monthly usage. It never claims to read the full account balance.
+- **Management Key** (Management Key mode) queries `https://openrouter.ai/api/v1/credits`: it shows account Credits (remaining = total − usage). It has higher permissions than a normal API key and should only be used when you need account-level Credits.
+- **403 when using a normal API key on the Credits endpoint**: OpenRouter returns 403 because that key is not a Management Key. Edit the account, switch the credential mode to **Management Key**, and save the Management Key.
+- **`limit_remaining = null`**: means "no key quota is set, or the quota is not constrained by this field" — it is displayed as **无限额度** and never treated as 0, and it never triggers a low-balance alert.
+- Keys are never sent to two endpoints automatically; the endpoint is chosen strictly by the selected credential mode. ApiMonitor never requests, creates, deletes, or rotates OpenRouter API keys, and never manages your OpenRouter account.
+
+## Multi-account credential storage
+
+- Each account's credential is associated with its AccountId in the Windows Credential Locker (resource `ApiMonitor`); Provider and credential mode are stored as plain account settings and never embedded in the key text.
+- If saving a new account fails (for example the system reaches a Credential Locker limit), the app rolls back the new credential write so existing accounts are never damaged; a clear message is shown.
+- If deleting an account fails partway, the app never silently leaves inconsistent state; retry and check the log for the exact failure.
+- The UI shows how many accounts are configured but does not claim a fixed credential-count limit that applies to every Windows configuration.
+
+## Balance query issues
+
 ### Windows App Runtime
 
 The app requires Windows App Runtime 2.3.1 or later. The full test package includes the runtime dependencies under `Dependencies\x64`, and `Install.cmd` installs only what the current x64 system is missing (same or higher installed versions are skipped). If Windows still reports a missing runtime, install the official Microsoft Windows App Runtime redistributable.
@@ -54,11 +93,13 @@ The app requires Windows App Runtime 2.3.1 or later. The full test package inclu
 - **401 Unauthorized**: the API key is invalid or expired; edit the account and save a new key.
 - **Network errors**: check your connection/DNS, then retry.
 - **Balance unavailable**: the provider may report the account as unavailable; retry later.
+- **OpenRouter 401 / 402 / 429 / 5xx**: classified errors are shown on the account card; check the key, your OpenRouter payment state, request rate, or service status.
+- **OpenRouter JSON/missing-field errors**: the official API shape may have changed; report the exact error text (without keys) as an issue.
 
 ## Filing an issue
 
 - Search existing issues first.
 - Include the app version, Windows version, and the exact error message.
-- **Never include your real API key, Credential Locker data, or unredacted logs.**
+- **Never include your real API key, Management Key, Credential Locker data, or unredacted logs.** Do not paste any key material into issues, including test keys.
 
 Feature requests are welcome via the feature request template.

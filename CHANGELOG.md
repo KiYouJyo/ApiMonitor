@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-03（开发版本，等待人工验收；未合并、未发布）
+
+### Added
+
+- 通用余额指标模型（BalanceMetric）：货币余额、平台 Credits、密钥额度、累计/周期使用量统一表示；未知数值为 null，无限额度不误触发低余额提醒
+- 多账户管理：同一 Provider 可添加多个账户；主界面账户总数/低余额/查询失败汇总、Provider 与状态筛选、刷新全部账户
+- OpenRouter Provider：普通 API Key（/api/v1/key）与 Management Key（/api/v1/credits）两种凭据模式，剩余 Credits = 总充值 − 总使用（负数不钳制）；凭据模式为账户非敏感设置，密钥仍只进 Credential Locker
+- Windows 通知中心低余额提醒（AppNotification）：首次低余额、重复提醒冷却（不重复/6h/12h/24h/3d）、余额恢复提醒、暂停提醒 24 小时、快照去重、多指标合并、稳定 Tag 替换、测试通知
+- 全局与每账户通知设置：升级后全局系统提醒默认关闭；已有 DeepSeek 阈值保留
+- 通知注册与单实例激活整合：先绑定 NotificationInvoked 再 Register；通知点击打开/定位对应账户，第二实例重定向，退出时 Unregister
+- 数据迁移：账户/余额文件升级到通用指标结构（账户 schema 2→3、余额记录 schema 2→3、设置体系 tray-settings 4→5），迁移前备份旧文件且幂等
+- 安装与卸载工具升级到 0.5.0.0，支持 v0.4.0 原地升级，安装脚本不自动开启通知与登录启动
+
+### Changed
+
+- 余额快照与历史记录改用稳定 MetricId；阈值规则按 MetricId 关联
+- Package.appxmanifest 增加 windows.toastNotificationActivation 与 comServer 扩展（AppNotification 激活）
+- 主界面、紧凑窗口、托盘状态与通知状态共用同一套阈值计算
+
+### Fixed
+
+- 修复了升级后凭据模式变化会误要求重新测试连接的问题
+
+### Security
+
+- 通知参数只包含 action/accountId/providerId/metricId 非敏感标识；通知内容不含 API Key
+- OpenRouter Management Key 权限说明与 403 提示；`limit_remaining=null` 显示为无限额度而非 0
+
+## [0.4.0] - 2026-08-03
+
 ## [0.4.0] - 2026-08-03
 
 ### Added

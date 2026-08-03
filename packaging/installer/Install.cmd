@@ -1,7 +1,7 @@
 @echo off
 setlocal
-rem ApiMonitor v0.4.0 one-click sideload installer.
-rem Always run from this script's own directory; the .ps1 also resolves paths itself.
+rem ApiMonitor 00.4.0 one-click sideload installer.
+rem Always run from this script's own directory; the .ps1 also resol0es paths itself.
 
 set "EXITCODE=0"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install.ps1"

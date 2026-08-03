@@ -2,59 +2,50 @@
 
 [English](README.md)
 
-**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。当前支持 DeepSeek 余额查询。
+**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。支持 **DeepSeek** 余额查询、**OpenRouter** 密钥额度 / Credits 查询，以及多账户管理与可选的 Windows 通知中心低余额提醒。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前正式版本：**v0.4.0**
+- 当前版本：**v0.5.0**
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store
 - 许可证：[MIT](LICENSE)
 
-## 从 v0.2.0 升级说明
+## 升级说明
 
-- **v0.3.0 使用全新的完整 ApiMonitor 包身份**（包名与发布者）。v0.2.0 侧载包**不会原地升级**到 v0.3.0。
-- 安装 v0.3.0 构建前，请先卸载旧的 v0.2.0 测试包。
-- v0.2.0 的本地账户、余额历史和 Credential Locker API Key **不会自动迁移**；安装 v0.3.0 后需要重新添加账户与 API Key。
-
-从 **v0.3.1** 开始，安装程序支持真正的原地升级；**v0.4.0** 在 v0.3.1 之上原地升级，会保留你的账户、余额历史、阈值、紧凑窗口设置和 Credential Locker API Key。安装程序**不会**自动开启“登录 Windows 时启动”。
+- **v0.5.0** 在 v0.4.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新设置、紧凑窗口设置、托盘设置与登录启动设置全部保留。已有 DeepSeek 币种余额与阈值无损迁移到新的通用指标模型。安装程序**不会**自动开启系统提醒，也**不会**自动开启登录启动。
+- **v0.3.1 / v0.4.0**（历史版本）已支持真正原地升级。
+- **v0.2.0 侧载包不会原地升级**：请先卸载旧包，再重新添加账户。
 
 ## 主要功能
 
-- 添加、编辑和删除 API 账户
-- 多币种余额查询（当前支持 DeepSeek：CNY / USD）
-- 本地余额历史记录（含保留策略）
-- 按币种设置低余额阈值规则
-- 应用运行期间自动刷新
-- 手动刷新与一键安全复制 API Key
-- **通知区域常驻**：即使关闭所有窗口，应用仍在通知区域运行
-- **关闭到托盘**：关闭主窗口时隐藏到通知区域（可设置为直接退出）
-- **托盘左键**打开或激活主窗口
-- **托盘右键菜单**：打开主窗口、打开紧凑窗口、刷新全部账户、自动刷新与低余额状态、切换登录启动、退出 ApiMonitor
-- **单进程、单实例**：第二次启动会激活已有实例，不创建第二个进程
-- **可选登录 Windows 时启动**（MSIX StartupTask，默认关闭；登录启动仅驻留通知区域，不自动弹窗）
-- **Explorer 重启恢复**：重启 Explorer 后托盘图标自动恢复
-- **显式退出**：选择“退出 ApiMonitor”才完全结束监测与进程
-- **v0.3.1 可原地升级到 v0.4.0**，保留账户、余额历史、阈值、紧凑窗口设置与 Credential Locker 凭据
-- **Install.cmd / Uninstall.cmd** 继续作为推荐安装、卸载方式
-- 重启后恢复本地余额快照
-- 紧凑置顶余额窗口（整个应用仅一个实例）
-- 紧凑窗口内切换账户与币种
-- 主窗口与紧凑窗口余额及刷新状态实时同步
-- 持久化紧凑窗口的位置、尺寸与置顶状态
+- 同一 Provider 支持多个账户（如多个 DeepSeek 账户、多个 OpenRouter 密钥）
+- **DeepSeek** 与 **OpenRouter** 两个 Provider，选择项由 Provider 注册表动态生成（不写死在 XAML）
+- **OpenRouter 两种凭据模式**：
+  - **普通 API Key**：密钥剩余额度 / 额度上限，以及累计、今日、本周、本月使用量
+  - **Management Key**：账户总 Credits（剩余 = 总充值 − 总使用，负值不钳制为 0）
+- 多账户汇总（总数 / 低余额数 / 查询失败数）、Provider 筛选与状态筛选（全部 / 正常 / 低余额 / 未知 / 失败）
+- 逐账户刷新与“刷新全部账户”（复用账户级并发锁，一个账户失败不影响其他账户）
+- 逐账户历史、阈值、自动刷新与通知设置
+- 通用 **BalanceMetric** 指标模型：货币余额、平台 Credits、密钥额度与使用量使用统一稳定表示；未知数值为 null（绝不用 0 表示），无限额度绝不误触发低余额提醒
+- **Windows 通知中心低余额提醒**（AppNotification）：
+  - 首次低余额提醒、重复提醒冷却（不重复 / 6 小时 / 12 小时 / 24 小时 / 3 天）与余额恢复提醒
+  - 通知按钮：“打开账户”与“暂停提醒 24 小时”
+  - 按账户 + 指标维护通知状态，快照去重，多指标合并为一条账户级通知，稳定 Tag 替换旧提醒
+  - 测试通知按钮；升级后**全局系统提醒默认关闭**
+- 通知区域常驻、关闭到托盘、单实例、可选登录启动与 Explorer 重启恢复（v0.4.0 行为保持不变）
+- 紧凑置顶余额窗口（账户与指标选择）
+- API Key 一键安全复制（约 30 秒后尝试从剪贴板清理）
 
 ## 安全与隐私设计
 
 - API Key 保存在 **Windows 凭据管理器（Credential Locker）** 的 ApiMonitor 资源中，绝不写入 JSON、日志或诊断信息。
-- API Key 只发送给对应 Provider 的官方接口（当前为 DeepSeek 官方余额接口）。
-- 账户元数据、余额快照、历史记录和设置仅保存在本机应用数据目录。
+- 密钥只发送给对应 Provider 的官方接口（DeepSeek 余额接口、OpenRouter key/credits 接口）。OpenRouter Management Key 只用于 Credits 接口，绝不发送到其他接口。
+- 账户元数据、余额快照、历史记录、设置与通知状态仅保存在本机应用数据目录。
+- 通知由本机 ApiMonitor 进程在运行期间生成；通知参数只包含非敏感标识（`action`、`accountId`、`providerId`、`metricId`），绝不包含 API Key、余额正文、Authorization、凭据资源或本机路径。
+- **无云端推送、无 WNS 远程推送、无遥测、无开发者服务器**。选择“退出 ApiMonitor”后不再查询或发送新提醒。
 - 自动刷新只在应用运行期间执行；关闭主窗口并隐藏到通知区域后进程仍在运行，自动刷新继续；只有选择“退出 ApiMonitor”才完全结束程序。
-- 本版本没有系统通知中心推送、低余额 Toast、通知声音或托盘气泡；阈值状态只反映在托盘提示文本与菜单中。
 - 登录启动为用户可选功能（默认关闭），仅驻留通知区域，不自动弹出主窗口。
-- 托盘状态只显示余额状态摘要，不包含 API Key 或余额明细。
-- 紧凑窗口只展示本机已有的账户与快照数据，不会额外上传任何内容。
-- 复制 API Key 会短暂写入 Windows 剪贴板，应用约 30 秒后尝试安全清理（不会清除你之后复制的新内容）。
-- 无遥测、广告和崩溃上传。
 
 ## 系统要求
 
@@ -66,7 +57,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.4.0.0_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.5.0.0_x64_Test.zip`。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
@@ -78,11 +69,10 @@
 > - 证书只导入 **本地计算机 > 受信任人（Trusted People）**，绝不导入受信任根证书颁发机构。
 > - 脚本在安装前校验 SHA-256、MSIX 签名与随包 CER 的**完整 Thumbprint**、证书 Subject（`CN=ApiMonitorDev`）、代码签名 EKU、有效期以及包 Identity。
 > - 你仍需要确认一次 UAC，这是 Windows 对机器级证书信任的正常机制。
-> - 请只安装你信任且来自官方仓库的证书。未来的 Microsoft Store 版本（v1.0）将由微软签名和分发，不再需要该流程。
 
 图形化步骤、SmartScreen 说明、常见错误与退出码、手动安装备用方案和 SHA-256 校验方法见 [INSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/INSTALL.md)；卸载与证书清理说明见 [UNINSTALL.md](https://github.com/KiYouJyo/ApiMonitor/blob/main/packaging/installer/UNINSTALL.md)。
 
-常见安装问题参见 [SUPPORT.md](SUPPORT.md)。
+常见安装与通知问题参见 [SUPPORT.md](SUPPORT.md)。
 
 ## 从源码构建
 
@@ -102,9 +92,9 @@ dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug
 dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 ```
 
-项目使用单项目 MSIX 工具链。自 v0.3.0 起使用完整 ApiMonitor 身份（`ApiMonitor` / `CN=ApiMonitorDev`）。
+项目使用单项目 MSIX 工具链。自 v0.3.0 起使用完整 ApiMonitor 身份（`ApiMonitor` / `CN=ApiMonitorDev`）；Package Family 与 Credential Locker 资源保持不变。
 
-第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、Microsoft 无隶属关系，两者均非本项目许可证签发方或背书方。
+第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、OpenRouter、Microsoft 均无隶属关系。
 
 ## 项目结构
 
@@ -115,27 +105,27 @@ App.xaml / MainWindow.xaml 应用与主窗口
 Views/                     主页面、账户编辑对话框、历史记录对话框
 Views/CompactWindow        紧凑置顶余额窗口
 ViewModels/                MVVM 视图模型
-Models/                    领域模型
-Providers/                 余额 Provider（DeepSeek）与注册表
-Services/                  存储、密钥、刷新、历史、阈值、剪贴板、窗口管理服务
+Models/                    领域模型（含通用 BalanceMetric）
+Providers/                 余额 Provider（DeepSeek、OpenRouter）与注册表
+Services/                  存储、密钥、刷新、历史、阈值、通知、剪贴板、窗口管理服务
 tests/ApiMonitor.Tests/    xUnit 测试套件
+tests/installer/           安装工具测试
 .github/workflows/ci.yml   CI 工作流
 ```
 
 ## 当前限制
 
-- 本版本还没有 Windows 通知中心推送、低余额 Toast、通知声音或托盘气泡；阈值状态只反映在托盘提示文本与菜单中。
-- 选择“退出 ApiMonitor”后停止全部刷新；关闭主窗口仅隐藏到托盘，监测继续，但退出进程后不再监测。
-- 登录启动默认关闭，需用户主动开启。
+- 通知只能根据 ApiMonitor 进程运行期间获得的查询结果产生。登录启动与托盘驻留可让应用持续监测，但选择“退出 ApiMonitor”后监测停止；无 Windows Service、无退出后的定时查询。
+- 无云端推送（WNS）、邮件、短信或 Webhook。
+- 无消耗速度预测与“预计可用天数”。
+- 无自动更新；Microsoft Store 上架计划在 v1.0 进行。
+- 仅支持 DeepSeek 与 OpenRouter 两个 Provider，不支持第三方 DLL Provider 动态加载。
 - GitHub 侧载版使用自签名开发证书（`CN=ApiMonitorDev`）。
-- 当前仅支持 DeepSeek Provider。
-- Microsoft Store 上架计划在 v1.0 进行。
 
 ## 路线图
 
-- 更多余额 Provider
-- Windows 通知中心推送与低余额 Toast
 - Microsoft Store 上架（v1.0）
+- 更多余额 Provider
 - 本地化完善
 
 ## 隐私

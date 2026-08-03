@@ -20,7 +20,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$Version = '0.4.0.0',
+    [string]$Version = '0.5.0.0',
     [Parameter(Mandatory = $true)][string]$MsixPath,
     [string]$CertificateThumbprint = '545198E3BC78BE49BDF861C3EA6863FFD285689F',
     [string]$RuntimeSdkVersion = '2.3.1',
