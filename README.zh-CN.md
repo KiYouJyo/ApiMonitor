@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前开发版本：**v0.6.0**（DisplayVersion `0.6.0` / PackageVersion `0.6.0.0`）
+- 当前版本：**v0.6.0**（DisplayVersion `0.6.0` / PackageVersion `0.6.0.1`）
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store（计划 v1.0）
 - 许可证：[MIT](LICENSE)
@@ -40,6 +40,7 @@
 - **消费估算**（v0.6.0）：按有效区间中位数估算每日消耗与预计可用天数，仅基于本机历史；明确标注“估算值”并附说明，数据不足 / 未观察到消耗 / 最近充值 / 指标不支持预测 / 当前值未知等显示明确原因
 - **便携备份**（v0.6.0）：设置 → 数据管理 中导出 / 导入 `.apimonitor-backup`（ZIP+JSON）——账户元数据、Provider 非敏感设置、余额历史、阈值、自动刷新 / 通知 / 托盘 / 紧凑窗口 / 外观设置。**绝不包含 API Key 或凭据**；导入为安全合并（已有账户保留本机凭据、新账户标记需重新输入密钥、历史按稳定 Id 去重、失败回滚）
 - **主题设置**（v0.6.0）：跟随系统 / 浅色 / 深色，立即应用到主窗口与紧凑窗口并持久化
+- **统一应用外壳**（v0.6.0）：标题栏、导航面板与页面背景共享统一主题表面（浅色 / 深色 / 高对比度一致）
 - **三语界面**（v0.6.0）：简体中文 / English / 日本語。切换语言会保存偏好、提示重启并通过 `AppInstance.Restart` 重启，不会出现半本地化
 - **完整“关于”页**（v0.6.0）：产品信息（DisplayVersion 与 PackageVersion 分离）、动态 Provider 列表、隐私与安全摘要、项目链接、本地文档（离线查看）、手动检查更新（GitHub REST，仅点击时访问，不自动下载安装）、复制诊断信息（非敏感）、打开本地数据文件夹
 - API Key 一键安全复制（约 30 秒后尝试从剪贴板清理）
@@ -66,7 +67,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.5.0.1_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.6.0.1_x64_Test.zip`。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
@@ -126,8 +127,11 @@ tests/installer/           安装工具测试
 
 - 通知只能根据 ApiMonitor 进程运行期间获得的查询结果产生。登录启动与托盘驻留可让应用持续监测，但选择“退出 ApiMonitor”后监测停止；无 Windows Service、无退出后的定时查询。
 - 无云端推送（WNS）、邮件、短信或 Webhook。
-- 无消耗速度预测与“预计可用天数”。
-- 无自动更新；Microsoft Store 上架计划在 v1.0 进行。
+- 消耗与可用天数估算仅基于本机历史，界面明确标注“估算值”。
+- 语言切换需要重启应用。
+- 旧指标的历史显示标签可能保留原有文本。
+- 更新检查仅手动触发，应用不会自动下载或安装更新。
+- Microsoft Store 上架计划在 v1.0 进行。
 - 仅支持 DeepSeek 与 OpenRouter 两个 Provider，不支持第三方 DLL Provider 动态加载。
 - GitHub 侧载版使用自签名开发证书（`CN=ApiMonitorDev`）。
 
