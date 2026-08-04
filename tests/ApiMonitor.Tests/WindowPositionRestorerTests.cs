@@ -80,8 +80,8 @@ public sealed class WindowPositionRestorerTests
         var restored = WindowPositionRestorer.Restore(
             0, 0, 10, 10, "primary", SingleDisplay);
 
-        Assert.True(restored.Width >= CompactWindowDefaults.MinWidth);
-        Assert.True(restored.Height >= CompactWindowDefaults.MinHeight);
+        Assert.True(restored.Width >= FloatingWindowDefaults.MinWidth);
+        Assert.True(restored.Height >= FloatingWindowDefaults.MinHeight);
     }
 
     [Fact]

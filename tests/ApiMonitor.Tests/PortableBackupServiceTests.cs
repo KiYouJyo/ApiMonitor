@@ -1,4 +1,7 @@
 using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using ApiMonitor.Models;
 using ApiMonitor.Services;
 using ApiMonitor.Tests.TestHelpers;
@@ -14,14 +17,14 @@ public sealed class PortableBackupServiceTests
         out JsonBalanceSnapshotStore snapshotStore,
         out JsonNotificationSettingsStore notificationStore,
         out JsonTraySettingsStore trayStore,
-        out CompactWindowSettingsStore compactStore,
+        out FloatingWindowSettingsStore floatingStore,
         out JsonAppearanceSettingsStore appearanceStore)
     {
         accountStore = new JsonAccountStore(dataDir);
         snapshotStore = new JsonBalanceSnapshotStore(dataDir);
         notificationStore = new JsonNotificationSettingsStore(dataDir);
         trayStore = new JsonTraySettingsStore(dataDir);
-        compactStore = new CompactWindowSettingsStore(dataDir);
+        floatingStore = new FloatingWindowSettingsStore(dataDir);
         appearanceStore = new JsonAppearanceSettingsStore(dataDir);
 
         return new PortableBackupService(
@@ -30,7 +33,7 @@ public sealed class PortableBackupServiceTests
             snapshotStore,
             notificationStore,
             trayStore,
-            compactStore,
+            floatingStore,
             appearanceStore,
             new[] { "deepseek", "openrouter" });
     }
@@ -214,7 +217,7 @@ public sealed class PortableBackupServiceTests
             new JsonBalanceSnapshotStore(temp.Path),
             new JsonNotificationSettingsStore(temp.Path),
             new JsonTraySettingsStore(temp.Path),
-            new CompactWindowSettingsStore(temp.Path),
+            new FloatingWindowSettingsStore(temp.Path),
             new JsonAppearanceSettingsStore(temp.Path),
             new[] { "deepseek", "openrouter" });
         await exportService.ExportAsync(backupPath, CancellationToken.None);
@@ -226,7 +229,7 @@ public sealed class PortableBackupServiceTests
             new JsonBalanceSnapshotStore(temp.Path),
             new JsonNotificationSettingsStore(temp.Path),
             new JsonTraySettingsStore(temp.Path),
-            new CompactWindowSettingsStore(temp.Path),
+            new FloatingWindowSettingsStore(temp.Path),
             new JsonAppearanceSettingsStore(temp.Path),
             new[] { "deepseek" });
 
@@ -253,7 +256,7 @@ public sealed class PortableBackupServiceTests
                 new JsonBalanceSnapshotStore(temp.Path),
                 new JsonNotificationSettingsStore(temp.Path),
                 new JsonTraySettingsStore(temp.Path),
-                new CompactWindowSettingsStore(temp.Path),
+                new FloatingWindowSettingsStore(temp.Path),
                 new JsonAppearanceSettingsStore(temp.Path),
                 new[] { "deepseek" }).InspectAsync(backupPath, CancellationToken.None));
     }
@@ -275,7 +278,7 @@ public sealed class PortableBackupServiceTests
                 new JsonBalanceSnapshotStore(temp.Path),
                 new JsonNotificationSettingsStore(temp.Path),
                 new JsonTraySettingsStore(temp.Path),
-                new CompactWindowSettingsStore(temp.Path),
+                new FloatingWindowSettingsStore(temp.Path),
                 new JsonAppearanceSettingsStore(temp.Path),
                 new[] { "deepseek" }).InspectAsync(backupPath, CancellationToken.None));
     }
@@ -297,8 +300,65 @@ public sealed class PortableBackupServiceTests
                 new JsonBalanceSnapshotStore(temp.Path),
                 new JsonNotificationSettingsStore(temp.Path),
                 new JsonTraySettingsStore(temp.Path),
-                new CompactWindowSettingsStore(temp.Path),
+                new FloatingWindowSettingsStore(temp.Path),
                 new JsonAppearanceSettingsStore(temp.Path),
                 new[] { "deepseek" }).InspectAsync(backupPath, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Import_LegacyBackupWithCompactWindowSettings_IsAcceptedAndMigrated()
+    {
+        using var temp = new TempDirectory();
+        string backupPath = Path.Combine(temp.Path, "legacy.apimonitor-backup");
+        var payloads = new Dictionary<string, string>
+        {
+            ["accounts.json"] = """{ "schemaVersion": 3, "accounts": [] }""",
+            ["balance-records.json"] = """{ "schemaVersion": 3, "records": [] }""",
+            ["notification-settings.json"] = "{}",
+            ["tray-settings.json"] = "{}",
+            ["compact-window-settings.json"] =
+                """{ "schemaVersion": 3, "selectedAccountId": "acct-legacy", "width": 380, "height": 220, "x": 10, "y": 20 }""",
+            ["appearance-settings.json"] = "{}",
+        };
+
+        var manifest = new
+        {
+            backupFormatVersion = 1,
+            displayVersion = "0.6.0",
+            packageVersion = "0.6.0.1",
+            createdAtUtc = DateTimeOffset.UtcNow,
+            containsSecrets = false,
+            supportedProviderIds = new[] { "deepseek", "openrouter" },
+            files = payloads.Select(p => new
+            {
+                name = p.Key,
+                size = (long)Encoding.UTF8.GetByteCount(p.Value),
+                sha256 = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(p.Value))),
+            }).ToList(),
+        };
+        payloads["manifest.json"] = JsonSerializer.Serialize(
+            manifest,
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        using (var archive = ZipFile.Open(backupPath, ZipArchiveMode.Create))
+        {
+            foreach (var (name, content) in payloads)
+            {
+                var entry = archive.CreateEntry(name);
+                await using var writer = new StreamWriter(entry.Open(), new UTF8Encoding(false));
+                await writer.WriteAsync(content);
+            }
+        }
+
+        var service = CreateService(temp.Path, out _, out _, out _, out _, out var floatingStore, out _);
+        var preview = await service.InspectAsync(backupPath, CancellationToken.None);
+        Assert.Contains("compact-window-settings.json", preview.SettingsSections);
+
+        await service.ImportAsync(backupPath, BackupMergePreference.PreferImport, CancellationToken.None);
+
+        var settings = await floatingStore.LoadAsync(CancellationToken.None);
+        Assert.Equal("acct-legacy", settings.SelectedAccountId);
+        Assert.Equal(380, settings.Width);
+        Assert.Equal(220, settings.Height);
     }
 }

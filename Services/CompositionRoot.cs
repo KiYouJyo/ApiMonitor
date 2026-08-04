@@ -42,9 +42,9 @@ public sealed class CompositionRoot
 
     public IWindowManager WindowManager { get; }
 
-    public ICompactWindowService CompactWindowService { get; }
+    public IFloatingWindowService FloatingWindowService { get; }
 
-    public ICompactWindowSettingsStore CompactWindowSettingsStore { get; }
+    public IFloatingWindowSettingsStore FloatingWindowSettingsStore { get; }
 
     public ITraySettingsStore TraySettingsStore { get; }
 
@@ -98,7 +98,7 @@ public sealed class CompositionRoot
         }
     }
 
-    /// <summary>主题服务（v0.6.0；主窗口/紧凑窗口根元素注册处）。</summary>
+    /// <summary>主题服务（v0.6.0；主窗口/悬浮窗根元素注册处）。</summary>
     private readonly AppearanceService _appearanceService;
 
     /// <summary>v0.6.0 主题统一协调器：窗口根元素主题 + 原生标题栏颜色同步。</summary>
@@ -145,7 +145,7 @@ public sealed class CompositionRoot
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);
         var snapshotStore = new JsonBalanceSnapshotStore(dataDirectory);
-        var compactWindowSettingsStore = new CompactWindowSettingsStore(dataDirectory);
+        var floatingWindowSettingsStore = new FloatingWindowSettingsStore(dataDirectory);
         var notificationSettingsStore = new JsonNotificationSettingsStore(dataDirectory);
         var notificationStateStore = new JsonNotificationStateStore(dataDirectory);
         var clipboard = new WindowsClipboardService(dispatcherQueue, Log);
@@ -163,30 +163,29 @@ public sealed class CompositionRoot
         DialogService = new DialogService(accountManager, Log);
         MonitoringScheduler = new MonitoringScheduler(accountManager, time, Log);
         WindowManager = new WindowManager();
-        CompactWindowSettingsStore = compactWindowSettingsStore;
+        FloatingWindowSettingsStore = floatingWindowSettingsStore;
 
-        // v0.6.0：外观服务在紧凑窗口创建前实例化，主题统一应用到所有窗口根元素。
+        // v0.6.0：外观服务在悬浮窗创建前实例化，主题统一应用到所有窗口根元素。
         _appearanceService = new AppearanceService();
         _themeCoordinator = new WindowThemeCoordinator(_appearanceService);
 
-        CompactWindowService = new CompactWindowService(() =>
+        FloatingWindowService = new FloatingWindowService(() =>
         {
-            var viewModel = new CompactWindowViewModel(
+            var viewModel = new FloatingWindowViewModel(
                 accountManager,
-                compactWindowSettingsStore,
+                floatingWindowSettingsStore,
                 Log,
                 uiThreadInvoker);
-            var window = new CompactWindow(
+            var window = new FloatingBalanceWindow(
                 viewModel,
-                compactWindowSettingsStore,
+                floatingWindowSettingsStore,
                 displayAreas,
                 Log);
-            window.OpenMainWindowRequested += (_, _) => _showMainWindow();
-            // 紧凑窗口根元素注册到主题协调器：切换主题立即同步（含标题栏）。
+            // 悬浮窗根元素注册到主题协调器：切换主题立即同步（含标题栏）。
             _themeCoordinator.RegisterWindow(window.AppWindow, window.RootGridElement, isMainWindow: false);
             window.Closed += (_, _) => _themeCoordinator.UnregisterWindow(window.RootGridElement);
-            WindowManager.RegisterCompactWindow(window);
-            return new WinUICompactWindowHost(window);
+            WindowManager.RegisterFloatingWindow(window);
+            return new WinUIFloatingWindowHost(window);
         });
 
         // ------------------------------------------------------------------
@@ -209,7 +208,7 @@ public sealed class CompositionRoot
             Log,
             clipboard,
             uiThreadInvoker,
-            () => CompactWindowService.OpenOrActivate(),
+            accountId => FloatingWindowService.Show(accountId),
             (accountId, ct) => notificationCoordinator.GetSnoozedUntilAsync(accountId, ct));
 
         accountManager.RefreshCompleted += (_, e) =>
@@ -248,7 +247,7 @@ public sealed class CompositionRoot
         ExitCoordinator = new ApplicationExitCoordinator(
             MonitoringScheduler,
             () => trayRef!,
-            CompactWindowService,
+            FloatingWindowService,
             TraySettingsStore,
             () => MainViewModel.Shutdown(),
             () => _closeMainWindow(),
@@ -265,7 +264,7 @@ public sealed class CompositionRoot
             statusProvider,
             menuService,
             accountManager,
-            CompactWindowService,
+            FloatingWindowService,
             StartupTaskService,
             TraySettingsStore,
             ExitCoordinator.BeginExit,
@@ -291,7 +290,7 @@ public sealed class CompositionRoot
         // v0.6.0：数据洞察、便携备份、外观与语言、关于页。
         // 全部共享同一账户服务与账户状态；不重复启动调度器、不重复订阅事件、
         // 不重复读取 Credential Locker。appearanceService 已在前方创建
-        // （紧凑窗口创建前），这里复用同一实例。
+        // （悬浮窗创建前），这里复用同一实例。
         // ------------------------------------------------------------------
         var appearanceStore = new JsonAppearanceSettingsStore(dataDirectory);
         var languageService = new LanguageService();
@@ -326,7 +325,7 @@ public sealed class CompositionRoot
             snapshotStore,
             notificationSettingsStore,
             TraySettingsStore,
-            compactWindowSettingsStore,
+            floatingWindowSettingsStore,
             appearanceStore,
             registry.Infos.Select(p => p.ProviderId));
 

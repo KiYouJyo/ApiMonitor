@@ -17,7 +17,7 @@ public sealed class TrayIconServiceTests
 
         public FakeAccountManager AccountManager { get; } = new();
 
-        public FakeCompactWindowService Compact { get; } = new();
+        public FakeFloatingWindowService Floating { get; } = new();
 
         public FakeStartupTaskService StartupTask { get; } = new();
 
@@ -42,7 +42,7 @@ public sealed class TrayIconServiceTests
                 StatusProvider,
                 new TrayMenuService(),
                 AccountManager,
-                Compact,
+                Floating,
                 StartupTask,
                 SettingsStore,
                 () => ExitApplicationCalls++,
@@ -193,16 +193,17 @@ public sealed class TrayIconServiceTests
     }
 
     [Fact]
-    public void ContextMenu_OpenCompactWindow_KeepsSingleInstance()
+    public void ContextMenu_OpenFloatingWindow_KeepsSingleInstance()
     {
         var harness = new Harness();
-        harness.Host.ShowContextMenuResult = (uint)TrayCommand.OpenCompactWindow;
+        harness.Host.ShowContextMenuResult = (uint)TrayCommand.OpenFloatingWindow;
         var sut = harness.CreateSut();
         sut.Initialize();
 
         harness.Host.RaiseContextMenu(new TrayScreenPoint(0, 0));
 
-        Assert.Equal(1, harness.Compact.OpenOrActivateCalls);
+        Assert.Equal(1, harness.Floating.ShowCalls);
+        Assert.Null(harness.Floating.LastShownAccountId);
     }
 
     [Fact]
@@ -274,7 +275,7 @@ public sealed class TrayIconServiceTests
 
         var items = harness.Host.MenuItems.Last();
         Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.OpenMainWindow && i.IsDefault);
-        Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.OpenCompactWindow);
+        Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.OpenFloatingWindow);
         Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.RefreshAll && i.IsEnabled);
         Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.ToggleStartWithWindows);
         Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.ExitApplication);

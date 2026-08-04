@@ -35,7 +35,7 @@
     <Compile Include="../../Models/MonitoringSettings.cs" Link="Models/MonitoringSettings.cs" />
     <Compile Include="../../Models/BalanceHistoryEntry.cs" Link="Models/BalanceHistoryEntry.cs" />
     <Compile Include="../../Models/AccountRefreshEventArgs.cs" Link="Models/AccountRefreshEventArgs.cs" />
-    <Compile Include="../../Models/CompactWindowSettings.cs" Link="Models/CompactWindowSettings.cs" />
+    <Compile Include="../../Models/FloatingWindowSettings.cs" Link="Models/FloatingWindowSettings.cs" />
     <Compile Include="../../Models/TraySettings.cs" Link="Models/TraySettings.cs" />
     <Compile Include="../../Providers/ProviderInfo.cs" Link="Providers/ProviderInfo.cs" />
     <Compile Include="../../Providers/IApiBalanceProvider.cs" Link="Providers/IApiBalanceProvider.cs" />
@@ -58,13 +58,13 @@
     <Compile Include="../../Services/JsonBalanceSnapshotStore.cs" Link="Services/JsonBalanceSnapshotStore.cs" />
     <Compile Include="../../Services/IAccountManager.cs" Link="Services/IAccountManager.cs" />
     <Compile Include="../../Services/AccountManager.cs" Link="Services/AccountManager.cs" />
-    <Compile Include="../../Services/ICompactWindowSettingsStore.cs" Link="Services/ICompactWindowSettingsStore.cs" />
-    <Compile Include="../../Services/JsonCompactWindowSettingsStore.cs" Link="Services/JsonCompactWindowSettingsStore.cs" />
+    <Compile Include="../../Services/IFloatingWindowSettingsStore.cs" Link="Services/IFloatingWindowSettingsStore.cs" />
+    <Compile Include="../../Services/JsonFloatingWindowSettingsStore.cs" Link="Services/JsonFloatingWindowSettingsStore.cs" />
     <Compile Include="../../Services/WindowPositionRestorer.cs" Link="Services/WindowPositionRestorer.cs" />
     <Compile Include="../../Services/WindowLifecycleTracker.cs" Link="Services/WindowLifecycleTracker.cs" />
-    <Compile Include="../../Services/ICompactWindowHost.cs" Link="Services/ICompactWindowHost.cs" />
-    <Compile Include="../../Services/ICompactWindowService.cs" Link="Services/ICompactWindowService.cs" />
-    <Compile Include="../../Services/CompactWindowService.cs" Link="Services/CompactWindowService.cs" />
+    <Compile Include="../../Services/IFloatingWindowHost.cs" Link="Services/IFloatingWindowHost.cs" />
+    <Compile Include="../../Services/IFloatingWindowService.cs" Link="Services/IFloatingWindowService.cs" />
+    <Compile Include="../../Services/FloatingWindowService.cs" Link="Services/FloatingWindowService.cs" />
     <Compile Include="../../Services/IDialogService.cs" Link="Services/IDialogService.cs" />
     <Compile Include="../../Services/IClipboardService.cs" Link="Services/IClipboardService.cs" />
     <Compile Include="../../Services/ClipboardPolicy.cs" Link="Services/ClipboardPolicy.cs" />
@@ -100,6 +100,7 @@
     <Compile Include="../../Services/WindowCloseBehaviorController.cs" Link="Services/WindowCloseBehaviorController.cs" />
     <Compile Include="../../Helpers/BalanceFormatter.cs" Link="Helpers/BalanceFormatter.cs" />
     <Compile Include="../../Helpers/BalanceMetricText.cs" Link="Helpers/BalanceMetricText.cs" />
+    <Compile Include="../../Helpers/MainBalanceMetricSelector.cs" Link="Helpers/MainBalanceMetricSelector.cs" />
     <Compile Include="../../ViewModels/StatusSeverity.cs" Link="ViewModels/StatusSeverity.cs" />
     <Compile Include="../../ViewModels/BalanceLine.cs" Link="ViewModels/BalanceLine.cs" />
     <Compile Include="../../ViewModels/AccountListItemViewModel.cs" Link="ViewModels/AccountListItemViewModel.cs" />
@@ -107,7 +108,7 @@
     <Compile Include="../../ViewModels/ThresholdEditorItem.cs" Link="ViewModels/ThresholdEditorItem.cs" />
     <Compile Include="../../ViewModels/BalanceHistoryViewModel.cs" Link="ViewModels/BalanceHistoryViewModel.cs" />
     <Compile Include="../../ViewModels/MainViewModel.cs" Link="ViewModels/MainViewModel.cs" />
-    <Compile Include="../../ViewModels/CompactWindowViewModel.cs" Link="ViewModels/CompactWindowViewModel.cs" />
+    <Compile Include="../../ViewModels/FloatingWindowViewModel.cs" Link="ViewModels/FloatingWindowViewModel.cs" />
     <Compile Include="../../ViewModels/TraySettingsViewModel.cs" Link="ViewModels/TraySettingsViewModel.cs" />
     <Compile Include="../../ViewModels/NotificationSettingsViewModel.cs" Link="ViewModels/NotificationSettingsViewModel.cs" />
     <Compile Include="../../ViewModels/AppearanceSettingsViewModel.cs" Link="ViewModels/AppearanceSettingsViewModel.cs" />

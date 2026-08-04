@@ -13,7 +13,7 @@
         <converters:StatusSeverityConverter x:Key="StatusSeverityConverter" />
     </UserControl.Resources>
 
-    <Grid Padding="28,20,28,24" RowSpacing="14">
+    <Grid Padding="28,16,28,20" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -22,20 +22,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 1. 页面标题与版本说明 -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
-            <StackPanel Spacing="4">
-                <TextBlock x:Name="PageTitleText" Style="{StaticResource TitleTextBlockStyle}" />
-                <TextBlock
-                    Text="{Binding SubtitleText}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            </StackPanel>
-            <Button
-                Grid.Column="1"
-                loc:Loc.Key="Home.OpenCompactWindow"
-                Command="{Binding OpenCompactWindowCommand}"
-                VerticalAlignment="Top" />
-        </Grid>
+        <!-- 1. 页面标题（v0.7.0：移除副标题与“打开紧凑窗口”按钮，保留主标题） -->
+        <TextBlock
+            x:Name="PageTitleText"
+            Grid.Row="0"
+            Style="{StaticResource TitleTextBlockStyle}" />
 
         <!-- 2. 主操作栏：添加账户为醒目主按钮 -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
@@ -234,6 +225,7 @@
                                             <Button loc:Loc.Key="Home.Refresh" Command="{x:Bind RefreshCommand}" />
                                             <Button loc:Loc.Key="Home.Edit" Command="{x:Bind EditCommand}" />
                                             <Button loc:Loc.Key="Home.ViewTrends" Command="{x:Bind ViewTrendsCommand}" />
+                                            <Button loc:Loc.Key="Home.SetAsFloatingWindow" Command="{x:Bind SetAsFloatingWindowCommand}" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                                             <Button loc:Loc.Key="Home.CopyKey" Command="{x:Bind CopyKeyCommand}" />

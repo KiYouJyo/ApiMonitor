@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.7.0.0] - 2026-08-04（v0.7.0 UI 整理 / 悬浮窗 / 图标更新候选包）
+
+### Added
+
+- 悬浮余额窗替代原紧凑窗口：轻量、始终置顶、不在任务栏占位的小窗口，只显示一个选定账户的主额度数字（账户名、Provider、单位、状态与最近更新时间），全局单实例，关闭不退出应用
+- 账户卡片新增“设为悬浮窗”入口：记录该账户为悬浮窗账户并显示/切换；托盘菜单“打开紧凑窗口”改为“打开悬浮窗”
+- 主额度数字统一选择规则集中封装（MainBalanceMetricSelector）：DeepSeek 用可用总余额、OpenRouter 普通 API Key 用剩余额度、OpenRouter Management Key 用剩余 Credits、无剩余值时选最合理可用指标、累计使用量不作为主数字
+- floating-window-settings.json 持久化（位置/尺寸/选中账户/置顶），旧 compact-window-settings.json 首次启动一次性幂等迁移，不删除旧文件、不影响启动
+- 应用图标整体替换为 TerminalShare 资产包：多尺寸 ICO（EXE/托盘）、Square44x44/Square71x71/Square150x150/Wide310x150/Square310x310/StoreLogo/SplashScreen 全 scale 与 targetsize/altform 变体、Store 列表图标 300×300
+
+### Changed
+
+- 主页 UI 整理：删除顶部副标题行与“打开紧凑窗口”按钮，保留主标题“ApiMonitor”与主要操作，压缩顶部间距
+- 便携备份使用 floating-window-settings.json；兼容读取含旧 compact-window-settings.json 的 v0.6.0 备份
+- 安装/卸载工具与备份校验接受 floating-window-settings.json（同时兼容旧文件名）
+- 版本：DisplayVersion 0.7.0 / PackageVersion 0.7.0.0（集中版本来源 Directory.Build.props 与 Package.appxmanifest）
+
+### Fixed
+
+- 清理所有旧“紧凑窗口”用户可见文案与入口（主页按钮、托盘菜单、设置/文档/备份说明），统一为“悬浮窗”
+
 ## [0.6.0.1] - 2026-08-03（v0.6.0 主题统一修订包）
 
 ### Fixed

@@ -200,11 +200,11 @@ try {
     $certExpired = New-TestCert -Subject 'CN=ApiMonitorDev' -WithCodeSigningEku -NotBefore (Get-Date).AddDays(-800) -NotAfter (Get-Date).AddDays(-400)
     Assert-True ($certA.Thumbprint -ne $certB.Thumbprint) '两个测试证书的 Thumbprint 不同'
 
-    $msixName = 'ApiMonitor_0.6.0.1_x64.msix'
+    $msixName = 'ApiMonitor_0.7.0.0_x64.msix'
     $goodManifest = @'
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
-  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.6.0.1" ProcessorArchitecture="x64" />
+  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.7.0.0" ProcessorArchitecture="x64" />
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="12.0.0.0" />
   </Dependencies>
@@ -269,13 +269,13 @@ try {
     Write-TestSection 'Manifest：版本与 Identity'
     $info = Get-MsixManifestInfo $msixPath
     Assert-Equal 'ApiMonitor' $info.Name 'Identity Name = ApiMonitor'
-    Assert-Equal '0.6.0.1' $info.Version '包版本 = 0.6.0.1'
+    Assert-Equal '0.7.0.0' $info.Version '包版本 = 0.7.0.0'
     Assert-Equal 'CN=ApiMonitorDev' $info.Publisher 'Publisher = CN=ApiMonitorDev'
     Assert-True (Assert-ManifestIdentity $info).Ok 'Assert-ManifestIdentity 通过'
 
-    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.6.0.1'; Publisher = 'CN=WrongPublisher' }
+    $wrongPublisher = @{ Name = 'ApiMonitor'; Version = '0.7.0.0'; Publisher = 'CN=WrongPublisher' }
     Assert-False (Assert-ManifestIdentity $wrongPublisher).Ok '错误 Publisher 被拒绝'
-    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.6.0.1'; Publisher = 'CN=ApiMonitorDev' }
+    $wrongName = @{ Name = 'ApiMonitorOther'; Version = '0.7.0.0'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongName).Ok '错误 Identity Name 被拒绝'
     $wrongVersion = @{ Name = 'ApiMonitor'; Version = '0.5.0.2'; Publisher = 'CN=ApiMonitorDev' }
     Assert-False (Assert-ManifestIdentity $wrongVersion).Ok '错误版本被拒绝'
@@ -342,12 +342,12 @@ try {
             Status            = 'Ok'
         }
     }
-    Assert-Equal 'Install' (Resolve-PackageAction $null '0.6.0.1' 'CN=ApiMonitorDev') '未安装 -> Install'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.6.0.1' 'CN=ApiMonitorDev') '低版本允许原地升级'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.5.0.0') '0.6.0.1' 'CN=ApiMonitorDev') 'v0.5.0.0 允许原地升级到 0.6.0.1'
-    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.6.0.1') '0.6.0.1' 'CN=ApiMonitorDev') '相同版本不重复安装'
-    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.6.0.2') '0.6.0.1' 'CN=ApiMonitorDev') '更高版本拒绝降级'
-    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.6.0.1' 'CN=SomeoneElse') '0.6.0.1' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
+    Assert-Equal 'Install' (Resolve-PackageAction $null '0.7.0.0' 'CN=ApiMonitorDev') '未安装 -> Install'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.7.0.0' 'CN=ApiMonitorDev') '低版本允许原地升级'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.6.0.1') '0.7.0.0' 'CN=ApiMonitorDev') 'v0.6.0.1 允许原地升级到 0.7.0.0'
+    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.7.0.0') '0.7.0.0' 'CN=ApiMonitorDev') '相同版本不重复安装'
+    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.7.0.1') '0.7.0.0' 'CN=ApiMonitorDev') '更高版本拒绝降级'
+    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.7.0.0' 'CN=SomeoneElse') '0.7.0.0' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.1.0') -eq 0) '版本比较：相等'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.0.0') -gt 0) '版本比较：更高'
     Assert-True ((Compare-PackageVersion '2.3.0.0' '2.3.1.0') -lt 0) '版本比较：更低'
@@ -509,7 +509,7 @@ try {
     [System.IO.File]::WriteAllText((Join-Path $backupSource 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $backupSource 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $backupSource 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
-    [System.IO.File]::WriteAllText((Join-Path $backupSource 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $backupSource 'floating-window-settings.json'), '{ "schemaVersion": 1 }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $hiddenDir 'notification-settings.json'), '{ "schemaVersion": 1, "settings": {} }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $hiddenDir 'app.log'), 'info line', (New-Object System.Text.UTF8Encoding($false)))
     $hiddenFile = Join-Path $backupSource '.hidden-config'
@@ -520,7 +520,7 @@ try {
         -Source $backupSource `
         -BackupRoot $backupRoot `
         -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' `
-        -AppVersion '0.6.0.1'
+        -AppVersion '0.7.0.0'
     Assert-True $backupResult.Ok '备份成功（空格+中文路径、多层子目录、隐藏文件）'
     Assert-Equal 7 $backupResult.FileCount '备份文件数量正确（含隐藏文件与子目录文件）'
     $backupDir = $backupResult.BackupDir
@@ -529,7 +529,7 @@ try {
     Assert-True (Test-Path -LiteralPath (Join-Path $backupDir '.hidden-config')) '隐藏文件已备份'
     $manifest = Get-Content (Join-Path $backupDir 'LocalState-backup-manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     Assert-Equal 'ApiMonitor_cx0n152q1hsh2' $manifest.packageFamilyName '清单 Package Family 正确'
-    Assert-Equal '0.6.0.1' $manifest.appVersion '清单应用版本正确'
+    Assert-Equal '0.7.0.0' $manifest.appVersion '清单应用版本正确'
     Assert-True ($manifest.files.Count -eq 7) '清单文件条目数量正确'
     Assert-True ($manifest.files[0].PSObject.Properties.Name -notcontains 'apiKey') '清单不含 apiKey'
     Assert-True ($manifest.files[0].PSObject.Properties.Name -notcontains 'credential') '清单不含凭据字段'
@@ -540,7 +540,7 @@ try {
     # 空源目录被识别（不崩溃），且空备份不能通过验证。
     $emptySource = Join-Path $script:TempRoot 'empty-source'
     New-Item -ItemType Directory -Path $emptySource | Out-Null
-    $emptyBackup = Backup-SafeLocalState -Source $emptySource -BackupRoot (Join-Path $script:TempRoot 'empty-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.6.0.1'
+    $emptyBackup = Backup-SafeLocalState -Source $emptySource -BackupRoot (Join-Path $script:TempRoot 'empty-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.7.0.0'
     Assert-False $emptyBackup.Ok '空源目录被识别且验证失败（缺少核心 JSON）'
 
     $emptyDirValidation = Test-SafeLocalStateBackup -BackupDir (Join-Path $script:TempRoot 'not-a-backup')
@@ -565,7 +565,7 @@ try {
     $corruptSource = Join-Path $script:TempRoot ('corrupt ' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $corruptSource | Out-Null
     [System.IO.File]::WriteAllText((Join-Path $corruptSource 'accounts.json'), '{ broken !!!', (New-Object System.Text.UTF8Encoding($false)))
-    $corruptBackup = Backup-SafeLocalState -Source $corruptSource -BackupRoot (Join-Path $script:TempRoot 'corrupt-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.6.0.1'
+    $corruptBackup = Backup-SafeLocalState -Source $corruptSource -BackupRoot (Join-Path $script:TempRoot 'corrupt-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.7.0.0'
     Assert-False $corruptBackup.Ok 'JSON 损坏时备份验证失败'
 
     # 0 字节文件。
@@ -573,8 +573,18 @@ try {
     New-Item -ItemType Directory -Path $zeroSource | Out-Null
     [System.IO.File]::WriteAllText((Join-Path $zeroSource 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $zeroSource 'tray-settings.json'), '', (New-Object System.Text.UTF8Encoding($false)))
-    $zeroBackup = Backup-SafeLocalState -Source $zeroSource -BackupRoot (Join-Path $script:TempRoot 'zero-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.6.0.1'
+    $zeroBackup = Backup-SafeLocalState -Source $zeroSource -BackupRoot (Join-Path $script:TempRoot 'zero-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.7.0.0'
     Assert-False $zeroBackup.Ok '0 字节文件导致备份验证失败'
+
+    # v0.6.0 升级源：只有旧 compact-window-settings.json（尚无 floating 文件）仍视为核心文件齐全。
+    $legacySource = Join-Path $script:TempRoot ('legacy ' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $legacySource | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $legacySource 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $legacySource 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $legacySource 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $legacySource 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    $legacyBackup = Backup-SafeLocalState -Source $legacySource -BackupRoot (Join-Path $script:TempRoot 'legacy-bak') -PackageFamilyName 'ApiMonitor_cx0n152q1hsh2' -AppVersion '0.6.0.1'
+    Assert-True $legacyBackup.Ok '仅含旧 compact-window-settings.json 的升级源备份成功'
 
     # -----------------------------------------------------------------------
     Write-TestSection 'Restore-SafeLocalState：二次备份与保护'
@@ -583,7 +593,7 @@ try {
     [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
-    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'floating-window-settings.json'), '{ "schemaVersion": 1 }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $restoreTarget 'new-unknown.json'), '{}', (New-Object System.Text.UTF8Encoding($false)))
 
     $restoreBlocked = Restore-SafeLocalState `
@@ -617,7 +627,7 @@ try {
     [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'accounts.json'), '{ "schemaVersion": 3, "accounts": [] }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'tray-settings.json'), '{ "schemaVersion": 5 }', (New-Object System.Text.UTF8Encoding($false)))
     [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'balance-records.json'), '{ "schemaVersion": 3, "records": [] }', (New-Object System.Text.UTF8Encoding($false)))
-    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'compact-window-settings.json'), '{ "schemaVersion": 3 }', (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText((Join-Path $fakeLocalState 'floating-window-settings.json'), '{ "schemaVersion": 1 }', (New-Object System.Text.UTF8Encoding($false)))
 
     $flowOps = @{ }
     foreach ($key in $fakeOps.Keys) { $flowOps[$key] = $fakeOps[$key] }
@@ -627,7 +637,7 @@ try {
         param($MainPath, [string[]]$DependencyPaths)
         $script:AddAppxCalls++
         $script:InstalledPackages = @($script:InstalledPackages | Where-Object { $_.Name -ne 'ApiMonitor' })
-        $script:InstalledPackages += New-InstalledPkg '0.6.0.1'
+        $script:InstalledPackages += New-InstalledPkg '0.7.0.0'
         $true
     }
     $flowOps['RemoveAppxPackageForUser'] = {
@@ -639,7 +649,7 @@ try {
 
     $script:InstalledPackages = @(
         [pscustomobject]@{ Name = 'Microsoft.WindowsAppRuntime.2'; Version = '2.3.1.0'; PackageFullName = 'Microsoft.WindowsAppRuntime.2_2.3.1.0_x64__8wekyb3d8bbwe'; Publisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US' },
-        (New-InstalledPkg '0.6.0.1')
+        (New-InstalledPkg '0.7.0.0')
     )
     $script:AddAppxCalls = 0
     $script:RemoveCalls = @()
@@ -684,13 +694,13 @@ try {
     # 原地升级：保留 LocalState、不卸载、不操作 Credential Locker。
     $script:InstalledPackages = @(
         [pscustomobject]@{ Name = 'Microsoft.WindowsAppRuntime.2'; Version = '2.3.1.0'; PackageFullName = 'Microsoft.WindowsAppRuntime.2_2.3.1.0_x64__8wekyb3d8bbwe'; Publisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US' },
-        (New-InstalledPkg '0.5.0.0')
+        (New-InstalledPkg '0.6.0.1')
     )
     $script:AddAppxCalls = 0
     $script:RemoveCalls = @()
     $beforeUpgradeHash = (Get-FileHash -LiteralPath (Join-Path $fakeLocalState 'accounts.json') -Algorithm SHA256).Hash
     $upgradeCode = Invoke-Install $flowOps
-    Assert-Equal 0 $upgradeCode 'v0.5.0.0 -> v0.6.0.1 原地升级成功'
+    Assert-Equal 0 $upgradeCode 'v0.6.0.1 -> v0.7.0.0 原地升级成功'
     Assert-Equal 0 $script:RemoveCalls.Count '原地升级不会调用卸载'
     Assert-Equal 1 $script:AddAppxCalls '原地升级只调用一次 Add-AppxPackage'
     Assert-True (Test-Path -LiteralPath (Join-Path $fakeLocalState 'accounts.json')) '原地升级保留 LocalState'

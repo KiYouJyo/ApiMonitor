@@ -1,0 +1,78 @@
+<Window
+    x:Class="ApiMonitor.Views.FloatingBalanceWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:ApiMonitor.Views.Converters"
+    Title="ApiMonitor">
+
+    <Grid x:Name="RootGrid" Padding="14,10">
+        <Grid.Resources>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+        </Grid.Resources>
+
+        <!-- 选定账户的核心额度信息（轻量，只显示一个账户） -->
+        <StackPanel
+            x:Name="DetailPanel"
+            VerticalAlignment="Center"
+            Spacing="5"
+            Visibility="{Binding HasAccount, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock
+                Text="{Binding AccountName}"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                FontSize="13"
+                TextAlignment="Center"
+                HorizontalAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+                MaxWidth="250" />
+            <TextBlock
+                Text="{Binding ProviderName}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                FontSize="11"
+                TextAlignment="Center"
+                HorizontalAlignment="Center" />
+
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="6"
+                HorizontalAlignment="Center"
+                Margin="0,2,0,0">
+                <TextBlock
+                    Text="{Binding BalanceText}"
+                    FontSize="28"
+                    FontWeight="Bold"
+                    TextAlignment="Center" />
+                <TextBlock
+                    Text="{Binding UnitText}"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,0,4" />
+            </StackPanel>
+
+            <TextBlock
+                Text="{Binding StatusText}"
+                FontSize="12"
+                TextAlignment="Center"
+                HorizontalAlignment="Center" />
+
+            <TextBlock
+                Text="{Binding LastUpdatedText}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                FontSize="11"
+                TextAlignment="Center"
+                HorizontalAlignment="Center" />
+        </StackPanel>
+
+        <!-- 空状态：无账户或当前选定账户不可用 -->
+        <TextBlock
+            Text="{Binding EmptyText}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            MaxWidth="240"
+            Visibility="{Binding HasAccount, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+    </Grid>
+</Window>

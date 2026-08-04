@@ -1,0 +1,186 @@
+using ApiMonitor.Services;
+using ApiMonitor.ViewModels;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
+
+namespace ApiMonitor.Views;
+
+/// <summary>
+/// 悬浮余额窗（v0.7.0）：只做视图职责（置顶、无任务栏、位置/尺寸、事件转发），
+/// 业务状态全部来自 FloatingWindowViewModel 与账户服务。
+/// </summary>
+public sealed partial class FloatingBalanceWindow : Window
+{
+    private readonly FloatingWindowViewModel _viewModel;
+    private readonly IFloatingWindowSettingsStore _settingsStore;
+    private readonly IDisplayAreaProvider _displayAreas;
+    private readonly AppLog _log;
+    private readonly CancellationTokenSource _lifetime = new();
+    private bool _boundsRestored;
+    private bool _closing;
+
+    public FloatingBalanceWindow(
+        FloatingWindowViewModel viewModel,
+        IFloatingWindowSettingsStore settingsStore,
+        IDisplayAreaProvider displayAreas,
+        AppLog log)
+    {
+        _viewModel = viewModel;
+        _settingsStore = settingsStore;
+        _displayAreas = displayAreas;
+        _log = log;
+
+        InitializeComponent();
+        Title = "ApiMonitor";
+        RootGrid.DataContext = viewModel;
+
+        Activated += OnWindowActivated;
+        Closed += OnWindowClosed;
+
+        ApplyPresenter();
+    }
+
+    /// <summary>窗口根元素（供主题服务注册；内部仅供 CompositionRoot 使用）。</summary>
+    internal Grid RootGridElement => RootGrid;
+
+    /// <summary>切换悬浮窗账户（宿主调用；初始化完成后应用）。</summary>
+    internal void SelectAccount(string accountId)
+    {
+        _ = SelectAccountCoreAsync(accountId);
+    }
+
+    private async Task SelectAccountCoreAsync(string accountId)
+    {
+        try
+        {
+            await _viewModel.InitializeAsync(_lifetime.Token);
+            await _viewModel.ShowAccountAsync(accountId, _lifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"切换悬浮窗账户失败: {ex.GetType().Name}");
+        }
+    }
+
+    private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
+    {
+        if (!_boundsRestored)
+        {
+            _boundsRestored = true;
+            _ = RestoreBoundsAsync();
+            _ = _viewModel.InitializeAsync(_lifetime.Token);
+        }
+
+        ApplyToolWindowStyle();
+    }
+
+    /// <summary>始终置顶 + 最小尺寸；固定置顶，不提供 UI 开关。</summary>
+    private void ApplyPresenter()
+    {
+        try
+        {
+            if (AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsAlwaysOnTop = true;
+                presenter.PreferredMinimumWidth = (int)FloatingWindowDefaults.MinWidth;
+                presenter.PreferredMinimumHeight = (int)FloatingWindowDefaults.MinHeight;
+            }
+        }
+        catch (Exception ex)
+        {
+            // 置顶失败不崩溃；窗口仍可用。
+            _log.Error($"设置悬浮窗置顶失败: {ex.GetType().Name}");
+        }
+    }
+
+    /// <summary>工具窗口样式：不在任务栏单独占位（保持置顶与可拖动标题栏）。</summary>
+    private void ApplyToolWindowStyle()
+    {
+        try
+        {
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            int style = NativeMethods.GetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE);
+            _ = NativeMethods.SetWindowLongW(
+                hwnd,
+                NativeMethods.GWL_EXSTYLE,
+                style | (int)NativeMethods.WS_EX_TOOLWINDOW);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"设置悬浮窗工具窗口样式失败: {ex.GetType().Name}");
+        }
+    }
+
+    private async Task RestoreBoundsAsync()
+    {
+        try
+        {
+            var settings = await _settingsStore.LoadAsync(_lifetime.Token);
+            var areas = _displayAreas.GetAll();
+            var restored = WindowPositionRestorer.Restore(
+                settings.X,
+                settings.Y,
+                settings.Width,
+                settings.Height,
+                settings.LastDisplayId,
+                areas);
+
+            AppWindow.MoveAndResize(new RectInt32(
+                restored.X,
+                restored.Y,
+                restored.Width,
+                restored.Height));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            // 位置恢复失败不影响启动。
+            _log.Error($"恢复悬浮窗位置失败: {ex.GetType().Name}");
+        }
+    }
+
+    private void OnWindowClosed(object sender, WindowEventArgs args)
+    {
+        if (_closing)
+        {
+            return;
+        }
+
+        _closing = true;
+        _ = SaveBoundsAsync();
+        _viewModel.Shutdown();
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+
+    private async Task SaveBoundsAsync()
+    {
+        try
+        {
+            var settings = await _settingsStore.LoadAsync(CancellationToken.None);
+            settings.Width = AppWindow.Size.Width;
+            settings.Height = AppWindow.Size.Height;
+            settings.X = AppWindow.Position.X;
+            settings.Y = AppWindow.Position.Y;
+            settings.LastDisplayId = _displayAreas
+                .GetContaining(new PixelRect(
+                    AppWindow.Position.X,
+                    AppWindow.Position.Y,
+                    AppWindow.Size.Width,
+                    AppWindow.Size.Height))
+                .DisplayId;
+            await _settingsStore.SaveAsync(settings, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"保存悬浮窗位置失败: {ex.GetType().Name}");
+        }
+    }
+}

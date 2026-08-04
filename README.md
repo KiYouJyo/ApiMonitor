@@ -7,7 +7,7 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
 
-- Current version: **v0.6.0** (DisplayVersion `0.6.0`, PackageVersion `0.6.0.1`)
+- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.0`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -15,7 +15,8 @@
 
 ## Upgrading
 
-- **v0.6.0** upgrades **in place** over v0.5.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, notification settings, compact-window settings, tray settings, and sign-in startup preferences are all preserved. The installer never enables notifications or sign-in startup automatically.
+- **v0.7.0** upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch. The installer never enables notifications or sign-in startup automatically.
+- **v0.6.0** upgraded **in place** over v0.5.0 (historical).
 - **v0.5.0** upgrades **in place** over v0.4.0 (historical).
 - **v0.2.0 sideload packages will not upgrade in place**; uninstall the old package first and re-add your accounts.
 
@@ -36,11 +37,11 @@
   - Per-account + metric notification state, snapshot deduplication, merged account-level notifications, stable Tag replacement
   - Test notification button; global alerts are **off by default** after upgrade
 - Notification-area (tray) residency, close-to-tray, single instance, optional sign-in startup, and Explorer restart recovery (all from v0.4.0, unchanged)
-- Compact always-on-top balance window with account/metric selection
+- **Floating balance window** (v0.7.0): a lightweight always-on-top window that shows only one selected account's main balance number (account name, provider, unit, status and last-updated time in small text). It does not occupy a taskbar slot, does not exit the app when closed, and there is exactly one instance. Open it from any account card (**设为悬浮窗**) or the tray menu; the last position, size and selected account are restored (old compact-window settings are migrated automatically). It replaces the former compact window.
 - **Data Insights** page (v0.6.0): account / metric / time-range selection, a lightweight local trend chart (WinUI-native, no chart framework), current value, range change, first/latest/min/max values, a collapsible history table, and CSV export
 - **Consumption estimates** (v0.6.0): estimated daily consumption (median of valid intervals) and estimated days left, computed only from local history; clearly labeled "估算值" with a disclaimer, and explicit reasons when estimation is not possible (not enough data, no consumption observed, recent top-ups, unsupported metric, unknown current value)
-- **Portable backup** (v0.6.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/compact-window/appearance settings. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
-- **Themes** (v0.6.0): follow system / light / dark, applied immediately to the main and compact windows and persisted.
+- **Portable backup** (v0.6.0, updated in v0.7.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
+- **Themes** (v0.6.0): follow system / light / dark, applied immediately to the main and floating windows and persisted.
 - **Unified app shell** (v0.6.0): the title bar, navigation pane and page backgrounds share one consistent theme surface across light, dark and high-contrast.
 - **Trilingual UI** (v0.6.0): 简体中文 / English / 日本語. Switching the language saves the preference, asks to restart, and restarts via `AppInstance.Restart`; it never partially localizes the window.
 - **Complete About page** (v0.6.0): product info (DisplayVersion and PackageVersion kept separate), dynamic provider list, privacy & security summary, project links, offline local documents (privacy policy / MIT license / third-party notices), manual update check (GitHub REST, only on click, never auto-downloads or installs), copy diagnostics (non-sensitive), and open local data folder.
@@ -68,7 +69,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.6.0.1_x64_Test.zip`.
+1. Download `ApiMonitor_0.7.0.0_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.
@@ -114,7 +115,7 @@ ApiMonitor.slnx
 ApiMonitor.csproj          Main WinUI 3 app project (x64)
 App.xaml / MainWindow.xaml Application and main window
 Views/                    Main page, account editor dialog, history dialog
-Views/CompactWindow       Compact always-on-top balance window
+Views/FloatingBalanceWindow  Lightweight always-on-top floating balance window
 ViewModels/               MVVM view models
 Models/                   Domain models (including generic BalanceMetric)
 Providers/                Balance providers (DeepSeek, OpenRouter) and registry

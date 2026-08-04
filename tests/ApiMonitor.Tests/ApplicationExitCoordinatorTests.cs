@@ -16,7 +16,7 @@ public sealed class ApplicationExitCoordinatorTests
 
         public FakeTrayIconService Tray { get; } = new();
 
-        public FakeCompactWindowService Compact { get; } = new();
+        public FakeFloatingWindowService Floating { get; } = new();
 
         public FakeTraySettingsStore SettingsStore { get; } = new();
 
@@ -35,7 +35,7 @@ public sealed class ApplicationExitCoordinatorTests
             return new ApplicationExitCoordinator(
                 Scheduler,
                 () => Tray,
-                Compact,
+                Floating,
                 SettingsStore,
                 () => CancelCalls++,
                 () => CloseMainWindowCalls++,
@@ -65,7 +65,7 @@ public sealed class ApplicationExitCoordinatorTests
         Assert.Equal(1, harness.Scheduler.StopCalls);
         Assert.Equal(1, harness.CancelCalls);
         Assert.Equal(1, harness.Tray.ShutdownCalls);
-        Assert.Equal(1, harness.Compact.ShutdownCalls);
+        Assert.Equal(1, harness.Floating.ShutdownCalls);
         Assert.Equal(1, harness.CloseMainWindowCalls);
         Assert.Equal(1, harness.ExitProcessCalls);
         Assert.Equal(1, harness.SettingsStore.SaveCalls);

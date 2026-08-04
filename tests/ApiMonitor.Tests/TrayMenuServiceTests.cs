@@ -62,7 +62,7 @@ public sealed class TrayMenuServiceTests
         uint[] required =
         {
             (uint)TrayCommand.OpenMainWindow,
-            (uint)TrayCommand.OpenCompactWindow,
+            (uint)TrayCommand.OpenFloatingWindow,
             (uint)TrayCommand.RefreshAll,
             (uint)TrayCommand.ToggleStartWithWindows,
             (uint)TrayCommand.ExitApplication,

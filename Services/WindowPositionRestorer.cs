@@ -47,12 +47,12 @@ public static class WindowPositionRestorer
 
         int width = Clamp(
             (int)Math.Round(savedWidth),
-            (int)CompactWindowDefaults.MinWidth,
-            (int)CompactWindowDefaults.MaxWidth);
+            (int)FloatingWindowDefaults.MinWidth,
+            (int)FloatingWindowDefaults.MaxWidth);
         int height = Clamp(
             (int)Math.Round(savedHeight),
-            (int)CompactWindowDefaults.MinHeight,
-            (int)CompactWindowDefaults.MaxHeight);
+            (int)FloatingWindowDefaults.MinHeight,
+            (int)FloatingWindowDefaults.MaxHeight);
 
         // 尺寸超出当前工作区时限制到工作区。
         width = Math.Min(width, Math.Max(1, primary.WorkArea.Width));

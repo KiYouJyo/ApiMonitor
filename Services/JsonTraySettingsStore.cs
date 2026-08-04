@@ -8,7 +8,7 @@ namespace ApiMonitor.Services;
 /// 托盘与启动设置（tray-settings.json）的持久化实现。
 /// v0.4.0 新增，schemaVersion 为 4；v0.5.0 升级到 5（保留已知字段）；
 /// v0.3.1 没有本文件时返回默认值；文件损坏时备份并恢复默认值，
-/// 不影响账户、历史、阈值、紧凑窗口设置与凭据。
+/// 不影响账户、历史、阈值、悬浮窗设置与凭据。
 /// </summary>
 public sealed class JsonTraySettingsStore : ITraySettingsStore
 {

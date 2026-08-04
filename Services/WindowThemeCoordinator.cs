@@ -32,7 +32,7 @@ public sealed class WindowThemeCoordinator
         _appearance = appearance;
     }
 
-    /// <summary>注册窗口根元素（主窗口与紧凑窗口各一次）；立即应用当前主题。</summary>
+    /// <summary>注册窗口根元素（主窗口与悬浮窗各一次）；立即应用当前主题。</summary>
     public void RegisterWindow(
         Microsoft.UI.Windowing.AppWindow appWindow,
         FrameworkElement root,

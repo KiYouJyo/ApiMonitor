@@ -7,30 +7,30 @@ namespace ApiMonitor.Tests;
 public sealed class WindowLifecycleTrackerTests
 {
     [Fact]
-    public void MainClosedWhileCompactOpen_DoesNotExit()
+    public void MainClosedWhileFloatingOpen_DoesNotExit()
     {
         var tracker = new WindowLifecycleTracker();
         int exitCount = 0;
         tracker.AllWindowsClosed += () => exitCount++;
 
         tracker.MainWindowOpened();
-        tracker.CompactWindowOpened();
+        tracker.FloatingWindowOpened();
         tracker.MainWindowClosed();
 
         Assert.Equal(0, exitCount);
-        Assert.True(tracker.IsCompactWindowOpen);
+        Assert.True(tracker.IsFloatingWindowOpen);
     }
 
     [Fact]
-    public void CompactClosedWhileMainOpen_DoesNotExit()
+    public void FloatingClosedWhileMainOpen_DoesNotExit()
     {
         var tracker = new WindowLifecycleTracker();
         int exitCount = 0;
         tracker.AllWindowsClosed += () => exitCount++;
 
         tracker.MainWindowOpened();
-        tracker.CompactWindowOpened();
-        tracker.CompactWindowClosed();
+        tracker.FloatingWindowOpened();
+        tracker.FloatingWindowClosed();
 
         Assert.Equal(0, exitCount);
         Assert.True(tracker.IsMainWindowOpen);
@@ -44,9 +44,9 @@ public sealed class WindowLifecycleTrackerTests
         tracker.AllWindowsClosed += () => exitCount++;
 
         tracker.MainWindowOpened();
-        tracker.CompactWindowOpened();
+        tracker.FloatingWindowOpened();
         tracker.MainWindowClosed();
-        tracker.CompactWindowClosed();
+        tracker.FloatingWindowClosed();
 
         Assert.Equal(1, exitCount);
     }
@@ -59,17 +59,17 @@ public sealed class WindowLifecycleTrackerTests
         tracker.AllWindowsClosed += () => exitCount++;
 
         tracker.MainWindowOpened();
-        tracker.CompactWindowOpened();
-        tracker.CompactWindowClosed();
+        tracker.FloatingWindowOpened();
+        tracker.FloatingWindowClosed();
         Assert.Equal(0, exitCount);
 
-        // 主窗口仍打开，紧凑窗口可以再次打开。
-        tracker.CompactWindowOpened();
-        tracker.CompactWindowClosed();
+        // 主窗口仍打开，悬浮窗可以再次打开。
+        tracker.FloatingWindowOpened();
+        tracker.FloatingWindowClosed();
         tracker.MainWindowClosed();
 
         Assert.Equal(1, exitCount);
         Assert.False(tracker.IsMainWindowOpen);
-        Assert.False(tracker.IsCompactWindowOpen);
+        Assert.False(tracker.IsFloatingWindowOpen);
     }
 }

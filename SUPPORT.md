@@ -6,25 +6,29 @@
 
 Since v0.3.1, `Install.cmd` performs all certificate steps automatically. The public certificate (`ApiMonitorDev.cer`) is imported only into **Local Machine > Trusted People** (never Trusted Root), and only after the script verifies the SHA-256 checksums, the full signer thumbprint, the Subject (`CN=ApiMonitorDev`), the Code Signing EKU, and the package Identity. You still see one normal UAC prompt because machine-level certificate trust requires administrator consent. Only install certificates you trust and only from the official repository.
 
+### Upgrading v0.6.0 to v0.7.0
+
+v0.7.0 upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. The old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch (the old file is kept untouched). The compact window itself is replaced by the lightweight floating balance window. Just run `Install.cmd` from the v0.7.0 `Test.zip` again. Do **not** uninstall and reinstall for a normal upgrade — that would destroy LocalState and remove Credential Locker entries.
+
 ### Upgrading v0.3.1 to v0.4.0
 
-v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds, compact-window settings, and Credential Locker API keys are preserved. Just run `Install.cmd` again. The installer never enables the "start with Windows" startup task automatically.
+v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds, window settings, and Credential Locker API keys are preserved. Just run `Install.cmd` again. The installer never enables the "start with Windows" startup task automatically.
 
 ### Upgrading v0.4.0 to v0.5.0
 
-v0.5.0 upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, compact-window settings, tray settings, and sign-in startup preferences are preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the generic metric model. The installer never enables notifications or sign-in startup automatically; global system alerts are **off by default** until you turn them on.
+v0.5.0 upgrades **in place** over v0.4.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh settings, window settings, tray settings, and sign-in startup preferences are preserved. Existing DeepSeek currency balances and thresholds are migrated losslessly to the generic metric model. The installer never enables notifications or sign-in startup automatically; global system alerts are **off by default** until you turn them on.
 
 ### Upgrading v0.5.0 to v0.6.0
 
-v0.6.0 upgrades **in place** over v0.5.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / compact-window / sign-in startup / appearance (theme and language) settings are all preserved. Just run `Install.cmd` from the v0.6.0 `Test.zip` again. Do **not** uninstall and reinstall for a normal upgrade — that would destroy LocalState and remove Credential Locker entries.
+v0.6.0 upgraded **in place** over v0.5.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / window / sign-in startup / appearance (theme and language) settings were all preserved (historical).
 
 ### Portable backup import
 
 A v0.6.0 portable backup (`.apimonitor-backup`) never contains API keys or Management Keys. During import, existing accounts keep their local credentials; **new accounts are marked as needing a re-entered key** — edit the imported account and save its API key (or Management Key) in the app, then test the connection. If a needed key is missing, queries for that account fail with a clear “需要重新输入凭据” prompt.
 
-### Candidate package revisions (0.5.0.1, 0.6.0.1, …)
+### Candidate package revisions (0.6.0.1, 0.7.0.0, …)
 
-- The user-visible version stays **v0.5.0** / **v0.6.0**; only the MSIX four-part version advances for each acceptance candidate.
+- The user-visible version stays **v0.6.0** / **v0.7.0**; only the MSIX four-part version advances for each acceptance candidate.
 - **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
 - If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
 
@@ -56,6 +60,7 @@ Starting with v0.4.0 the app stays resident in the notification area:
 - **The tray icon disappeared after an Explorer restart?** It should reappear automatically within a few seconds (the app listens for the `TaskbarCreated` message and re-adds the icon). No restart of ApiMonitor is required. If it does not return, restart Explorer (`explorer.exe`) or sign out and back in.
 - **How to fully exit the app?** Right-click the tray icon → **退出 ApiMonitor** (Exit ApiMonitor). Closing the main window only hides it to the tray by default; choose **关闭主窗口时：退出 ApiMonitor** in the settings to make the close button exit the app instead.
 - **How to reopen the main window?** Left-click the tray icon, or right-click the tray icon → **打开 ApiMonitor**. You can also launch ApiMonitor again from Start (it activates the existing instance instead of starting a second one).
+- **How to show the floating balance window?** Right-click the tray icon → **打开悬浮窗** (v0.7.0). It reopens with the last selected account and position; closing it does not exit the app.
 - **The tray context menu opens in the wrong place?** The menu is anchored to your cursor and expands toward the notification icon on the correct monitor. If it appears near the upper-left corner, your system may be using an older build; update to v0.4.0 (which contains the fix) and restart the app. If the issue persists, file an issue with your Windows version and taskbar position (bottom/top/left/right) and DPI scaling — do not paste API keys or logs containing them.
 - **How to turn off start-with-Windows?** Open the main window → settings section **通知区域与启动** → toggle **登录 Windows 时启动 ApiMonitor** off. You can also disable it in **Task Manager → Startup apps** or **Settings → Apps → Startup**; the app respects that choice.
 - **How to re-enable it in Windows startup settings?** Toggle it on inside the app, or enable `ApiMonitor` in **Settings → Apps → Startup**.

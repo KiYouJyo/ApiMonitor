@@ -76,6 +76,15 @@ internal static partial class NativeMethods
     public const uint WS_POPUP = 0x80000000;
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
 
+    /// <summary>GetWindowLongW/SetWindowLongW 的扩展样式索引。</summary>
+    public const int GWL_EXSTYLE = -20;
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
+    public static extern int GetWindowLongW(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
+    public static extern int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
+
     public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_CLOSE = 0x0010;
