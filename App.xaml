@@ -23,6 +23,7 @@
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#1A1A1A" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#5C5C5C" />
                     <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#E5F1FB" />
+                    <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <!-- 外壳背景：与系统深色 Surface 一致的中性深色。 -->
@@ -32,6 +33,7 @@
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#F3F3F3" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#A0A0A0" />
                     <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#3D3D3D" />
+                    <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#000000" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <!-- 高对比度：尊重系统高对比度资源，不强制自定义灰色。 -->
@@ -41,6 +43,7 @@
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

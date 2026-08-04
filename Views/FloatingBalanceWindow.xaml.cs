@@ -214,7 +214,7 @@ public sealed partial class FloatingBalanceWindow : Window
             $"悬浮窗诊断: AppWindow={AppWindow.Size.Width}x{AppWindow.Size.Height}, " +
             $"ClientSize={AppWindow.ClientSize.Width}x{AppWindow.ClientSize.Height}, " +
             $"Surface={SingleRootSurface.ActualWidth:0.##}x{SingleRootSurface.ActualHeight:0.##}, " +
-            $"CornerRadius=22, Caption={GetPhysicalFixedSize()}x{GetPhysicalFixedSize()} physical, " +
+            $"CornerRadius=18, Caption={GetPhysicalFixedSize()}x{GetPhysicalFixedSize()} physical, " +
             $"Scale={SingleRootSurface.XamlRoot?.RasterizationScale ?? 1:0.##}, SaveCount={_positionSaveCount}.");
     }
 

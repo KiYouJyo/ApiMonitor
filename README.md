@@ -7,7 +7,7 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
 
-- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.11`)
+- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.12`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -70,7 +70,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.7.0.11_x64_Test.zip`.
+1. Download `ApiMonitor_0.7.0.12_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.

@@ -7,13 +7,11 @@
 
     <Border
         x:Name="SingleRootSurface"
-        Width="208"
-        Height="208"
-        Padding="18"
-        CornerRadius="22"
-        BorderThickness="1"
-        BorderBrush="{ThemeResource AppCardBorderBrush}"
-        Background="{ThemeResource AppCardBackgroundBrush}">
+        Width="168"
+        Height="168"
+        Padding="14"
+        CornerRadius="18"
+        Background="{ThemeResource FloatingSurfaceBackgroundBrush}">
         <Border.Resources>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
@@ -25,23 +23,23 @@
                 Grid.Row="0"
                 Text="{Binding AccountName}"
                 Foreground="{ThemeResource AppPrimaryTextBrush}"
-                FontSize="18"
+                FontSize="16"
                 FontWeight="SemiBold"
                 TextAlignment="Center"
                 HorizontalAlignment="Center"
                 TextTrimming="CharacterEllipsis"
                 MaxLines="1"
-                MaxWidth="170" />
+                MaxWidth="140" />
             <TextBlock
                 Grid.Row="1"
                 Text="{Binding ProviderName}"
                 Foreground="{ThemeResource AppSecondaryTextBrush}"
-                FontSize="14"
+                FontSize="12"
                 TextAlignment="Center"
                 HorizontalAlignment="Center"
                 TextTrimming="CharacterEllipsis"
                 MaxLines="1"
-                MaxWidth="170" />
+                MaxWidth="140" />
             <Grid
                 Grid.Row="2"
                 ColumnDefinitions="Auto,Auto"
@@ -58,23 +56,23 @@
                     Grid.Column="1"
                     Text="{Binding UnitText}"
                     Foreground="{ThemeResource AppSecondaryTextBrush}"
-                    FontSize="14"
+                    FontSize="12"
                     VerticalAlignment="Center"
-                    Margin="6,8,0,0"
+                    Margin="4,6,0,0"
                     TextTrimming="None" />
             </Grid>
             <TextBlock
                 Grid.Row="3"
                 Text="{Binding StatusText}"
                 Foreground="{ThemeResource AppPrimaryTextBrush}"
-                FontSize="16"
+                FontSize="14"
                 FontWeight="SemiBold"
                 TextAlignment="Center"
                 HorizontalAlignment="Center"
                 TextTrimming="CharacterEllipsis"
                 MaxLines="1"
-                MaxWidth="170"
-                Margin="0,8,0,4" />
+                MaxWidth="140"
+                Margin="0,6,0,2" />
             <TextBlock
                 Grid.Row="0"
                 Grid.RowSpan="4"
@@ -84,7 +82,7 @@
                 TextWrapping="Wrap"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                MaxWidth="170"
+                MaxWidth="140"
                 Visibility="{Binding HasAccount, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
         </Grid>
     </Border>

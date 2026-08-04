@@ -13,12 +13,17 @@ public sealed record FloatingAmountDisplay(
 {
     public static double SelectFontSize(string amountText, string unitText)
     {
+        if (string.IsNullOrWhiteSpace(unitText))
+        {
+            return 46;
+        }
+
         int length = (amountText ?? string.Empty).Length + (unitText ?? string.Empty).Length;
         return length switch
         {
-            <= 6 => 46,
-            <= 8 => 40,
-            <= 11 => 34,
+            <= 6 => 40,
+            <= 8 => 36,
+            <= 11 => 32,
             <= 13 => 28,
             _ => 24,
         };

@@ -64,15 +64,20 @@ public sealed class FloatingWindowContentTests
     {
         string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
         Assert.Contains("x:Name=\"SingleRootSurface\"", xaml);
-        Assert.Contains("Width=\"208\"", xaml);
-        Assert.Contains("Height=\"208\"", xaml);
-        Assert.Contains("CornerRadius=\"22\"", xaml);
-        Assert.Contains("AppCardBackgroundBrush", xaml);
+        Assert.Contains("Width=\"168\"", xaml);
+        Assert.Contains("Height=\"168\"", xaml);
+        Assert.Contains("CornerRadius=\"18\"", xaml);
+        Assert.Contains("FloatingSurfaceBackgroundBrush", xaml);
         Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
         Assert.Contains("Text=\"{Binding UnitText}\"", xaml);
         Assert.Contains("FontSize=\"{Binding AmountFontSize}\"", xaml);
         Assert.DoesNotContain("LastUpdatedText", xaml);
-        Assert.Equal(1, CountOccurrences(xaml, "Background=\"{ThemeResource AppCardBackgroundBrush}\""));
+        Assert.Equal(1, CountOccurrences(xaml, "Background=\"{ThemeResource FloatingSurfaceBackgroundBrush}\""));
+        Assert.DoesNotContain("AppCardBackgroundBrush", xaml);
+        Assert.DoesNotContain("BorderBrush=", xaml);
+        Assert.DoesNotContain("BorderThickness=", xaml);
+        Assert.Equal(1, CountOccurrences(xaml, "CornerRadius=\""));
+        Assert.DoesNotContain("Shadow", xaml);
         Assert.DoesNotContain("Margin=\"-", xaml);
         Assert.DoesNotContain("Translation=", xaml);
         Assert.DoesNotContain("RenderTransform=", xaml);

@@ -181,7 +181,7 @@ public sealed class FloatingWindowSettingsStore : IFloatingWindowSettingsStore
 /// <summary>悬浮余额窗尺寸的默认值与最小/最大边界（比原紧凑窗口更小、更轻）。</summary>
 public static class FloatingWindowDefaults
 {
-    public const double FixedSize = 208;
+    public const double FixedSize = 168;
     public const double DefaultWidth = FixedSize;
     public const double DefaultHeight = FixedSize;
     public const double MinWidth = FixedSize;
