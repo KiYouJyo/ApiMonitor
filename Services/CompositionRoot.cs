@@ -4,6 +4,7 @@ using ApiMonitor.Views;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using System.Text.Json;
 
 namespace ApiMonitor.Services;
 
@@ -82,8 +83,24 @@ public sealed class CompositionRoot
     {
         try
         {
-            var store = new JsonAppearanceSettingsStore(dataDirectory);
-            var settings = store.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+            // This runs while the UI thread is constructing the composition root.
+            // Do not synchronously wait on the async store here: its async file
+            // operations can capture the UI context and prevent the first window
+            // from ever being created.
+            string path = Path.Combine(dataDirectory, JsonAppearanceSettingsStore.FileName);
+            if (!File.Exists(path))
+            {
+                return string.Empty;
+            }
+
+            var settings = JsonSerializer.Deserialize<AppearanceSettingsData>(
+                File.ReadAllText(path),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (settings is null)
+            {
+                return string.Empty;
+            }
+
             return settings.Language switch
             {
                 nameof(AppLanguagePreference.ZhCn) => "zh-CN",

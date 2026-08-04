@@ -14,7 +14,7 @@
   -->
   <PropertyGroup>
     <ApiMonitorDisplayVersion>0.7.0</ApiMonitorDisplayVersion>
-    <ApiMonitorPackageVersion>0.7.0.2</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion>0.7.0.3</ApiMonitorPackageVersion>
 
     <!-- 程序集四段版本（MSIX 升级判断）。 -->
     <Version>$(ApiMonitorPackageVersion)</Version>

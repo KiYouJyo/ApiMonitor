@@ -77,6 +77,8 @@ public sealed class ResourceConsistencyTests
         Assert.Contains("ReadPersistedLanguage(dataDirectory)", compositionRoot);
         Assert.Contains("ResourceContext.SetGlobalQualifierValue", compositionRoot);
         Assert.Contains("persistedLanguage", compositionRoot);
+        Assert.DoesNotContain("LoadAsync(CancellationToken.None).GetAwaiter().GetResult()", compositionRoot);
+        Assert.Contains("File.ReadAllText(path)", compositionRoot);
 
         string project = File.ReadAllText(Path.Combine(RepoRoot, "ApiMonitor.csproj"));
         Assert.Contains("BuildAppxSideloadPackageForUap", project);
