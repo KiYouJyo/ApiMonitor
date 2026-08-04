@@ -25,7 +25,7 @@ public sealed class TrayIconService : ITrayIconService
     private readonly ITrayStatusProvider _statusProvider;
     private readonly ITrayMenuService _menuService;
     private readonly IAccountManager _accountManager;
-    private readonly ICompactWindowService _compactWindowService;
+    private readonly IFloatingWindowService _floatingWindowService;
     private readonly IStartupTaskService _startupTaskService;
     private readonly ITraySettingsStore _settingsStore;
     private readonly Action _exitApplication;
@@ -51,7 +51,7 @@ public sealed class TrayIconService : ITrayIconService
         ITrayStatusProvider statusProvider,
         ITrayMenuService menuService,
         IAccountManager accountManager,
-        ICompactWindowService compactWindowService,
+        IFloatingWindowService floatingWindowService,
         IStartupTaskService startupTaskService,
         ITraySettingsStore settingsStore,
         Action exitApplication,
@@ -62,7 +62,7 @@ public sealed class TrayIconService : ITrayIconService
         _statusProvider = statusProvider;
         _menuService = menuService;
         _accountManager = accountManager;
-        _compactWindowService = compactWindowService;
+        _floatingWindowService = floatingWindowService;
         _startupTaskService = startupTaskService;
         _settingsStore = settingsStore;
         _exitApplication = exitApplication;
@@ -281,6 +281,7 @@ public sealed class TrayIconService : ITrayIconService
 
         return new TrayMenuContext(
             HasAccounts: _hasAccounts,
+            IsFloatingWindowOpen: _floatingWindowService.IsWindowOpen,
             IsRefreshingAll: _isRefreshingAll,
             AutoRefreshStatusText: autoRefreshText,
             LowBalanceStatusText: lowBalanceText,
@@ -338,8 +339,12 @@ public sealed class TrayIconService : ITrayIconService
                 ShowMainWindow();
                 break;
 
-            case TrayCommand.OpenCompactWindow:
-                _compactWindowService.OpenOrActivate();
+            case TrayCommand.OpenFloatingWindow:
+                _floatingWindowService.Show();
+                break;
+
+            case TrayCommand.CloseFloatingWindow:
+                _floatingWindowService.CloseWindow();
                 break;
 
             case TrayCommand.RefreshAll:

@@ -67,7 +67,7 @@ public static class AppInfo
             // 回退到常量。
         }
 
-        return "0.6.0";
+        return "0.7.0";
     }
 
     private static string ReadPackageVersion()
@@ -87,11 +87,11 @@ public static class AppInfo
 
         try
         {
-            return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.6.0.0";
+            return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.7.0.0";
         }
         catch
         {
-            return "0.6.0.0";
+            return "0.7.0.0";
         }
     }
 

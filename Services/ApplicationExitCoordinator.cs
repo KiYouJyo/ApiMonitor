@@ -3,14 +3,14 @@ namespace ApiMonitor.Services;
 /// <summary>
 /// 统一退出协调器实现。退出流程幂等（Interlocked 保证最多执行一次）：
 /// 停止调度 → 取消在途操作 → 保存设置 → 删除托盘图标 →
-/// 关闭紧凑窗口 → 关闭主窗口 → 释放原生句柄 → 退出进程。
+/// 关闭悬浮窗 → 关闭主窗口 → 释放原生句柄 → 退出进程。
 /// 不强制 Kill 自身，不使用 Environment.FailFast。
 /// </summary>
 public sealed class ApplicationExitCoordinator : IApplicationExitCoordinator
 {
     private readonly IMonitoringScheduler _scheduler;
     private readonly Func<ITrayIconService> _trayProvider;
-    private readonly ICompactWindowService _compactWindowService;
+    private readonly IFloatingWindowService _floatingWindowService;
     private readonly ITraySettingsStore _settingsStore;
     private readonly Action _cancelInFlightOperations;
     private readonly Action _closeMainWindow;
@@ -21,7 +21,7 @@ public sealed class ApplicationExitCoordinator : IApplicationExitCoordinator
     public ApplicationExitCoordinator(
         IMonitoringScheduler scheduler,
         Func<ITrayIconService> trayProvider,
-        ICompactWindowService compactWindowService,
+        IFloatingWindowService floatingWindowService,
         ITraySettingsStore settingsStore,
         Action cancelInFlightOperations,
         Action closeMainWindow,
@@ -30,7 +30,7 @@ public sealed class ApplicationExitCoordinator : IApplicationExitCoordinator
     {
         _scheduler = scheduler;
         _trayProvider = trayProvider;
-        _compactWindowService = compactWindowService;
+        _floatingWindowService = floatingWindowService;
         _settingsStore = settingsStore;
         _cancelInFlightOperations = cancelInFlightOperations;
         _closeMainWindow = closeMainWindow;
@@ -67,8 +67,8 @@ public sealed class ApplicationExitCoordinator : IApplicationExitCoordinator
             // 3. 删除通知区域图标（内部取消在途刷新并释放原生句柄）。
             _trayProvider().Shutdown();
 
-            // 4. 关闭紧凑窗口与主窗口。
-            _compactWindowService.Shutdown();
+            // 4. 关闭悬浮窗与主窗口。
+            _floatingWindowService.Shutdown();
             _closeMainWindow();
 
             _log.Info("应用退出流程完成，进程即将结束。");

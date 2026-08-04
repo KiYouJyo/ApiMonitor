@@ -333,10 +333,16 @@ function Test-SafeLocalStateBackup {
     }
 
     # 预期核心 JSON 必须存在（账户文件为强依赖）。
-    foreach ($core in @('accounts.json', 'balance-records.json', 'tray-settings.json', 'compact-window-settings.json')) {
+    foreach ($core in @('accounts.json', 'balance-records.json', 'tray-settings.json')) {
         if (-not $expectedSet.ContainsKey($core)) {
             $errors += "备份缺少核心文件：$core"
         }
+    }
+    # 窗口设置：v0.7.0 起为 floating-window-settings.json；v0.6.0 及更早为
+    # compact-window-settings.json（旧版本升级时仍可能只有旧文件）。
+    if (-not $expectedSet.ContainsKey('floating-window-settings.json') -and
+        -not $expectedSet.ContainsKey('compact-window-settings.json')) {
+        $errors += '备份缺少核心文件：floating-window-settings.json'
     }
 
     # 与源目录逐项对比（数量/字节）。

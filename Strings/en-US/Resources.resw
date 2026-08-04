@@ -3,7 +3,6 @@
   <!-- ===================== Navigation ===================== -->
 
   <!-- ===================== Home ===================== -->
-  <data name="Home.Subtitle" xml:space="preserve"><value>Query and record your own API account balances (v{0}, supports DeepSeek and OpenRouter).</value></data>
   <data name="Home.AccountSummary" xml:space="preserve"><value>{0} accounts · {1} low balance · {2} query failed</value></data>
   <data name="Home.FilterAllProviders" xml:space="preserve"><value>All providers</value></data>
   <data name="Home.FilterAllStatus" xml:space="preserve"><value>All statuses</value></data>
@@ -170,7 +169,8 @@
   <data name="Nav.Settings.Content" xml:space="preserve"><value>Settings</value></data>
   <data name="Nav.About.Content" xml:space="preserve"><value>About</value></data>
   <data name="Tray.OpenMainWindow" xml:space="preserve"><value>Open ApiMonitor</value></data>
-  <data name="Tray.OpenCompactWindow" xml:space="preserve"><value>Open compact window</value></data>
+  <data name="Tray.OpenFloatingWindow" xml:space="preserve"><value>Open floating window</value></data>
+  <data name="Tray.CloseFloatingWindow" xml:space="preserve"><value>Close floating window</value></data>
   <data name="Tray.RefreshAll" xml:space="preserve"><value>Refresh all accounts</value></data>
   <data name="Tray.StartWithWindows" xml:space="preserve"><value>Start when I sign in</value></data>
   <data name="Tray.ExitApplication" xml:space="preserve"><value>Exit ApiMonitor</value></data>
@@ -178,7 +178,7 @@
   <data name="Notification.Dismiss" xml:space="preserve"><value>Dismiss</value></data>
   <data name="Notification.LowBalanceTitle" xml:space="preserve"><value>{0} balance is low</value></data>
   <data name="Home.Title.Text" xml:space="preserve"><value>ApiMonitor</value></data>
-  <data name="Home.OpenCompactWindow.Content" xml:space="preserve"><value>Open compact window</value></data>
+  <data name="Home.SetAsFloatingWindow.Content" xml:space="preserve"><value>Set as floating window</value></data>
   <data name="Home.AddAccount.Content" xml:space="preserve"><value>Add account</value></data>
   <data name="Home.RefreshAll.Content" xml:space="preserve"><value>Refresh all accounts</value></data>
   <data name="Home.AccountOverview.Text" xml:space="preserve"><value>Account overview</value></data>
@@ -225,11 +225,6 @@
   <data name="Notification.TestTitle" xml:space="preserve"><value>ApiMonitor: test notification</value></data>
   <data name="Notification.TestBody" xml:space="preserve"><value>This is a test notification. Click to open ApiMonitor.</value></data>
   <data name="Notification.Snooze24h" xml:space="preserve"><value>Snooze alerts for 24 hours</value></data>
-  <data name="Compact.EmptyTitle.Text" xml:space="preserve"><value>No API accounts yet</value></data>
-  <data name="Compact.OpenMainWindow.Content" xml:space="preserve"><value>Open main window</value></data>
-  <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>Status: </value></data>
-  <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>Last successful: </value></data>
-  <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>No balance queried yet</value></data>
   <data name="About.ArchitectureFormat" xml:space="preserve"><value>Architecture: {0}</value></data>
   <data name="About.BackupExportFailed" xml:space="preserve"><value>Export backup failed. Please try again later.</value></data>
   <data name="About.BackupExported" xml:space="preserve"><value>Portable backup exported (no API keys).</value></data>
@@ -259,7 +254,6 @@
   <data name="About.TaglineText" xml:space="preserve"><value>Query and record your own API account balances</value></data>
   <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>A new version v{0} is available.</value></data>
   <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>Update check failed: {0}</value></data>
-  <data name="Home.SubtitleFormat" xml:space="preserve"><value>Query and record your own API account balances (v{0}, supports DeepSeek and OpenRouter).</value></data>
   <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker and are only used to call the provider official API; plain configuration and balance snapshots are stored only in the local app data directory.</value></data>
   <data name="Home.AccountSummaryFormat" xml:space="preserve"><value>{0} accounts · {1} low balance · {2} query failed</value></data>
   <data name="Home.SnoozeUntilFormat" xml:space="preserve"><value>Alerts paused until {0}</value></data>
@@ -350,9 +344,9 @@
   <data name="Notification.Hours12" xml:space="preserve"><value>12 hours</value></data>
   <data name="Notification.Hours24" xml:space="preserve"><value>24 hours</value></data>
   <data name="Notification.Days3" xml:space="preserve"><value>3 days</value></data>
-  <data name="Compact.NotQueried" xml:space="preserve"><value>Balance not queried yet</value></data>
-  <data name="Compact.NoAccounts" xml:space="preserve"><value>No API accounts yet</value></data>
-  <data name="Compact.RefreshFailed" xml:space="preserve"><value>Refresh failed. Please try again later.</value></data>
+  <data name="Floating.NotQueried" xml:space="preserve"><value>Balance not queried yet</value></data>
+  <data name="Floating.NoAccounts" xml:space="preserve"><value>No API accounts yet</value></data>
+  <data name="Floating.QueryFailed" xml:space="preserve"><value>Query failed</value></data>
   <data name="History.Loading" xml:space="preserve"><value>Loading history…</value></data>
   <data name="History.Empty" xml:space="preserve"><value>No history to display.</value></data>
   <data name="History.ClearFailed" xml:space="preserve"><value>Failed to clear history. Please try again later.</value></data>
@@ -400,13 +394,12 @@
   <data name="Settings.EnableNotificationsOffContent" xml:space="preserve"><value>Off</value></data>
   <data name="Settings.RecoveryNotificationsOnContent" xml:space="preserve"><value>On</value></data>
   <data name="Settings.RecoveryNotificationsOffContent" xml:space="preserve"><value>Off</value></data>
-  <data name="Compact.AlwaysOnTopOnContent" xml:space="preserve"><value>On</value></data>
-  <data name="Compact.AlwaysOnTopOffContent" xml:space="preserve"><value>Off</value></data>
   <data name="Settings.SendTestNotificationContent" xml:space="preserve"><value>Send test notification</value></data>
   <data name="Settings.OpenNotificationSettingsContent" xml:space="preserve"><value>Open Windows notification settings</value></data>
   <data name="Settings.StartWithWindowsHeader" xml:space="preserve"><value>Start ApiMonitor when I sign in to Windows</value></data>
-  <data name="Compact.RefreshButton.Content" xml:space="preserve"><value>Refresh</value></data>
-  <data name="Compact.AlwaysOnTop.Header" xml:space="preserve"><value>Always on top</value></data>
+  <data name="Floating.Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Floating.NoSelectedAccount" xml:space="preserve"><value>No account selected</value></data>
+  <data name="Floating.LastUpdatedFormat" xml:space="preserve"><value>Last updated: {0}</value></data>
   <data name="Dialog.AccountName" xml:space="preserve"><value>Account display name</value></data>
   <data name="Dialog.AccountNamePlaceholder" xml:space="preserve"><value>e.g. My DeepSeek account</value></data>
   <data name="Dialog.AccountNotification" xml:space="preserve"><value>Account notifications</value></data>
@@ -500,4 +493,8 @@
   <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>The API response is missing required fields (total_credits).</value></data>
   <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} could not be read and was reset.</value></data>
   <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} was corrupt; backed up to {1} and reset.</value></data>
+  <data name="Floating.StatusNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Floating.StatusLow" xml:space="preserve"><value>Low</value></data>
+  <data name="Floating.StatusFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Floating.StatusUnknown" xml:space="preserve"><value>Unknown</value></data>
 </root>

@@ -139,6 +139,9 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     /// <summary>v0.6.0：从账户卡片进入数据洞察并预选该账户。</summary>
     public IAsyncRelayCommand ViewTrendsCommand { get; }
 
+    /// <summary>v0.7.0：把该账户设为悬浮余额窗账户并显示。</summary>
+    public IAsyncRelayCommand SetAsFloatingWindowCommand { get; }
+
     public AccountListItemViewModel(
         ApiAccount account,
         string providerDisplayName,
@@ -148,7 +151,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         Func<Task> deleteAsync,
         Func<Task> copyAsync,
         Func<Task> historyAsync,
-        Func<Task>? viewTrendsAsync = null)
+        Func<Task>? viewTrendsAsync = null,
+        Func<Task>? setAsFloatingWindowAsync = null)
     {
         Account = account;
         ProviderDisplayName = providerDisplayName;
@@ -175,6 +179,8 @@ public sealed partial class AccountListItemViewModel : ObservableObject
             () => _historyAsync(),
             () => !IsHistoryOpen);
         ViewTrendsCommand = new AsyncRelayCommand(() => viewTrendsAsync?.Invoke() ?? Task.CompletedTask);
+        SetAsFloatingWindowCommand = new AsyncRelayCommand(
+            () => setAsFloatingWindowAsync?.Invoke() ?? Task.CompletedTask);
 
         if (record?.LastSuccessfulSnapshot is { } snapshot)
         {

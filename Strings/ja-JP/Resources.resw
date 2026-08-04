@@ -3,7 +3,6 @@
   <!-- ===================== ナビゲーション ===================== -->
 
   <!-- ===================== ホーム ===================== -->
-  <data name="Home.Subtitle" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します（v{0}、DeepSeek と OpenRouter に対応）。</value></data>
   <data name="Home.AccountSummary" xml:space="preserve"><value>合計 {0} アカウント · 残高不足 {1} · 照会失敗 {2}</value></data>
   <data name="Home.FilterAllProviders" xml:space="preserve"><value>すべての Provider</value></data>
   <data name="Home.FilterAllStatus" xml:space="preserve"><value>すべての状態</value></data>
@@ -170,7 +169,8 @@
   <data name="Nav.Settings.Content" xml:space="preserve"><value>設定</value></data>
   <data name="Nav.About.Content" xml:space="preserve"><value>このアプリについて</value></data>
   <data name="Tray.OpenMainWindow" xml:space="preserve"><value>ApiMonitor を開く</value></data>
-  <data name="Tray.OpenCompactWindow" xml:space="preserve"><value>コンパクトウィンドウを開く</value></data>
+  <data name="Tray.OpenFloatingWindow" xml:space="preserve"><value>フローティングウィンドウを開く</value></data>
+  <data name="Tray.CloseFloatingWindow" xml:space="preserve"><value>フローティングウィンドウを閉じる</value></data>
   <data name="Tray.RefreshAll" xml:space="preserve"><value>すべてのアカウントを更新</value></data>
   <data name="Tray.StartWithWindows" xml:space="preserve"><value>サインイン時に起動</value></data>
   <data name="Tray.ExitApplication" xml:space="preserve"><value>ApiMonitor を終了</value></data>
@@ -178,7 +178,7 @@
   <data name="Notification.Dismiss" xml:space="preserve"><value>閉じる</value></data>
   <data name="Notification.LowBalanceTitle" xml:space="preserve"><value>{0} の残高が不足しています</value></data>
   <data name="Home.Title.Text" xml:space="preserve"><value>ApiMonitor</value></data>
-  <data name="Home.OpenCompactWindow.Content" xml:space="preserve"><value>コンパクトウィンドウを開く</value></data>
+  <data name="Home.SetAsFloatingWindow.Content" xml:space="preserve"><value>フローティングウィンドウに設定</value></data>
   <data name="Home.AddAccount.Content" xml:space="preserve"><value>アカウントを追加</value></data>
   <data name="Home.RefreshAll.Content" xml:space="preserve"><value>すべてのアカウントを更新</value></data>
   <data name="Home.AccountOverview.Text" xml:space="preserve"><value>アカウント概要</value></data>
@@ -225,11 +225,6 @@
   <data name="Notification.TestTitle" xml:space="preserve"><value>ApiMonitor：テスト通知</value></data>
   <data name="Notification.TestBody" xml:space="preserve"><value>これはテスト通知です。クリックすると ApiMonitor を開きます。</value></data>
   <data name="Notification.Snooze24h" xml:space="preserve"><value>アラートを 24 時間一時停止</value></data>
-  <data name="Compact.EmptyTitle.Text" xml:space="preserve"><value>API アカウントがまだありません</value></data>
-  <data name="Compact.OpenMainWindow.Content" xml:space="preserve"><value>メインウィンドウを開く</value></data>
-  <data name="Compact.StatusPrefix.Text" xml:space="preserve"><value>状態：</value></data>
-  <data name="Compact.LastSuccessPrefix.Text" xml:space="preserve"><value>最終更新成功：</value></data>
-  <data name="Compact.NoSnapshot.Text" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
   <data name="About.ArchitectureFormat" xml:space="preserve"><value>アーキテクチャ：{0}</value></data>
   <data name="About.BackupExportFailed" xml:space="preserve"><value>バックアップのエクスポートに失敗しました。後でもう一度お試しください。</value></data>
   <data name="About.BackupExported" xml:space="preserve"><value>ポータブルバックアップをエクスポートしました（API キーは含まれません）。</value></data>
@@ -259,7 +254,6 @@
   <data name="About.TaglineText" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します</value></data>
   <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>新しいバージョン v{0} があります。</value></data>
   <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>更新の確認に失敗しました：{0}</value></data>
-  <data name="Home.SubtitleFormat" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します（v{0}、DeepSeek と OpenRouter に対応）。</value></data>
   <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API キーは Windows の資格情報ロッカー（Credential Locker）に保存され、対応する Provider の公式 API への要求にのみ使用されます。通常の設定と残高スナップショットはローカルのアプリデータのみに保存されます。</value></data>
   <data name="Home.AccountSummaryFormat" xml:space="preserve"><value>合計 {0} アカウント · 残高不足 {1} · 照会失敗 {2}</value></data>
   <data name="Home.SnoozeUntilFormat" xml:space="preserve"><value>{0} までアラート一時停止</value></data>
@@ -350,9 +344,9 @@
   <data name="Notification.Hours12" xml:space="preserve"><value>12 時間</value></data>
   <data name="Notification.Hours24" xml:space="preserve"><value>24 時間</value></data>
   <data name="Notification.Days3" xml:space="preserve"><value>3 日</value></data>
-  <data name="Compact.NotQueried" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
-  <data name="Compact.NoAccounts" xml:space="preserve"><value>API アカウントがまだありません</value></data>
-  <data name="Compact.RefreshFailed" xml:space="preserve"><value>更新に失敗しました。後でもう一度お試しください。</value></data>
+  <data name="Floating.NotQueried" xml:space="preserve"><value>残高はまだ照会されていません</value></data>
+  <data name="Floating.NoAccounts" xml:space="preserve"><value>API アカウントがまだありません</value></data>
+  <data name="Floating.QueryFailed" xml:space="preserve"><value>照会に失敗しました</value></data>
   <data name="History.Loading" xml:space="preserve"><value>履歴を読み込んでいます…</value></data>
   <data name="History.Empty" xml:space="preserve"><value>表示できる履歴はありません。</value></data>
   <data name="History.ClearFailed" xml:space="preserve"><value>履歴の削除に失敗しました。後でもう一度お試しください。</value></data>
@@ -400,13 +394,12 @@
   <data name="Settings.EnableNotificationsOffContent" xml:space="preserve"><value>オフ</value></data>
   <data name="Settings.RecoveryNotificationsOnContent" xml:space="preserve"><value>オン</value></data>
   <data name="Settings.RecoveryNotificationsOffContent" xml:space="preserve"><value>オフ</value></data>
-  <data name="Compact.AlwaysOnTopOnContent" xml:space="preserve"><value>オン</value></data>
-  <data name="Compact.AlwaysOnTopOffContent" xml:space="preserve"><value>オフ</value></data>
   <data name="Settings.SendTestNotificationContent" xml:space="preserve"><value>テスト通知を送信</value></data>
   <data name="Settings.OpenNotificationSettingsContent" xml:space="preserve"><value>Windows の通知設定を開く</value></data>
   <data name="Settings.StartWithWindowsHeader" xml:space="preserve"><value>Windows へのサインイン時に ApiMonitor を起動</value></data>
-  <data name="Compact.RefreshButton.Content" xml:space="preserve"><value>更新</value></data>
-  <data name="Compact.AlwaysOnTop.Header" xml:space="preserve"><value>常に手前に表示</value></data>
+  <data name="Floating.Unknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Floating.NoSelectedAccount" xml:space="preserve"><value>アカウントが選択されていません</value></data>
+  <data name="Floating.LastUpdatedFormat" xml:space="preserve"><value>最終更新：{0}</value></data>
   <data name="Dialog.AccountName" xml:space="preserve"><value>アカウント表示名</value></data>
   <data name="Dialog.AccountNamePlaceholder" xml:space="preserve"><value>例：マイ DeepSeek アカウント</value></data>
   <data name="Dialog.AccountNotification" xml:space="preserve"><value>このアカウントの通知</value></data>
@@ -500,4 +493,8 @@
   <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>API レスポンスに必須フィールド（total_credits）がありません。</value></data>
   <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} を読み取れず、リセットしました。</value></data>
   <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} が破損していたため、{1} にバックアップしてリセットしました。</value></data>
+  <data name="Floating.StatusNormal" xml:space="preserve"><value>正常</value></data>
+  <data name="Floating.StatusLow" xml:space="preserve"><value>残高不足</value></data>
+  <data name="Floating.StatusFailed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Floating.StatusUnknown" xml:space="preserve"><value>不明</value></data>
 </root>

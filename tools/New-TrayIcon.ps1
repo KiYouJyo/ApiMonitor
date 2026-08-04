@@ -3,9 +3,9 @@ param(
     [string]$OutputPath = ''
 )
 
-# Generates the notification-area multi-size ICO (16/20/24/32/48/256, PNG frames,
-# supported on Windows Vista+). Reuses the ApiMonitor icon language (blue rounded
-# tile + white bold "A"). No external dependencies, only .NET System.Drawing.
+# v0.7.0 起托盘图标使用 TerminalShare 资产包中的多尺寸 ICO（Assets\TrayIcon.ico）。
+# 本脚本仅保留用于生成 v0.7.0 之前的占位托盘图标；检测到新资产后拒绝运行，
+# 避免覆盖正式图标。
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -13,6 +13,9 @@ Add-Type -AssemblyName System.Drawing
 $repoRoot = Split-Path -Parent $PSScriptRoot
 if (-not $OutputPath) {
     $OutputPath = Join-Path $repoRoot 'Assets\TrayIcon.ico'
+}
+if (Test-Path -LiteralPath (Join-Path $repoRoot 'Assets\Square150x150Logo.scale-100.png')) {
+    Write-Error '检测到 v0.7.0 TerminalShare 图标资产包，本脚本不会覆盖正式托盘图标。请勿运行。'
 }
 
 $sizes = @(16, 20, 24, 32, 48, 256)

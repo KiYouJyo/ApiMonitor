@@ -83,16 +83,24 @@ public sealed class FakeExitCoordinator : IApplicationExitCoordinator
     }
 }
 
-/// <summary>记录打开/关闭调用的假紧凑窗口服务。</summary>
-public sealed class FakeCompactWindowService : ICompactWindowService
+/// <summary>记录打开/关闭调用的假悬浮窗服务。</summary>
+public sealed class FakeFloatingWindowService : IFloatingWindowService
 {
-    public int OpenOrActivateCalls { get; private set; }
+    public int ShowCalls { get; private set; }
 
     public int ShutdownCalls { get; private set; }
 
     public bool IsWindowOpen { get; set; }
 
-    public void OpenOrActivate() => OpenOrActivateCalls++;
+    /// <summary>最近一次 Show 传入的账户 ID（null 表示托盘入口未指定账户）。</summary>
+    public string? LastShownAccountId { get; private set; }
+
+    public void Show(string? accountId = null)
+    {
+        ShowCalls++;
+        LastShownAccountId = accountId;
+        IsWindowOpen = true;
+    }
 
     public void CloseWindow()
     {

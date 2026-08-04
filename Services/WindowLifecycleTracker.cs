@@ -1,14 +1,14 @@
 namespace ApiMonitor.Services;
 
 /// <summary>
-/// 纯逻辑的窗口生命周期跟踪：主窗口与紧凑窗口都关闭时触发应用退出信号。
+/// 纯逻辑的窗口生命周期跟踪：主窗口与悬浮窗都关闭时触发应用退出信号。
 /// 不含任何 WinUI 依赖，便于单元测试。
 /// </summary>
 public sealed class WindowLifecycleTracker
 {
     public bool IsMainWindowOpen { get; private set; }
 
-    public bool IsCompactWindowOpen { get; private set; }
+    public bool IsFloatingWindowOpen { get; private set; }
 
     public event Action? AllWindowsClosed;
 
@@ -20,17 +20,17 @@ public sealed class WindowLifecycleTracker
         RaiseIfEmpty();
     }
 
-    public void CompactWindowOpened() => IsCompactWindowOpen = true;
+    public void FloatingWindowOpened() => IsFloatingWindowOpen = true;
 
-    public void CompactWindowClosed()
+    public void FloatingWindowClosed()
     {
-        IsCompactWindowOpen = false;
+        IsFloatingWindowOpen = false;
         RaiseIfEmpty();
     }
 
     private void RaiseIfEmpty()
     {
-        if (!IsMainWindowOpen && !IsCompactWindowOpen)
+        if (!IsMainWindowOpen && !IsFloatingWindowOpen)
         {
             AllWindowsClosed?.Invoke();
         }

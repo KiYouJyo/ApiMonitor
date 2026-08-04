@@ -13,8 +13,8 @@
     （packaging/New-PreviewInstallerPackage.ps1 等）使用的版本必须与本文件一致。
   -->
   <PropertyGroup>
-    <ApiMonitorDisplayVersion>0.6.0</ApiMonitorDisplayVersion>
-    <ApiMonitorPackageVersion>0.6.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorDisplayVersion>0.7.0</ApiMonitorDisplayVersion>
+    <ApiMonitorPackageVersion>0.7.0.12</ApiMonitorPackageVersion>
 
     <!-- 程序集四段版本（MSIX 升级判断）。 -->
     <Version>$(ApiMonitorPackageVersion)</Version>

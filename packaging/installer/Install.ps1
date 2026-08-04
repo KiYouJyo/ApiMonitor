@@ -1,6 +1,6 @@
 ﻿#requires -Version 5.1
 <#
-  ApiMonitor v0.6.0 sideload installer (candidate package version 0.6.0.1)
+  ApiMonitor v0.7.0 sideload installer (candidate package version 0.7.0.12)
   ====================================
   Double-click entry: Install.cmd -> this script (Windows PowerShell 5.1).
 
@@ -12,7 +12,7 @@
      - full signer thumbprint extracted from the MSIX compared with the CER;
      - certificate Subject = CN=ApiMonitorDev, Code Signing EKU, validity;
      - manifest Publisher matches the certificate Subject;
-      - manifest Identity = ApiMonitor and version = 0.6.0.1.
+      - manifest Identity = ApiMonitor and version = 0.7.0.12.
   4. Import the public certificate into LocalMachine\TrustedPeople only.
   5. Install x64 Windows App Runtime dependencies bundled under Dependencies\x64.
   6. Fresh install / in-place upgrade of the ApiMonitor MSIX for the current user,
@@ -32,7 +32,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$PackageVersion = '0.6.0.1',
+    [string]$PackageVersion = '0.7.0.12',
     [string]$PackageIdentity = 'ApiMonitor',
     [string]$PublisherSubject = 'CN=ApiMonitorDev',
     [string]$RuntimePackageName = 'Microsoft.WindowsAppRuntime.2',
@@ -477,7 +477,7 @@ function Assert-ManifestIdentity {
         [Parameter(Mandatory = $true)][hashtable]$Manifest,
         [string]$ExpectedName = 'ApiMonitor',
         [string]$ExpectedPublisher = 'CN=ApiMonitorDev',
-        [string]$ExpectedVersion = '0.6.0.1'
+        [string]$ExpectedVersion = '0.7.0.12'
     )
     if ($Manifest.Name -ne $ExpectedName) {
         return @{ Ok = $false; Reason = ('包 Identity Name 不符："{0}"（期望 {1}）。' -f $Manifest.Name, $ExpectedName) }
@@ -705,7 +705,7 @@ function Invoke-Install {
         }
     }
 
-    Write-InstallerLog '==== ApiMonitor v0.6.0 自动安装开始 ===='
+    Write-InstallerLog '==== ApiMonitor v0.7.0 自动安装开始 ===='
 
     # 1. Pre-install checks
     $pre = Assert-Prerequisites $scriptDir $Ops
@@ -818,7 +818,7 @@ function Invoke-Install {
         }
         'HigherVersionInstalled' {
             Write-InstallerLog (
-                '已安装更高版本（{0}），v0.6.0 安装程序不会执行降级。' -f $installedPkg.Version) 'ERROR'
+                '已安装更高版本（{0}），v0.7.0 安装程序不会执行降级。' -f $installedPkg.Version) 'ERROR'
             return (Get-InstallerExitCode 'HigherVersionInstalled')
         }
         'SameVersion' {

@@ -45,14 +45,10 @@ public static class WindowPositionRestorer
             return new PixelRect(0, 0, (int)savedWidth, (int)savedHeight);
         }
 
-        int width = Clamp(
-            (int)Math.Round(savedWidth),
-            (int)CompactWindowDefaults.MinWidth,
-            (int)CompactWindowDefaults.MaxWidth);
-        int height = Clamp(
-            (int)Math.Round(savedHeight),
-            (int)CompactWindowDefaults.MinHeight,
-            (int)CompactWindowDefaults.MaxHeight);
+        // The floating widget is deliberately fixed-size. Ignore historical
+        // compact-window dimensions while preserving the saved position.
+        int width = (int)FloatingWindowDefaults.FixedSize;
+        int height = (int)FloatingWindowDefaults.FixedSize;
 
         // 尺寸超出当前工作区时限制到工作区。
         width = Math.Min(width, Math.Max(1, primary.WorkArea.Width));

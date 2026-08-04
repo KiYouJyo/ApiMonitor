@@ -22,9 +22,9 @@ public sealed class WindowManager : IWindowManager
         window.Closed += (_, _) => _tracker.MainWindowClosed();
     }
 
-    public void RegisterCompactWindow(Window window)
+    public void RegisterFloatingWindow(Window window)
     {
-        _tracker.CompactWindowOpened();
-        window.Closed += (_, _) => _tracker.CompactWindowClosed();
+        _tracker.FloatingWindowOpened();
+        window.Closed += (_, _) => _tracker.FloatingWindowClosed();
     }
 }

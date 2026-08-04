@@ -13,6 +13,10 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Include generated zh-CN/ja-JP resource packages in sideload bundles. -->
+    <BuildAppxSideloadPackageForUap>true</BuildAppxSideloadPackageForUap>
+    <!-- Keep the three UI languages in the main sideload MSIX; scale assets may split. -->
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- MVVMTK0045 only matters for AOT/trimmed WinRT scenarios; this app is not AOT. -->
@@ -63,10 +67,18 @@
     <Content Include="Assets\ApiMonitor.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <!-- 通知区域图标：多尺寸 ICO，随包分发，运行期从包内路径加载。 -->
     <Content Include="Assets\TrayIcon.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="Assets\Square150x150Logo.png" />
-    <Content Include="Assets\Square44x44Logo.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\SplashScreen.png" />
+    <!--
+      v0.7.0：应用图标整体替换为 TerminalShare 资产包（按 Package.appxmanifest
+      现有资源名引用，MRT 自动按 scale/targetsize 解析；通配符覆盖各缩放与
+      altform 变体）。
+    -->
+    <Content Include="Assets\Square150x150Logo*.png" />
+    <Content Include="Assets\Square44x44Logo*.png" />
+    <Content Include="Assets\Square71x71Logo*.png" />
+    <Content Include="Assets\Wide310x150Logo*.png" />
+    <Content Include="Assets\Square310x310Logo*.png" />
+    <Content Include="Assets\StoreLogo*.png" />
+    <Content Include="Assets\SplashScreen*.png" />
   </ItemGroup>
 
   <!--

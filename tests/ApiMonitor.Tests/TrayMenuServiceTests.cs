@@ -16,6 +16,7 @@ public sealed class TrayMenuServiceTests
     {
         var context = new TrayMenuContext(
             HasAccounts: hasAccounts,
+            IsFloatingWindowOpen: false,
             IsRefreshingAll: refreshingAll,
             AutoRefreshStatusText: hasAccounts
                 ? TrayStatusText.AutoRefreshRunning
@@ -62,7 +63,8 @@ public sealed class TrayMenuServiceTests
         uint[] required =
         {
             (uint)TrayCommand.OpenMainWindow,
-            (uint)TrayCommand.OpenCompactWindow,
+            (uint)TrayCommand.OpenFloatingWindow,
+            (uint)TrayCommand.CloseFloatingWindow,
             (uint)TrayCommand.RefreshAll,
             (uint)TrayCommand.ToggleStartWithWindows,
             (uint)TrayCommand.ExitApplication,
@@ -79,6 +81,7 @@ public sealed class TrayMenuServiceTests
         // 状态项禁用（只读文本）。
         Assert.Contains(items, i => !i.IsEnabled && i.Text == TrayStatusText.AutoRefreshRunning);
         Assert.Contains(items, i => !i.IsEnabled && i.Text == TrayStatusText.LowBalanceNormal);
+        Assert.Contains(items, i => i.CommandId == (uint)TrayCommand.CloseFloatingWindow && !i.IsEnabled);
 
         // 三个分隔符分组。
         Assert.Equal(3, items.Count(i => i.IsSeparator));
@@ -89,6 +92,7 @@ public sealed class TrayMenuServiceTests
     {
         var context = new TrayMenuContext(
             HasAccounts: true,
+            IsFloatingWindowOpen: false,
             IsRefreshingAll: false,
             AutoRefreshStatusText: TrayStatusText.AutoRefreshRunning,
             LowBalanceStatusText: TrayStatusText.LowBalanceNormal,
@@ -101,10 +105,28 @@ public sealed class TrayMenuServiceTests
     }
 
     [Fact]
+    public void OpenFloatingWindow_EnablesCloseCommand()
+    {
+        var context = new TrayMenuContext(
+            HasAccounts: true,
+            IsFloatingWindowOpen: true,
+            IsRefreshingAll: false,
+            AutoRefreshStatusText: TrayStatusText.AutoRefreshRunning,
+            LowBalanceStatusText: TrayStatusText.LowBalanceNormal,
+            StartWithWindowsChecked: false,
+            StartWithWindowsEnabled: true);
+
+        var close = Service.BuildMenu(context).First(i => i.CommandId == (uint)TrayCommand.CloseFloatingWindow);
+
+        Assert.True(close.IsEnabled);
+    }
+
+    [Fact]
     public void StartWithWindows_DisabledByPolicy_IsDisabled()
     {
         var context = new TrayMenuContext(
             HasAccounts: true,
+            IsFloatingWindowOpen: false,
             IsRefreshingAll: false,
             AutoRefreshStatusText: TrayStatusText.AutoRefreshRunning,
             LowBalanceStatusText: TrayStatusText.LowBalanceNormal,

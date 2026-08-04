@@ -4,7 +4,7 @@ using ApiMonitor.Services;
 namespace ApiMonitor.Helpers;
 
 /// <summary>
-/// 通用指标展示文本（账户卡片、历史、紧凑窗口与通知正文共用），
+/// 通用指标展示文本（账户卡片、历史、悬浮窗与通知正文共用），
 /// 避免 UI 直接引用 Provider DTO。数值未知显示“未知”，绝不用 0 表示。
 /// </summary>
 public static class BalanceMetricText

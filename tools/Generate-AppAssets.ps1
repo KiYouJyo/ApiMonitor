@@ -1,13 +1,19 @@
 param()
 
-# 生成本地验收用的占位应用资产（纯色背景 + 白色字母 A）。
-# 正式图标可后续替换，文件路径保持不变即可。
+# v0.7.0 起应用图标整体替换为 TerminalShare 资产包（Assets 下的
+# Square150x150Logo.scale-* / Square44x44Logo.* / StoreLogo.scale-* /
+# SplashScreen.scale-* / ApiMonitor.ico / TrayIcon.ico）。
+# 本脚本仅保留用于生成 v0.7.0 之前的占位资产；检测到新资产包后拒绝运行，
+# 避免把正式图标覆盖回旧占位图。
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $assetsDir = Join-Path $repoRoot 'Assets'
+if (Test-Path -LiteralPath (Join-Path $assetsDir 'Square150x150Logo.scale-100.png')) {
+    Write-Error '检测到 v0.7.0 TerminalShare 图标资产包，本脚本不会覆盖正式图标。请勿运行。'
+}
 New-Item -ItemType Directory -Force -Path $assetsDir | Out-Null
 
 function New-LogoBitmap {

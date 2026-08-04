@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-04
+
+### Added
+
+- Floating balance window for a selected account
+- Account-card command for selecting the floating account
+- Persistent floating-window position and selected account
+- Updated application icon assets
+
+### Changed
+
+- Replaced the former compact window with a smaller floating balance widget
+- Simplified the home-page header
+- Reduced the floating window to a fixed-size, single-surface design
+- Changed the floating window to a monochrome visual style
+- Updated window, taskbar, Start menu, package and notification-area icons
+
+### Fixed
+
+- Floating window showing a large outer background
+- Mismatched inner and outer corner radii
+- Severe lag while dragging the floating window
+- Truncated account names, statuses, balances and currency units
+- Old icon remaining in the main-window title bar
+- Unused spacing remaining after removal of the home-page subtitle
+
+> Historical note: the former compact window was replaced by the floating balance window.
+
 ## [0.6.0.1] - 2026-08-03（v0.6.0 主题统一修订包）
 
 ### Fixed

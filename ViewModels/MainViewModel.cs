@@ -23,7 +23,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IClipboardService _clipboard;
     private readonly IUiThreadInvoker _ui;
     private readonly AppLog _log;
-    private readonly Action _openCompactWindow;
+    private readonly Action<string>? _showFloatingWindow;
     private readonly Func<string, CancellationToken, Task<DateTimeOffset?>>? _snoozeReader;
     private readonly CancellationTokenSource _lifetime = new();
     private int _statusGeneration;
@@ -91,10 +91,6 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>关于页 ViewModel（由 CompositionRoot 注入）。</summary>
     public AboutViewModel? About { get; set; }
 
-    /// <summary>主界面副标题，版本号取自集中元数据服务（AssemblyInformationalVersion）。</summary>
-    public string SubtitleText { get; } =
-        L10n.Format("Home.SubtitleFormat", AppInfo.DisplayVersion);
-
     /// <summary>主页空状态隐私说明（v0.6.0 起从资源取，避免硬编码）。</summary>
     public string HomePrivacyMessage { get; } =
         L10n.Get("Home.PrivacyMessageText");
@@ -128,8 +124,6 @@ public sealed partial class MainViewModel : ObservableObject
 
     public AsyncRelayCommand AddAccountCommand { get; }
 
-    public RelayCommand OpenCompactWindowCommand { get; }
-
     public AsyncRelayCommand RefreshAllCommand { get; }
 
     /// <summary>当前支持的 Provider 文本（设置页“应用信息”展示）。</summary>
@@ -141,7 +135,7 @@ public sealed partial class MainViewModel : ObservableObject
         AppLog log,
         IClipboardService clipboard,
         IUiThreadInvoker ui,
-        Action? openCompactWindow = null,
+        Action<string>? showFloatingWindow = null,
         Func<string, CancellationToken, Task<DateTimeOffset?>>? snoozeReader = null)
     {
         _accountManager = accountManager;
@@ -149,14 +143,13 @@ public sealed partial class MainViewModel : ObservableObject
         _log = log;
         _clipboard = clipboard;
         _ui = ui;
-        _openCompactWindow = openCompactWindow ?? (() => { });
+        _showFloatingWindow = showFloatingWindow;
         _snoozeReader = snoozeReader;
 
         StatusSeverity = StatusSeverity.Informational;
         StatusTitle = string.Empty;
         StatusMessage = string.Empty;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAsync, () => !IsLoading);
-        OpenCompactWindowCommand = new RelayCommand(() => _openCompactWindow());
         RefreshAllCommand = new AsyncRelayCommand(
             RefreshAllAsync,
             () => HasAccounts && !IsRefreshingAll);
@@ -183,6 +176,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>切换到指定导航页面（不会重建账户状态，不重启调度器）。</summary>
     public void NavigateTo(AppPageKind page) => CurrentPage = page;
+
+    /// <summary>把指定账户设为悬浮窗账户并显示/切换悬浮窗（账户卡片入口）。</summary>
+    public void SetFloatingAccount(string accountId) =>
+        _showFloatingWindow?.Invoke(accountId);
 
     /// <summary>把筛选恢复为“全部 Provider / 全部状态”（新增账户后与通知定位共用）。</summary>
     public void ResetFiltersToAll()
@@ -548,6 +545,11 @@ public sealed partial class MainViewModel : ObservableObject
                 () =>
                 {
                     OpenInsightsForAccount(account.AccountId);
+                    return Task.CompletedTask;
+                },
+                () =>
+                {
+                    SetFloatingAccount(account.AccountId);
                     return Task.CompletedTask;
                 });
 

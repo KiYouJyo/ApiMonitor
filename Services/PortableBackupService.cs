@@ -18,7 +18,7 @@ public sealed class PortableBackupService : IPortableBackupService
     private readonly IBalanceSnapshotStore _snapshotStore;
     private readonly INotificationSettingsStore _notificationSettingsStore;
     private readonly ITraySettingsStore _traySettingsStore;
-    private readonly ICompactWindowSettingsStore _compactWindowSettingsStore;
+    private readonly IFloatingWindowSettingsStore _floatingWindowSettingsStore;
     private readonly IAppearanceSettingsStore _appearanceSettingsStore;
     private readonly IReadOnlyList<string> _supportedProviderIds;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -29,7 +29,7 @@ public sealed class PortableBackupService : IPortableBackupService
         IBalanceSnapshotStore snapshotStore,
         INotificationSettingsStore notificationSettingsStore,
         ITraySettingsStore traySettingsStore,
-        ICompactWindowSettingsStore compactWindowSettingsStore,
+        IFloatingWindowSettingsStore floatingWindowSettingsStore,
         IAppearanceSettingsStore appearanceSettingsStore,
         IEnumerable<string> supportedProviderIds)
     {
@@ -38,7 +38,7 @@ public sealed class PortableBackupService : IPortableBackupService
         _snapshotStore = snapshotStore;
         _notificationSettingsStore = notificationSettingsStore;
         _traySettingsStore = traySettingsStore;
-        _compactWindowSettingsStore = compactWindowSettingsStore;
+        _floatingWindowSettingsStore = floatingWindowSettingsStore;
         _appearanceSettingsStore = appearanceSettingsStore;
         _supportedProviderIds = supportedProviderIds.OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
         _jsonOptions = new JsonSerializerOptions
@@ -66,7 +66,7 @@ public sealed class PortableBackupService : IPortableBackupService
         var records = await _snapshotStore.LoadAsync(cancellationToken);
         var notification = await _notificationSettingsStore.LoadAsync(cancellationToken);
         var tray = await _traySettingsStore.LoadAsync(cancellationToken);
-        var compact = await _compactWindowSettingsStore.LoadAsync(cancellationToken);
+        var floating = await _floatingWindowSettingsStore.LoadAsync(cancellationToken);
         var appearance = await _appearanceSettingsStore.LoadAsync(cancellationToken);
 
         // 打包内容：只含非敏感数据文件。
@@ -76,7 +76,7 @@ public sealed class PortableBackupService : IPortableBackupService
             [PortableBackupConstants.BalanceRecordsFileName] = Serialize(ToBalanceRecordsFileData(records.Records)),
             [PortableBackupConstants.NotificationSettingsFileName] = Serialize(notification),
             [PortableBackupConstants.TraySettingsFileName] = Serialize(tray),
-            [PortableBackupConstants.CompactWindowSettingsFileName] = Serialize(compact),
+            [PortableBackupConstants.FloatingWindowSettingsFileName] = Serialize(floating),
             [PortableBackupConstants.AppearanceSettingsFileName] = Serialize(appearance),
         };
 
@@ -170,7 +170,8 @@ public sealed class PortableBackupService : IPortableBackupService
         {
             PortableBackupConstants.NotificationSettingsFileName,
             PortableBackupConstants.TraySettingsFileName,
-            PortableBackupConstants.CompactWindowSettingsFileName,
+            PortableBackupConstants.FloatingWindowSettingsFileName,
+            PortableBackupConstants.LegacyCompactWindowSettingsFileName,
             PortableBackupConstants.AppearanceSettingsFileName,
         })
         {
@@ -254,13 +255,18 @@ public sealed class PortableBackupService : IPortableBackupService
                 await _traySettingsStore.SaveAsync(MergeTray(localTray, incomingTray, preference), cancellationToken);
             }
 
-            if (File.Exists(Path.Combine(extraction.Directory, PortableBackupConstants.CompactWindowSettingsFileName)))
+            string windowSettingsName = File.Exists(Path.Combine(
+                extraction.Directory,
+                PortableBackupConstants.FloatingWindowSettingsFileName))
+                ? PortableBackupConstants.FloatingWindowSettingsFileName
+                : PortableBackupConstants.LegacyCompactWindowSettingsFileName;
+            if (File.Exists(Path.Combine(extraction.Directory, windowSettingsName)))
             {
-                var incomingCompact = Deserialize<CompactWindowSettings>(
-                    Path.Combine(extraction.Directory, PortableBackupConstants.CompactWindowSettingsFileName));
-                var localCompact = await _compactWindowSettingsStore.LoadAsync(cancellationToken);
-                await _compactWindowSettingsStore.SaveAsync(
-                    MergeCompact(localCompact, incomingCompact, preference),
+                var incomingFloating = Deserialize<FloatingWindowSettings>(
+                    Path.Combine(extraction.Directory, windowSettingsName));
+                var localFloating = await _floatingWindowSettingsStore.LoadAsync(cancellationToken);
+                await _floatingWindowSettingsStore.SaveAsync(
+                    MergeFloating(localFloating, incomingFloating, preference),
                     cancellationToken);
             }
 
@@ -480,9 +486,9 @@ public sealed class PortableBackupService : IPortableBackupService
     private static TraySettings MergeTray(TraySettings local, TraySettings incoming, BackupMergePreference preference) =>
         preference == BackupMergePreference.PreferImport ? incoming : local;
 
-    private static CompactWindowSettings MergeCompact(
-        CompactWindowSettings local,
-        CompactWindowSettings incoming,
+    private static FloatingWindowSettings MergeFloating(
+        FloatingWindowSettings local,
+        FloatingWindowSettings incoming,
         BackupMergePreference preference) =>
         preference == BackupMergePreference.PreferImport ? incoming : local;
 
@@ -646,7 +652,8 @@ public sealed class PortableBackupService : IPortableBackupService
             PortableBackupConstants.BalanceRecordsFileName,
             PortableBackupConstants.NotificationSettingsFileName,
             PortableBackupConstants.TraySettingsFileName,
-            PortableBackupConstants.CompactWindowSettingsFileName,
+            PortableBackupConstants.FloatingWindowSettingsFileName,
+            PortableBackupConstants.LegacyCompactWindowSettingsFileName,
             PortableBackupConstants.AppearanceSettingsFileName,
         };
 
@@ -757,7 +764,8 @@ public sealed class PortableBackupService : IPortableBackupService
             JsonBalanceSnapshotStore.FileName,
             JsonNotificationSettingsStore.FileName,
             JsonTraySettingsStore.FileName,
-            CompactWindowSettingsStore.FileName,
+            FloatingWindowSettingsStore.FileName,
+            FloatingWindowSettingsStore.LegacyFileName,
             JsonAppearanceSettingsStore.FileName,
         };
 

@@ -4,15 +4,17 @@ namespace ApiMonitor.Services;
 public enum TrayCommand : uint
 {
     OpenMainWindow = 0x1000,
-    OpenCompactWindow = 0x1001,
-    RefreshAll = 0x1002,
-    ToggleStartWithWindows = 0x1003,
-    ExitApplication = 0x1004,
+    OpenFloatingWindow = 0x1001,
+    CloseFloatingWindow = 0x1002,
+    RefreshAll = 0x1003,
+    ToggleStartWithWindows = 0x1004,
+    ExitApplication = 0x1005,
 }
 
 /// <summary>构建托盘菜单所需的上下文（每次弹出前重新计算）。</summary>
 public sealed record TrayMenuContext(
     bool HasAccounts,
+    bool IsFloatingWindowOpen,
     bool IsRefreshingAll,
     string AutoRefreshStatusText,
     string LowBalanceStatusText,
@@ -26,7 +28,7 @@ public interface ITrayMenuService
 }
 
 /// <summary>
-/// 默认托盘菜单布局：打开/紧凑、刷新与状态、登录启动、退出。
+/// 默认托盘菜单布局：打开/悬浮窗、刷新与状态、登录启动、退出。
 /// v0.6.0：文本通过 IAppStrings 按当前 UI 语言取；未注入时回退内置中文。
 /// </summary>
 public sealed class TrayMenuService : ITrayMenuService
@@ -43,7 +45,11 @@ public sealed class TrayMenuService : ITrayMenuService
         var items = new List<TrayMenuItem>
         {
             new(T("Tray.OpenMainWindow", "打开 ApiMonitor"), (uint)TrayCommand.OpenMainWindow, IsDefault: true),
-            new(T("Tray.OpenCompactWindow", "打开紧凑窗口"), (uint)TrayCommand.OpenCompactWindow),
+            new(T("Tray.OpenFloatingWindow", "打开悬浮窗"), (uint)TrayCommand.OpenFloatingWindow),
+            new(
+                T("Tray.CloseFloatingWindow", "关闭悬浮窗"),
+                (uint)TrayCommand.CloseFloatingWindow,
+                IsEnabled: context.IsFloatingWindowOpen),
             new(null, 0, IsSeparator: true),
             new(
                 T("Tray.RefreshAll", "刷新全部账户"),

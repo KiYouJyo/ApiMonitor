@@ -2,7 +2,6 @@ using ApiMonitor.Models;
 using ApiMonitor.Services;
 using ApiMonitor.Tests.TestDoubles;
 using ApiMonitor.ViewModels;
-using System.Reflection;
 using Xunit;
 
 namespace ApiMonitor.Tests;
@@ -10,14 +9,36 @@ namespace ApiMonitor.Tests;
 public sealed class MainViewModelTests
 {
     [Fact]
-    public void SubtitleText_MatchesAssemblyVersion()
+    public void SetFloatingAccount_ForwardsAccountId()
     {
-        var (vm, _, _, _, _) = CreateSut();
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        var manager = new FakeAccountManager();
+        var dialogs = new FakeDialogService();
+        var clipboard = new FakeClipboardService();
+        var ui = new FakeUiThreadInvoker();
+        var log = new AppLog(Path.Combine(Path.GetTempPath(), $"abm-log-{Guid.NewGuid():N}"));
+        string? shown = null;
+        var viewModel = new MainViewModel(
+            manager,
+            dialogs,
+            log,
+            clipboard,
+            ui,
+            accountId => shown = accountId);
 
-        Assert.NotNull(version);
-        Assert.Contains($"v{version!.Major}.{version.Minor}.0", vm.SubtitleText);
-        Assert.DoesNotContain("v0.1.0", vm.SubtitleText);
+        viewModel.SetFloatingAccount("acct-42");
+
+        Assert.Equal("acct-42", shown);
+    }
+
+    [Fact]
+    public async Task AccountCards_ExposeSetAsFloatingWindowCommand()
+    {
+        var (viewModel, manager, _, _, _) = CreateSut();
+        manager.Accounts.Add(Account());
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.Accounts[0].SetAsFloatingWindowCommand.CanExecute(null));
     }
 
     private static ApiAccount Account(string id = "acct-1") =>

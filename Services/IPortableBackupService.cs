@@ -10,7 +10,11 @@ public static class PortableBackupConstants
     public const string BalanceRecordsFileName = "balance-records.json";
     public const string NotificationSettingsFileName = "notification-settings.json";
     public const string TraySettingsFileName = "tray-settings.json";
-    public const string CompactWindowSettingsFileName = "compact-window-settings.json";
+    /// <summary>v0.7.0 起悬浮窗设置文件（新备份使用）。</summary>
+    public const string FloatingWindowSettingsFileName = "floating-window-settings.json";
+
+    /// <summary>v0.6.0 及更早的紧凑窗口设置文件（旧备份兼容读取）。</summary>
+    public const string LegacyCompactWindowSettingsFileName = "compact-window-settings.json";
     public const string AppearanceSettingsFileName = "appearance-settings.json";
 
     /// <summary>扩展名（不含点）。</summary>

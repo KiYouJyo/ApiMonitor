@@ -39,7 +39,7 @@ public enum StartupTaskStatus
 public sealed class TraySettings
 {
     /// <summary>
-    /// v0.5.0 设置文件版本（独立于账户/余额/紧凑窗口/通知设置文件）。
+    /// v0.5.0 设置文件版本（独立于账户/余额/悬浮窗/通知设置文件）。
     /// 从 4 升级到 5：v0.4.0 文件保留全部已知字段。
     /// </summary>
     public int SchemaVersion { get; set; } = 5;
