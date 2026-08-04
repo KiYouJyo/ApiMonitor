@@ -75,6 +75,22 @@ internal static partial class NativeMethods
     // ------------------------------------------------------------------
     public const uint WS_POPUP = 0x80000000;
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
+    public const uint WS_EX_APPWINDOW = 0x00040000;
+
+    public const int GWL_STYLE = -16;
+    public const uint WS_BORDER = 0x00800000;
+    public const uint WS_DLGFRAME = 0x00400000;
+    public const uint WS_CAPTION = WS_BORDER | WS_DLGFRAME;
+    public const uint WS_THICKFRAME = 0x00040000;
+    public const uint WS_MINIMIZEBOX = 0x00020000;
+    public const uint WS_MAXIMIZEBOX = 0x00010000;
+    public const uint WS_SYSMENU = 0x00080000;
+
+    public static readonly IntPtr HWND_TOPMOST = new(-1);
+    public const uint SWP_NOSIZE = 0x0001;
+    public const uint SWP_NOMOVE = 0x0002;
+    public const uint SWP_NOACTIVATE = 0x0010;
+    public const uint SWP_FRAMECHANGED = 0x0020;
 
     /// <summary>GetWindowLongW/SetWindowLongW 的扩展样式索引。</summary>
     public const int GWL_EXSTYLE = -20;
@@ -84,6 +100,24 @@ internal static partial class NativeMethods
 
     [DllImport("user32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
     public static extern int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowPos", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetWindowPos(
+        IntPtr hWnd,
+        IntPtr hWndInsertAfter,
+        int x,
+        int y,
+        int cx,
+        int cy,
+        uint flags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll", EntryPoint = "SendMessageW")]
+    public static extern IntPtr SendMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
@@ -95,6 +129,8 @@ internal static partial class NativeMethods
     public const uint WM_LBUTTONDBLCLK = 0x0203;
     public const uint WM_RBUTTONUP = 0x0205;
     public const uint WM_RBUTTONDBLCLK = 0x0206;
+    public const uint WM_NCLBUTTONDOWN = 0x00A1;
+    public const int HTCAPTION = 2;
 
     public const uint CS_HREDRAW = 0x0002;
     public const uint CS_VREDRAW = 0x0001;

@@ -170,6 +170,7 @@
   <data name="Nav.About.Content" xml:space="preserve"><value>このアプリについて</value></data>
   <data name="Tray.OpenMainWindow" xml:space="preserve"><value>ApiMonitor を開く</value></data>
   <data name="Tray.OpenFloatingWindow" xml:space="preserve"><value>フローティングウィンドウを開く</value></data>
+  <data name="Tray.CloseFloatingWindow" xml:space="preserve"><value>フローティングウィンドウを閉じる</value></data>
   <data name="Tray.RefreshAll" xml:space="preserve"><value>すべてのアカウントを更新</value></data>
   <data name="Tray.StartWithWindows" xml:space="preserve"><value>サインイン時に起動</value></data>
   <data name="Tray.ExitApplication" xml:space="preserve"><value>ApiMonitor を終了</value></data>

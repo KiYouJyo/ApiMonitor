@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using ApiMonitor.Services;
 using Xunit;
 
 namespace ApiMonitor.Tests;
@@ -62,7 +63,9 @@ public sealed class FloatingWindowContentTests
     public void FloatingWindow_UsesCompactSquareCardAndShortStatusResources()
     {
         string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
-        Assert.Contains("CornerRadius=\"12\"", xaml);
+        Assert.Contains("Width=\"208\"", xaml);
+        Assert.Contains("Height=\"208\"", xaml);
+        Assert.Contains("CornerRadius=\"26\"", xaml);
         Assert.Contains("AppCardBackgroundBrush", xaml);
         Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
         Assert.Contains("Text=\"{Binding UnitText}\"", xaml);
@@ -76,6 +79,28 @@ public sealed class FloatingWindowContentTests
                 Assert.Contains($"name=\"{key}\"", resources);
             }
         }
+    }
+
+    [Fact]
+    public void FloatingWindow_IsBorderlessFixedSizeToolWindowAndSupportsContentDrag()
+    {
+        string code = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml.cs"));
+        string native = File.ReadAllText(Path.Combine(RepoRoot, "Services", "NativeMethods.cs"));
+
+        Assert.Contains("SetBorderAndTitleBar", code);
+        Assert.Contains("IsResizable = false", code);
+        Assert.Contains("IsMaximizable = false", code);
+        Assert.Contains("IsMinimizable = false", code);
+        Assert.Contains("WS_POPUP", code);
+        Assert.Contains("WS_EX_TOOLWINDOW", code);
+        Assert.Contains("WS_EX_APPWINDOW", code);
+        Assert.Contains("PointerPressed=\"OnRootPointerPressed\"", File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml")));
+        Assert.Contains("WM_NCLBUTTONDOWN", code);
+        Assert.Contains("SetWindowPos", native);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultWidth);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultHeight);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MinWidth);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MaxWidth);
     }
 
     [Fact]
@@ -99,6 +124,7 @@ public sealed class FloatingWindowContentTests
             "Floating.QueryFailed",
             "Floating.LastUpdatedFormat",
             "Tray.OpenFloatingWindow",
+            "Tray.CloseFloatingWindow",
             "Home.SetAsFloatingWindow.Content",
         };
 

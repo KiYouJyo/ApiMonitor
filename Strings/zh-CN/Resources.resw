@@ -170,6 +170,7 @@
   <data name="Nav.About.Content" xml:space="preserve"><value>关于</value></data>
   <data name="Tray.OpenMainWindow" xml:space="preserve"><value>打开 ApiMonitor</value></data>
   <data name="Tray.OpenFloatingWindow" xml:space="preserve"><value>打开悬浮窗</value></data>
+  <data name="Tray.CloseFloatingWindow" xml:space="preserve"><value>关闭悬浮窗</value></data>
   <data name="Tray.RefreshAll" xml:space="preserve"><value>刷新全部账户</value></data>
   <data name="Tray.StartWithWindows" xml:space="preserve"><value>登录时启动</value></data>
   <data name="Tray.ExitApplication" xml:space="preserve"><value>退出 ApiMonitor</value></data>

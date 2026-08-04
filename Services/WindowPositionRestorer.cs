@@ -45,26 +45,10 @@ public static class WindowPositionRestorer
             return new PixelRect(0, 0, (int)savedWidth, (int)savedHeight);
         }
 
-        int width = Clamp(
-            (int)Math.Round(savedWidth),
-            (int)FloatingWindowDefaults.MinWidth,
-            (int)FloatingWindowDefaults.MaxWidth);
-        int height = Clamp(
-            (int)Math.Round(savedHeight),
-            (int)FloatingWindowDefaults.MinHeight,
-            (int)FloatingWindowDefaults.MaxHeight);
-
-        // v0.7.0.1: old compact-window settings were wide rectangles. Restore them
-        // as the new square information block without changing the stored user data.
-        if ((double)width / height > 1.35 || (double)height / width > 1.35)
-        {
-            int size = Clamp(
-                Math.Max(width, height),
-                (int)FloatingWindowDefaults.MinWidth,
-                (int)FloatingWindowDefaults.MaxWidth);
-            width = size;
-            height = size;
-        }
+        // The floating widget is deliberately fixed-size. Ignore historical
+        // compact-window dimensions while preserving the saved position.
+        int width = (int)FloatingWindowDefaults.FixedSize;
+        int height = (int)FloatingWindowDefaults.FixedSize;
 
         // 尺寸超出当前工作区时限制到工作区。
         width = Math.Min(width, Math.Max(1, primary.WorkArea.Width));

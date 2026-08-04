@@ -3,6 +3,7 @@ using ApiMonitor.ViewModels;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 
 namespace ApiMonitor.Views;
@@ -33,7 +34,7 @@ public sealed partial class FloatingBalanceWindow : Window
         _log = log;
 
         InitializeComponent();
-        Title = "ApiMonitor";
+        Title = string.Empty;
         RootGrid.DataContext = viewModel;
 
         Activated += OnWindowActivated;
@@ -79,16 +80,18 @@ public sealed partial class FloatingBalanceWindow : Window
         ApplyToolWindowStyle();
     }
 
-    /// <summary>始终置顶 + 最小尺寸；固定置顶，不提供 UI 开关。</summary>
+    /// <summary>无标题栏、无边框、固定尺寸并始终置顶。</summary>
     private void ApplyPresenter()
     {
         try
         {
             if (AppWindow.Presenter is OverlappedPresenter presenter)
             {
+                presenter.SetBorderAndTitleBar(hasBorder: false, hasTitleBar: false);
                 presenter.IsAlwaysOnTop = true;
-                presenter.PreferredMinimumWidth = (int)FloatingWindowDefaults.MinWidth;
-                presenter.PreferredMinimumHeight = (int)FloatingWindowDefaults.MinHeight;
+                presenter.IsResizable = false;
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
             }
         }
         catch (Exception ex)
@@ -98,21 +101,71 @@ public sealed partial class FloatingBalanceWindow : Window
         }
     }
 
-    /// <summary>工具窗口样式：不在任务栏单独占位（保持置顶与可拖动标题栏）。</summary>
+    /// <summary>
+    /// 将宿主切换为真正的无边框工具窗口：不进入任务栏/Alt+Tab，
+    /// 去掉系统标题栏、边框和调整大小样式。拖动由内容区域转发为标题拖动消息。
+    /// </summary>
     private void ApplyToolWindowStyle()
     {
         try
         {
             IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            int windowStyle = NativeMethods.GetWindowLongW(hwnd, NativeMethods.GWL_STYLE);
+            windowStyle &= ~unchecked((int)(
+                NativeMethods.WS_CAPTION
+                | NativeMethods.WS_THICKFRAME
+                | NativeMethods.WS_MINIMIZEBOX
+                | NativeMethods.WS_MAXIMIZEBOX
+                | NativeMethods.WS_SYSMENU));
+            windowStyle |= unchecked((int)NativeMethods.WS_POPUP);
+            _ = NativeMethods.SetWindowLongW(hwnd, NativeMethods.GWL_STYLE, windowStyle);
+
             int style = NativeMethods.GetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE);
+            style &= ~unchecked((int)NativeMethods.WS_EX_APPWINDOW);
             _ = NativeMethods.SetWindowLongW(
                 hwnd,
                 NativeMethods.GWL_EXSTYLE,
                 style | (int)NativeMethods.WS_EX_TOOLWINDOW);
+            _ = NativeMethods.SetWindowPos(
+                hwnd,
+                NativeMethods.HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                NativeMethods.SWP_NOMOVE
+                | NativeMethods.SWP_NOSIZE
+                | NativeMethods.SWP_NOACTIVATE
+                | NativeMethods.SWP_FRAMECHANGED);
         }
         catch (Exception ex)
         {
             _log.Error($"设置悬浮窗工具窗口样式失败: {ex.GetType().Name}");
+        }
+    }
+
+    /// <summary>整个方块都是拖动命中区，不保留额外标题栏或拖动手柄。</summary>
+    private void OnRootPointerPressed(object sender, PointerRoutedEventArgs args)
+    {
+        if (!args.GetCurrentPoint(RootGrid).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        try
+        {
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            NativeMethods.ReleaseCapture();
+            _ = NativeMethods.SendMessageW(
+                hwnd,
+                NativeMethods.WM_NCLBUTTONDOWN,
+                new IntPtr(NativeMethods.HTCAPTION),
+                IntPtr.Zero);
+            args.Handled = true;
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"拖动悬浮窗失败: {ex.GetType().Name}");
         }
     }
 

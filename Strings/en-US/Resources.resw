@@ -170,6 +170,7 @@
   <data name="Nav.About.Content" xml:space="preserve"><value>About</value></data>
   <data name="Tray.OpenMainWindow" xml:space="preserve"><value>Open ApiMonitor</value></data>
   <data name="Tray.OpenFloatingWindow" xml:space="preserve"><value>Open floating window</value></data>
+  <data name="Tray.CloseFloatingWindow" xml:space="preserve"><value>Close floating window</value></data>
   <data name="Tray.RefreshAll" xml:space="preserve"><value>Refresh all accounts</value></data>
   <data name="Tray.StartWithWindows" xml:space="preserve"><value>Start when I sign in</value></data>
   <data name="Tray.ExitApplication" xml:space="preserve"><value>Exit ApiMonitor</value></data>

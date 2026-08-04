@@ -27,8 +27,8 @@ public sealed class WindowPositionRestorerTests
 
         Assert.Equal(120, restored.X);
         Assert.Equal(80, restored.Y);
-        Assert.Equal(360, restored.Width);
-        Assert.Equal(360, restored.Height);
+        Assert.Equal((int)FloatingWindowDefaults.FixedSize, restored.Width);
+        Assert.Equal((int)FloatingWindowDefaults.FixedSize, restored.Height);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public sealed class WindowPositionRestorerTests
 
         Assert.True(restored.X >= 0 && restored.X < 1920);
         Assert.True(restored.Y >= 0 && restored.Y < 1040);
-        Assert.Equal(360, restored.Width);
-        Assert.Equal(360, restored.Height);
+        Assert.Equal((int)FloatingWindowDefaults.FixedSize, restored.Width);
+        Assert.Equal((int)FloatingWindowDefaults.FixedSize, restored.Height);
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public sealed class WindowPositionRestorerTests
         var restored = WindowPositionRestorer.Restore(
             null, null, 360, 240, null, DualDisplay);
 
-        Assert.Equal((1920 - 360) / 2, restored.X);
-        Assert.Equal((1040 - 360) / 2, restored.Y);
+        Assert.Equal((1920 - (int)FloatingWindowDefaults.FixedSize) / 2, restored.X);
+        Assert.Equal((1040 - (int)FloatingWindowDefaults.FixedSize) / 2, restored.Y);
     }
 
     [Fact]

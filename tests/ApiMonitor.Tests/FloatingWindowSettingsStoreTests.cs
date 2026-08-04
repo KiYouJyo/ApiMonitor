@@ -43,8 +43,8 @@ public sealed class FloatingWindowSettingsStoreTests
 
         Assert.False(loaded.IsAlwaysOnTop);
         Assert.Equal("acct-1", loaded.SelectedAccountId);
-        Assert.Equal(320, loaded.Width);
-        Assert.Equal(180, loaded.Height);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, loaded.Width);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, loaded.Height);
         Assert.Equal(120, loaded.X);
         Assert.Equal(80, loaded.Y);
         Assert.Equal("display-1", loaded.LastDisplayId);
@@ -77,8 +77,8 @@ public sealed class FloatingWindowSettingsStoreTests
         Assert.Equal(FloatingWindowSettingsStore.CurrentSchemaVersion, first.SchemaVersion);
         Assert.False(first.IsAlwaysOnTop);
         Assert.Equal("acct-keep", first.SelectedAccountId);
-        Assert.Equal(380, first.Width);
-        Assert.Equal(220, first.Height);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, first.Width);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, first.Height);
         Assert.Equal(150, first.X);
         Assert.Equal(90, first.Y);
         Assert.Equal("display-legacy", first.LastDisplayId);

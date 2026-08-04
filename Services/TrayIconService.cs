@@ -281,6 +281,7 @@ public sealed class TrayIconService : ITrayIconService
 
         return new TrayMenuContext(
             HasAccounts: _hasAccounts,
+            IsFloatingWindowOpen: _floatingWindowService.IsWindowOpen,
             IsRefreshingAll: _isRefreshingAll,
             AutoRefreshStatusText: autoRefreshText,
             LowBalanceStatusText: lowBalanceText,
@@ -340,6 +341,10 @@ public sealed class TrayIconService : ITrayIconService
 
             case TrayCommand.OpenFloatingWindow:
                 _floatingWindowService.Show();
+                break;
+
+            case TrayCommand.CloseFloatingWindow:
+                _floatingWindowService.CloseWindow();
                 break;
 
             case TrayCommand.RefreshAll:

@@ -358,7 +358,7 @@ public sealed class PortableBackupServiceTests
 
         var settings = await floatingStore.LoadAsync(CancellationToken.None);
         Assert.Equal("acct-legacy", settings.SelectedAccountId);
-        Assert.Equal(380, settings.Width);
-        Assert.Equal(220, settings.Height);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, settings.Width);
+        Assert.Equal(FloatingWindowDefaults.FixedSize, settings.Height);
     }
 }
