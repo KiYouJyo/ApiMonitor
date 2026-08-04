@@ -7,7 +7,7 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
 
-- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.0`)
+- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.1`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -37,7 +37,8 @@
   - Per-account + metric notification state, snapshot deduplication, merged account-level notifications, stable Tag replacement
   - Test notification button; global alerts are **off by default** after upgrade
 - Notification-area (tray) residency, close-to-tray, single instance, optional sign-in startup, and Explorer restart recovery (all from v0.4.0, unchanged)
-- **Floating balance window** (v0.7.0): a lightweight always-on-top window that shows only one selected account's main balance number (account name, provider, unit, status and last-updated time in small text). It does not occupy a taskbar slot, does not exit the app when closed, and there is exactly one instance. Open it from any account card (**设为悬浮窗**) or the tray menu; the last position, size and selected account are restored (old compact-window settings are migrated automatically). It replaces the former compact window.
+- **Floating balance window** (v0.7.0): a lightweight black-and-white, rounded square always-on-top information block with the account name, provider, main balance number, unit and short status. It does not occupy a taskbar slot, does not exit the app when closed, and there is exactly one instance. Open it from any account card (**设为悬浮窗**) or the tray menu; the last position and selected account are restored (old compact-window settings are migrated automatically). It replaces the former compact window.
+- The home header has been tightened so the title, actions, status bar and account overview move together without a reserved subtitle gap; the custom `ApiMonitor.ico` is also applied explicitly to the window chrome.
 - **Data Insights** page (v0.6.0): account / metric / time-range selection, a lightweight local trend chart (WinUI-native, no chart framework), current value, range change, first/latest/min/max values, a collapsible history table, and CSV export
 - **Consumption estimates** (v0.6.0): estimated daily consumption (median of valid intervals) and estimated days left, computed only from local history; clearly labeled "估算值" with a disclaimer, and explicit reasons when estimation is not possible (not enough data, no consumption observed, recent top-ups, unsupported metric, unknown current value)
 - **Portable backup** (v0.6.0, updated in v0.7.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
@@ -69,7 +70,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.7.0.0_x64_Test.zip`.
+1. Download `ApiMonitor_0.7.0.1_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.

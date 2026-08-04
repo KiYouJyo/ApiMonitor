@@ -152,7 +152,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         {
             BalanceText = "—";
             UnitText = string.Empty;
-            StatusText = L10n.Get("Floating.QueryFailed");
+            StatusText = L10n.Get("Floating.StatusFailed");
             LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
             return;
         }
@@ -161,7 +161,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         {
             BalanceText = "—";
             UnitText = string.Empty;
-            StatusText = L10n.Get("Floating.NotQueried");
+            StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
             return;
         }
@@ -172,7 +172,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
             // 无可显示主额度：显示“未知”，绝不用 0 或旧值。
             BalanceText = L10n.Get("Floating.Unknown");
             UnitText = string.Empty;
-            StatusText = L10n.Get("Home.StatusUnknown");
+            StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = FormatTime(snapshot.RetrievedAt);
             return;
         }
@@ -183,7 +183,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
             // 无可显示主额度：显示“未知”，绝不用 0 或旧值。
             BalanceText = L10n.Get("Floating.Unknown");
             UnitText = metric.Unit;
-            StatusText = L10n.Get("Home.StatusUnknown");
+            StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = FormatTime(snapshot.RetrievedAt);
             return;
         }
@@ -195,9 +195,9 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
             string.Equals(r.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase));
         StatusText = ThresholdEvaluator.Evaluate(metric, rule) switch
         {
-            ThresholdStatus.BelowThreshold => L10n.Get("Home.StatusLow"),
-            ThresholdStatus.Normal => L10n.Get("Home.StatusNormal"),
-            _ => L10n.Get("Home.StatusUnknown"),
+            ThresholdStatus.BelowThreshold => L10n.Get("Floating.StatusLow"),
+            ThresholdStatus.Normal => L10n.Get("Floating.StatusNormal"),
+            _ => L10n.Get("Floating.StatusUnknown"),
         };
         LastUpdatedText = L10n.Format("Floating.LastUpdatedFormat", FormatTime(snapshot.RetrievedAt));
     }

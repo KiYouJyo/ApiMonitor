@@ -32,6 +32,13 @@ public sealed class FloatingWindowContentTests
 
         Assert.DoesNotContain("Home.OpenCompactWindow", home);
         Assert.DoesNotContain("OpenCompactWindowCommand", home);
+        Assert.Contains("x:Name=\"PageTitleText\"", home);
+        Assert.Contains("x:Name=\"HomeActionBar\"", home);
+        Assert.Contains("x:Name=\"HomeStatusInfoBar\"", home);
+        Assert.Contains("x:Name=\"AccountOverviewBorder\"", home);
+        Assert.True(home.IndexOf("PageTitleText", StringComparison.Ordinal) < home.IndexOf("HomeActionBar", StringComparison.Ordinal));
+        Assert.True(home.IndexOf("HomeActionBar", StringComparison.Ordinal) < home.IndexOf("HomeStatusInfoBar", StringComparison.Ordinal));
+        Assert.True(home.IndexOf("HomeStatusInfoBar", StringComparison.Ordinal) < home.IndexOf("AccountOverviewBorder", StringComparison.Ordinal));
         Assert.DoesNotContain("{Binding SubtitleText}", home);
         Assert.Contains("Home.SetAsFloatingWindow", home);
         Assert.Contains("SetAsFloatingWindowCommand", home);
@@ -49,6 +56,35 @@ public sealed class FloatingWindowContentTests
             Assert.DoesNotContain("Home.Subtitle", keys);
             Assert.DoesNotContain("Home.SubtitleFormat", keys);
         }
+    }
+
+    [Fact]
+    public void FloatingWindow_UsesCompactSquareCardAndShortStatusResources()
+    {
+        string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
+        Assert.Contains("CornerRadius=\"12\"", xaml);
+        Assert.Contains("AppCardBackgroundBrush", xaml);
+        Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
+        Assert.Contains("Text=\"{Binding UnitText}\"", xaml);
+        Assert.DoesNotContain("LastUpdatedText", xaml);
+
+        foreach (string language in new[] { "zh-CN", "en-US", "ja-JP" })
+        {
+            string resources = File.ReadAllText(Path.Combine(RepoRoot, "Strings", language, "Resources.resw"));
+            foreach (string key in new[] { "Floating.StatusNormal", "Floating.StatusLow", "Floating.StatusFailed", "Floating.StatusUnknown" })
+            {
+                Assert.Contains($"name=\"{key}\"", resources);
+            }
+        }
+    }
+
+    [Fact]
+    public void MainWindow_ExplicitlyUsesCustomIcoForWindowChrome()
+    {
+        string code = File.ReadAllText(Path.Combine(RepoRoot, "MainWindow.xaml.cs"));
+        Assert.Contains("AppWindow.SetIcon", code);
+        Assert.Contains("ApiMonitor.ico", code);
+        Assert.True(File.Exists(Path.Combine(RepoRoot, "Assets", "ApiMonitor.ico")));
     }
 
     [Fact]

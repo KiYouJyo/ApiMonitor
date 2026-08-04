@@ -492,4 +492,8 @@
   <data name="Provider.ErrorMissingTotalCredits" xml:space="preserve"><value>API レスポンスに必須フィールド（total_credits）がありません。</value></data>
   <data name="Store.FileUnreadableReset" xml:space="preserve"><value>{0} を読み取れず、リセットしました。</value></data>
   <data name="Store.FileCorruptBackedUp" xml:space="preserve"><value>{0} が破損していたため、{1} にバックアップしてリセットしました。</value></data>
+  <data name="Floating.StatusNormal" xml:space="preserve"><value>正常</value></data>
+  <data name="Floating.StatusLow" xml:space="preserve"><value>残高不足</value></data>
+  <data name="Floating.StatusFailed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Floating.StatusUnknown" xml:space="preserve"><value>不明</value></data>
 </root>

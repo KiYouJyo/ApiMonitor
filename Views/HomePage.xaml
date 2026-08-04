@@ -13,7 +13,7 @@
         <converters:StatusSeverityConverter x:Key="StatusSeverityConverter" />
     </UserControl.Resources>
 
-    <Grid Padding="28,16,28,20" RowSpacing="12">
+    <Grid Padding="28,8,28,20" RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -26,10 +26,11 @@
         <TextBlock
             x:Name="PageTitleText"
             Grid.Row="0"
+            Margin="0,0,0,2"
             Style="{StaticResource TitleTextBlockStyle}" />
 
         <!-- 2. 主操作栏：添加账户为醒目主按钮 -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
+        <StackPanel x:Name="HomeActionBar" Grid.Row="1" Orientation="Horizontal" Spacing="10">
             <Button
                 Style="{StaticResource AccentButtonStyle}"
                 Command="{Binding AddAccountCommand}">
@@ -49,6 +50,7 @@
         </StackPanel>
 
         <InfoBar
+            x:Name="HomeStatusInfoBar"
             Grid.Row="2"
             IsClosable="True"
             IsOpen="{Binding IsStatusVisible}"
@@ -58,6 +60,7 @@
 
         <!-- 3. 账户汇总与筛选（带明确标签） -->
         <Border
+            x:Name="AccountOverviewBorder"
             Grid.Row="3"
             Padding="14,10"
             CornerRadius="8"

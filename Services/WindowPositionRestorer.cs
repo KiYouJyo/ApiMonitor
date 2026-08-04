@@ -54,6 +54,18 @@ public static class WindowPositionRestorer
             (int)FloatingWindowDefaults.MinHeight,
             (int)FloatingWindowDefaults.MaxHeight);
 
+        // v0.7.0.1: old compact-window settings were wide rectangles. Restore them
+        // as the new square information block without changing the stored user data.
+        if ((double)width / height > 1.35 || (double)height / width > 1.35)
+        {
+            int size = Clamp(
+                Math.Max(width, height),
+                (int)FloatingWindowDefaults.MinWidth,
+                (int)FloatingWindowDefaults.MaxWidth);
+            width = size;
+            height = size;
+        }
+
         // 尺寸超出当前工作区时限制到工作区。
         width = Math.Min(width, Math.Max(1, primary.WorkArea.Width));
         height = Math.Min(height, Math.Max(1, primary.WorkArea.Height));

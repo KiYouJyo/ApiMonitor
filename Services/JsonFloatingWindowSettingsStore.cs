@@ -18,7 +18,7 @@ public sealed class FloatingWindowSettingsStore : IFloatingWindowSettingsStore
     public const string LegacyFileName = "compact-window-settings.json";
 
     /// <summary>v0.7.0 新设置文件的 schemaVersion（独立设置文件，从 1 开始）。</summary>
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     private readonly string _directory;
     private readonly JsonSerializerOptions _options;
@@ -181,10 +181,10 @@ public sealed class FloatingWindowSettingsStore : IFloatingWindowSettingsStore
 /// <summary>悬浮余额窗尺寸的默认值与最小/最大边界（比原紧凑窗口更小、更轻）。</summary>
 public static class FloatingWindowDefaults
 {
-    public const double DefaultWidth = 300;
-    public const double DefaultHeight = 168;
-    public const double MinWidth = 260;
-    public const double MinHeight = 140;
+    public const double DefaultWidth = 190;
+    public const double DefaultHeight = 190;
+    public const double MinWidth = 176;
+    public const double MinHeight = 176;
     public const double MaxWidth = 420;
-    public const double MaxHeight = 260;
+    public const double MaxHeight = 420;
 }

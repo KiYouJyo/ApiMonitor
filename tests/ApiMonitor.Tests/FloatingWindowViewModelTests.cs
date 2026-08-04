@@ -52,7 +52,8 @@ public sealed class FloatingWindowViewModelTests
         BalanceMetricKind kind,
         decimal? available = null,
         decimal? total = null,
-        decimal? used = null) =>
+        decimal? used = null,
+        bool thresholdSupported = false) =>
         new()
         {
             MetricId = metricId,
@@ -62,6 +63,7 @@ public sealed class FloatingWindowViewModelTests
             AvailableAmount = available,
             TotalAmount = total,
             UsedAmount = used,
+            IsThresholdSupported = thresholdSupported,
         };
 
     private static AccountBalanceRecord Record(
@@ -159,6 +161,33 @@ public sealed class FloatingWindowViewModelTests
     }
 
     [Fact]
+    public async Task Initialize_LowBalance_UsesShortLowStatus()
+    {
+        using var h = new Harness();
+        var account = Account("acct-low", "低余额账户");
+        account.Monitoring.Thresholds.Add(new BalanceThresholdRule
+        {
+            MetricId = "deepseek:CNY:total",
+            DisplayName = "CNY 总余额",
+            Unit = "CNY",
+            IsEnabled = true,
+            ThresholdAmount = 20m,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        });
+        h.Manager.Accounts.Add(account);
+        h.Manager.Records["acct-low"] = Record(
+            "acct-low",
+            "deepseek",
+            new[] { Metric("deepseek:CNY:total", "CNY 总余额", "CNY", BalanceMetricKind.MonetaryBalance, available: 10m, total: 10m, thresholdSupported: true) });
+        var store = new FloatingWindowSettingsStore(h.Temp.Path);
+        await store.SaveAsync(new FloatingWindowSettings { SelectedAccountId = "acct-low" }, CancellationToken.None);
+
+        await h.ViewModel.InitializeAsync(CancellationToken.None);
+
+        Assert.Equal("低余额", h.ViewModel.StatusText);
+    }
+
+    [Fact]
     public async Task ShowAccountAsync_SwitchesFromAToB()
     {
         using var h = new Harness();
@@ -248,7 +277,7 @@ public sealed class FloatingWindowViewModelTests
         await h.ViewModel.InitializeAsync(CancellationToken.None);
 
         Assert.Equal("—", h.ViewModel.BalanceText);
-        Assert.Equal("查询失败", h.ViewModel.StatusText);
+        Assert.Equal("失败", h.ViewModel.StatusText);
     }
 
     [Fact]

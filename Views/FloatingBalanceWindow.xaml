@@ -5,71 +5,67 @@
     xmlns:converters="using:ApiMonitor.Views.Converters"
     Title="ApiMonitor">
 
-    <Grid x:Name="RootGrid" Padding="14,10">
+    <Grid x:Name="RootGrid" Padding="10">
         <Grid.Resources>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
         </Grid.Resources>
 
         <!-- 选定账户的核心额度信息（轻量，只显示一个账户） -->
-        <StackPanel
+        <Border
             x:Name="DetailPanel"
+            Padding="10,8"
+            CornerRadius="12"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource AppCardBorderBrush}"
+            Background="{ThemeResource AppCardBackgroundBrush}"
             VerticalAlignment="Center"
-            Spacing="5"
             Visibility="{Binding HasAccount, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock
-                Text="{Binding AccountName}"
-                Style="{StaticResource BodyStrongTextBlockStyle}"
-                FontSize="13"
-                TextAlignment="Center"
-                HorizontalAlignment="Center"
-                TextTrimming="CharacterEllipsis"
-                MaxWidth="250" />
-            <TextBlock
-                Text="{Binding ProviderName}"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                FontSize="11"
-                TextAlignment="Center"
-                HorizontalAlignment="Center" />
-
-            <StackPanel
-                Orientation="Horizontal"
-                Spacing="6"
-                HorizontalAlignment="Center"
-                Margin="0,2,0,0">
+            <StackPanel Spacing="4">
                 <TextBlock
-                    Text="{Binding BalanceText}"
-                    FontSize="28"
-                    FontWeight="Bold"
-                    TextAlignment="Center" />
+                    Text="{Binding AccountName}"
+                    Foreground="{ThemeResource AppPrimaryTextBrush}"
+                    FontSize="12"
+                    TextAlignment="Center"
+                    HorizontalAlignment="Center"
+                    TextTrimming="CharacterEllipsis"
+                    MaxWidth="220" />
                 <TextBlock
-                    Text="{Binding UnitText}"
-                    FontSize="14"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,0,4" />
+                    Text="{Binding ProviderName}"
+                    Foreground="{ThemeResource AppSecondaryTextBrush}"
+                    FontSize="10"
+                    TextAlignment="Center"
+                    HorizontalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Margin="0,2,0,0">
+                    <TextBlock
+                        Text="{Binding BalanceText}"
+                        Foreground="{ThemeResource AppPrimaryTextBrush}"
+                        FontSize="32"
+                        FontWeight="Bold"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        Text="{Binding UnitText}"
+                        Foreground="{ThemeResource AppSecondaryTextBrush}"
+                        FontSize="12"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,4" />
+                </StackPanel>
+                <TextBlock
+                    Text="{Binding StatusText}"
+                    Foreground="{ThemeResource AppPrimaryTextBrush}"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    TextAlignment="Center"
+                    HorizontalAlignment="Center" />
             </StackPanel>
-
-            <TextBlock
-                Text="{Binding StatusText}"
-                FontSize="12"
-                TextAlignment="Center"
-                HorizontalAlignment="Center" />
-
-            <TextBlock
-                Text="{Binding LastUpdatedText}"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                FontSize="11"
-                TextAlignment="Center"
-                HorizontalAlignment="Center" />
-        </StackPanel>
+        </Border>
 
         <!-- 空状态：无账户或当前选定账户不可用 -->
         <TextBlock
             Text="{Binding EmptyText}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Foreground="{ThemeResource AppSecondaryTextBrush}"
             TextAlignment="Center"
             TextWrapping="Wrap"
             MaxWidth="240"

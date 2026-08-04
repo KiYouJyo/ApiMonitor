@@ -14,6 +14,7 @@ public sealed partial class MainWindow : Window, IMainWindowController
     {
         InitializeComponent();
         Title = "ApiMonitor";
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "ApiMonitor.ico"));
         _compositionRoot = compositionRoot;
         AppWindow.Closing += OnAppWindowClosing;
     }
