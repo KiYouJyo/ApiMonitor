@@ -112,6 +112,22 @@ internal static partial class NativeMethods
         int cy,
         uint flags);
 
+    [DllImport("gdi32.dll", SetLastError = true)]
+    public static extern IntPtr CreateRoundRectRgn(
+        int left,
+        int top,
+        int right,
+        int bottom,
+        int width,
+        int height);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DeleteObject(IntPtr hObject);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool ReleaseCapture();

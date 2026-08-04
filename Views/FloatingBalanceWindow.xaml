@@ -19,7 +19,7 @@
         <Border
             x:Name="DetailPanel"
             Padding="18"
-            CornerRadius="26"
+            CornerRadius="22"
             BorderThickness="1"
             BorderBrush="{ThemeResource AppCardBorderBrush}"
             Background="{ThemeResource AppCardBackgroundBrush}"
@@ -34,34 +34,43 @@
                     TextAlignment="Center"
                     HorizontalAlignment="Center"
                     TextTrimming="CharacterEllipsis"
-                    MaxWidth="220" />
+                    MaxWidth="170" />
                 <TextBlock
                     Text="{Binding ProviderName}"
                     Foreground="{ThemeResource AppSecondaryTextBrush}"
                     FontSize="10"
                     TextAlignment="Center"
                     HorizontalAlignment="Center" />
-                <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Margin="0,2,0,0">
-                    <TextBlock
-                        Text="{Binding BalanceText}"
-                        Foreground="{ThemeResource AppPrimaryTextBrush}"
-                    FontSize="30"
-                        FontWeight="Bold"
-                        TextAlignment="Center" />
-                    <TextBlock
-                        Text="{Binding UnitText}"
-                        Foreground="{ThemeResource AppSecondaryTextBrush}"
-                        FontSize="12"
-                        VerticalAlignment="Bottom"
-                        Margin="0,0,0,4" />
-                </StackPanel>
+                <!-- 数字与单位作为整体缩放，永不裁切单位。 -->
+                <Viewbox
+                    Stretch="Uniform"
+                    MaxWidth="170"
+                    MaxHeight="52"
+                    HorizontalAlignment="Center"
+                    Margin="0,2,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock
+                            Text="{Binding BalanceText}"
+                            Foreground="{ThemeResource AppPrimaryTextBrush}"
+                            FontSize="30"
+                            FontWeight="Bold"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Text="{Binding UnitText}"
+                            Foreground="{ThemeResource AppSecondaryTextBrush}"
+                            FontSize="12"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,0,4" />
+                    </StackPanel>
+                </Viewbox>
                 <TextBlock
                     Text="{Binding StatusText}"
                     Foreground="{ThemeResource AppPrimaryTextBrush}"
                     FontSize="12"
                     FontWeight="SemiBold"
                     TextAlignment="Center"
-                    HorizontalAlignment="Center" />
+                    HorizontalAlignment="Center"
+                    MaxWidth="170" />
             </StackPanel>
         </Border>
 

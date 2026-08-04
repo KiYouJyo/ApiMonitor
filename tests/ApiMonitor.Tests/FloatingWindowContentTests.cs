@@ -65,7 +65,9 @@ public sealed class FloatingWindowContentTests
         string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
         Assert.Contains("HorizontalAlignment=\"Stretch\"", xaml);
         Assert.Contains("VerticalAlignment=\"Stretch\"", xaml);
-        Assert.Contains("CornerRadius=\"26\"", xaml);
+        Assert.Contains("CornerRadius=\"22\"", xaml);
+        Assert.Contains("<Viewbox", xaml);
+        Assert.Contains("MaxWidth=\"170\"", xaml);
         Assert.Contains("AppCardBackgroundBrush", xaml);
         Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
         Assert.Contains("Text=\"{Binding UnitText}\"", xaml);
@@ -98,6 +100,11 @@ public sealed class FloatingWindowContentTests
         Assert.Contains("WM_NCLBUTTONDOWN", code);
         Assert.Contains("SetWindowPos", native);
         Assert.Contains("ApplyWindowBounds", code);
+        Assert.Contains("ApplyRoundedWindowRegion", code);
+        Assert.Contains("CreateRoundRectRgn", native);
+        Assert.Contains("SetWindowRgn", native);
+        Assert.DoesNotContain("PointerMoved", code);
+        Assert.DoesNotContain("AppWindow.Move", code);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultWidth);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultHeight);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MinWidth);

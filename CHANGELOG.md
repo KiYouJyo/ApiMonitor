@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.7.0.5] - 2026-08-04（v0.7.0 悬浮窗客户区收紧候选包）
+## [0.7.0.6] - 2026-08-04（v0.7.0 悬浮窗圆角、拖动和额度显示修复）
 
 ### Added
 
@@ -17,7 +17,7 @@
 - 主页 UI 整理：删除顶部副标题行与“打开紧凑窗口”按钮，保留主标题“ApiMonitor”与主要操作，压缩顶部间距
 - 便携备份使用 floating-window-settings.json；兼容读取含旧 compact-window-settings.json 的 v0.6.0 备份
 - 安装/卸载工具与备份校验接受 floating-window-settings.json（同时兼容旧文件名）
-- 版本：DisplayVersion 0.7.0 / PackageVersion 0.7.0.5（集中版本来源 Directory.Build.props 与 Package.appxmanifest）
+- 版本：DisplayVersion 0.7.0 / PackageVersion 0.7.0.6（集中版本来源 Directory.Build.props 与 Package.appxmanifest）
 - 修复启动语言偏好未应用以及多语言资源未进入 MSIX 候选包的问题。
 - 进一步将悬浮窗调整为黑白主题的小方块额度窗，整理主页顶部间距，并显式应用自定义图标到标题栏/窗口图标层。
 

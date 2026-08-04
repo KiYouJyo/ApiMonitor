@@ -4,7 +4,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Windows.Graphics;
 
 namespace ApiMonitor.Views;
 
@@ -135,10 +134,32 @@ public sealed partial class FloatingBalanceWindow : Window
                 (int)FloatingWindowDefaults.FixedSize,
                 NativeMethods.SWP_NOACTIVATE
                 | NativeMethods.SWP_FRAMECHANGED);
+            ApplyRoundedWindowRegion(hwnd);
         }
         catch (Exception ex)
         {
             _log.Error($"设置悬浮窗工具窗口样式失败: {ex.GetType().Name}");
+        }
+    }
+
+    private static void ApplyRoundedWindowRegion(IntPtr hwnd)
+    {
+        const int radius = 22;
+        IntPtr region = NativeMethods.CreateRoundRectRgn(
+            0,
+            0,
+            (int)FloatingWindowDefaults.FixedSize + 1,
+            (int)FloatingWindowDefaults.FixedSize + 1,
+            radius * 2,
+            radius * 2);
+        if (region == IntPtr.Zero)
+        {
+            return;
+        }
+
+        if (NativeMethods.SetWindowRgn(hwnd, region, true) == 0)
+        {
+            NativeMethods.DeleteObject(region);
         }
     }
 
