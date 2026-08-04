@@ -5,84 +5,87 @@
     xmlns:converters="using:ApiMonitor.Views.Converters"
     Title="">
 
-    <Grid
-        x:Name="RootGrid"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        PointerPressed="OnRootPointerPressed">
-        <Grid.Resources>
+    <Border
+        x:Name="SingleRootSurface"
+        Width="208"
+        Height="208"
+        Padding="18"
+        CornerRadius="22"
+        BorderThickness="1"
+        BorderBrush="{ThemeResource AppCardBorderBrush}"
+        Background="{ThemeResource AppCardBackgroundBrush}">
+        <Border.Resources>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
-        </Grid.Resources>
-
-        <!-- 选定账户的核心额度信息（轻量，只显示一个账户） -->
-        <Border
-            x:Name="DetailPanel"
-            Padding="18"
-            CornerRadius="22"
-            BorderThickness="1"
-            BorderBrush="{ThemeResource AppCardBorderBrush}"
-            Background="{ThemeResource AppCardBackgroundBrush}"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Visibility="{Binding HasAccount, Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel Spacing="3" VerticalAlignment="Center">
+        </Border.Resources>
+        <Grid
+            x:Name="ContentGrid"
+            RowDefinitions="Auto,Auto,*,Auto">
+            <TextBlock
+                Grid.Row="0"
+                Text="{Binding AccountName}"
+                Foreground="{ThemeResource AppPrimaryTextBrush}"
+                FontSize="18"
+                FontWeight="SemiBold"
+                TextAlignment="Center"
+                HorizontalAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+                MaxLines="1"
+                MaxWidth="170" />
+            <TextBlock
+                Grid.Row="1"
+                Text="{Binding ProviderName}"
+                Foreground="{ThemeResource AppSecondaryTextBrush}"
+                FontSize="14"
+                TextAlignment="Center"
+                HorizontalAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+                MaxLines="1"
+                MaxWidth="170" />
+            <Grid
+                Grid.Row="2"
+                ColumnDefinitions="Auto,Auto"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
                 <TextBlock
-                    Text="{Binding AccountName}"
+                    Grid.Column="0"
+                    Text="{Binding BalanceText}"
                     Foreground="{ThemeResource AppPrimaryTextBrush}"
-                    FontSize="12"
-                    TextAlignment="Center"
-                    HorizontalAlignment="Center"
-                    TextTrimming="CharacterEllipsis"
-                    MaxWidth="170" />
+                    FontSize="{Binding AmountFontSize}"
+                    FontWeight="Bold"
+                    VerticalAlignment="Center" />
                 <TextBlock
-                    Text="{Binding ProviderName}"
+                    Grid.Column="1"
+                    Text="{Binding UnitText}"
                     Foreground="{ThemeResource AppSecondaryTextBrush}"
-                    FontSize="10"
-                    TextAlignment="Center"
-                    HorizontalAlignment="Center" />
-                <!-- 数字与单位作为整体缩放，永不裁切单位。 -->
-                <Viewbox
-                    Stretch="Uniform"
-                    MaxWidth="170"
-                    MaxHeight="52"
-                    HorizontalAlignment="Center"
-                    Margin="0,2,0,0">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock
-                            Text="{Binding BalanceText}"
-                            Foreground="{ThemeResource AppPrimaryTextBrush}"
-                            FontSize="30"
-                            FontWeight="Bold"
-                            TextAlignment="Center" />
-                        <TextBlock
-                            Text="{Binding UnitText}"
-                            Foreground="{ThemeResource AppSecondaryTextBrush}"
-                            FontSize="12"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,0,4" />
-                    </StackPanel>
-                </Viewbox>
-                <TextBlock
-                    Text="{Binding StatusText}"
-                    Foreground="{ThemeResource AppPrimaryTextBrush}"
-                    FontSize="12"
-                    FontWeight="SemiBold"
-                    TextAlignment="Center"
-                    HorizontalAlignment="Center"
-                    MaxWidth="170" />
-            </StackPanel>
-        </Border>
-
-        <!-- 空状态：无账户或当前选定账户不可用 -->
-        <TextBlock
-            Text="{Binding EmptyText}"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Foreground="{ThemeResource AppSecondaryTextBrush}"
-            TextAlignment="Center"
-            TextWrapping="Wrap"
-            MaxWidth="176"
-            Visibility="{Binding HasAccount, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
-    </Grid>
+                    FontSize="14"
+                    VerticalAlignment="Center"
+                    Margin="6,8,0,0"
+                    TextTrimming="None" />
+            </Grid>
+            <TextBlock
+                Grid.Row="3"
+                Text="{Binding StatusText}"
+                Foreground="{ThemeResource AppPrimaryTextBrush}"
+                FontSize="16"
+                FontWeight="SemiBold"
+                TextAlignment="Center"
+                HorizontalAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+                MaxLines="1"
+                MaxWidth="170"
+                Margin="0,8,0,4" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.RowSpan="4"
+                Text="{Binding EmptyText}"
+                Foreground="{ThemeResource AppSecondaryTextBrush}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="170"
+                Visibility="{Binding HasAccount, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+        </Grid>
+    </Border>
 </Window>

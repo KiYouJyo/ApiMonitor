@@ -109,6 +109,7 @@
     <Compile Include="../../ViewModels/BalanceHistoryViewModel.cs" Link="ViewModels/BalanceHistoryViewModel.cs" />
     <Compile Include="../../ViewModels/MainViewModel.cs" Link="ViewModels/MainViewModel.cs" />
     <Compile Include="../../ViewModels/FloatingWindowViewModel.cs" Link="ViewModels/FloatingWindowViewModel.cs" />
+    <Compile Include="../../ViewModels/FloatingAmountDisplay.cs" Link="ViewModels/FloatingAmountDisplay.cs" />
     <Compile Include="../../ViewModels/TraySettingsViewModel.cs" Link="ViewModels/TraySettingsViewModel.cs" />
     <Compile Include="../../ViewModels/NotificationSettingsViewModel.cs" Link="ViewModels/NotificationSettingsViewModel.cs" />
     <Compile Include="../../ViewModels/AppearanceSettingsViewModel.cs" Link="ViewModels/AppearanceSettingsViewModel.cs" />

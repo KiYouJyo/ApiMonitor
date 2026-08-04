@@ -63,15 +63,20 @@ public sealed class FloatingWindowContentTests
     public void FloatingWindow_UsesCompactSquareCardAndShortStatusResources()
     {
         string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
-        Assert.Contains("HorizontalAlignment=\"Stretch\"", xaml);
-        Assert.Contains("VerticalAlignment=\"Stretch\"", xaml);
+        Assert.Contains("x:Name=\"SingleRootSurface\"", xaml);
+        Assert.Contains("Width=\"208\"", xaml);
+        Assert.Contains("Height=\"208\"", xaml);
         Assert.Contains("CornerRadius=\"22\"", xaml);
-        Assert.Contains("<Viewbox", xaml);
-        Assert.Contains("MaxWidth=\"170\"", xaml);
         Assert.Contains("AppCardBackgroundBrush", xaml);
         Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
         Assert.Contains("Text=\"{Binding UnitText}\"", xaml);
+        Assert.Contains("FontSize=\"{Binding AmountFontSize}\"", xaml);
         Assert.DoesNotContain("LastUpdatedText", xaml);
+        Assert.Equal(1, CountOccurrences(xaml, "Background=\"{ThemeResource AppCardBackgroundBrush}\""));
+        Assert.DoesNotContain("Margin=\"-", xaml);
+        Assert.DoesNotContain("Translation=", xaml);
+        Assert.DoesNotContain("RenderTransform=", xaml);
+        Assert.DoesNotContain("Clip=", xaml);
 
         foreach (string language in new[] { "zh-CN", "en-US", "ja-JP" })
         {
@@ -84,10 +89,11 @@ public sealed class FloatingWindowContentTests
     }
 
     [Fact]
-    public void FloatingWindow_IsBorderlessFixedSizeToolWindowAndSupportsContentDrag()
+    public void FloatingWindow_IsSingleSurfaceFixedSizeToolWindowAndUsesNativeCaptionDrag()
     {
         string code = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml.cs"));
         string native = File.ReadAllText(Path.Combine(RepoRoot, "Services", "NativeMethods.cs"));
+        string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
 
         Assert.Contains("SetBorderAndTitleBar", code);
         Assert.Contains("IsResizable = false", code);
@@ -96,19 +102,41 @@ public sealed class FloatingWindowContentTests
         Assert.Contains("WS_POPUP", code);
         Assert.Contains("WS_EX_TOOLWINDOW", code);
         Assert.Contains("WS_EX_APPWINDOW", code);
-        Assert.Contains("PointerPressed=\"OnRootPointerPressed\"", File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml")));
-        Assert.Contains("WM_NCLBUTTONDOWN", code);
+        Assert.Contains("InputNonClientPointerSource", code);
+        Assert.Contains("NonClientRegionKind.Caption", code);
+        Assert.Contains("SetRegionRects", code);
+        Assert.DoesNotContain("PointerPressed", xaml);
+        Assert.DoesNotContain("PointerMoved", code);
+        Assert.DoesNotContain("PointerReleased", code);
+        Assert.DoesNotContain("CapturePointer", code);
+        Assert.DoesNotContain("AppWindow.Move", code);
+        Assert.DoesNotContain("MoveAndResize", code);
+        Assert.DoesNotContain("WM_NCLBUTTONDOWN", code);
+        Assert.DoesNotContain("ApplyRoundedWindowRegion", code);
+        Assert.DoesNotContain("SetWindowRgn", native);
+        Assert.DoesNotContain("CreateRoundRectRgn", native);
+        Assert.DoesNotContain("ReleaseCapture", native);
+        Assert.DoesNotContain("SendMessageW", native);
         Assert.Contains("SetWindowPos", native);
         Assert.Contains("ApplyWindowBounds", code);
-        Assert.Contains("ApplyRoundedWindowRegion", code);
-        Assert.Contains("CreateRoundRectRgn", native);
-        Assert.Contains("SetWindowRgn", native);
-        Assert.DoesNotContain("PointerMoved", code);
-        Assert.DoesNotContain("AppWindow.Move", code);
+        Assert.Contains("OnAppWindowChanged", code);
+        Assert.Contains("600", code);
+        Assert.Contains("_positionSaveCount", code);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultWidth);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultHeight);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MinWidth);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MaxWidth);
+    }
+
+    private static int CountOccurrences(string value, string needle)
+    {
+        int count = 0;
+        for (int offset = 0; (offset = value.IndexOf(needle, offset, StringComparison.Ordinal)) >= 0; offset += needle.Length)
+        {
+            count++;
+        }
+
+        return count;
     }
 
     [Fact]

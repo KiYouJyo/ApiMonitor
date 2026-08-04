@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前版本：**v0.7.0**（DisplayVersion `0.7.0` / PackageVersion `0.7.0.6`）
+- 当前版本：**v0.7.0**（DisplayVersion `0.7.0` / PackageVersion `0.7.0.11`）
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store（计划 v1.0）
 - 许可证：[MIT](LICENSE)
@@ -68,7 +68,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.7.0.6_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.7.0.11_x64_Test.zip`。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。

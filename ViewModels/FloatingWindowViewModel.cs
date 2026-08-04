@@ -37,6 +37,9 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
     private string _unitText = string.Empty;
 
     [ObservableProperty]
+    private double _amountFontSize = 46;
+
+    [ObservableProperty]
     private string _statusText = string.Empty;
 
     [ObservableProperty]
@@ -47,6 +50,14 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
 
     /// <summary>置顶固定为开启（v0.7.0 不提供 UI 配置）。</summary>
     public bool IsAlwaysOnTop => true;
+
+    public FloatingAmountDisplay CurrentDisplay => new(
+        BalanceText,
+        UnitText,
+        AmountFontSize,
+        AccountName,
+        ProviderName,
+        StatusText);
 
     public FloatingWindowViewModel(
         IAccountManager accountManager,
@@ -122,6 +133,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
             ProviderName = string.Empty;
             BalanceText = "—";
             UnitText = string.Empty;
+            AmountFontSize = FloatingAmountDisplay.SelectFontSize(BalanceText, UnitText);
             StatusText = string.Empty;
             LastUpdatedText = string.Empty;
             EmptyText = accounts.Count == 0
@@ -150,8 +162,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
                 || record.LastQuerySuccessAt is not { } success
                 || attempt > success))
         {
-            BalanceText = "—";
-            UnitText = string.Empty;
+            SetAmount("—", string.Empty);
             StatusText = L10n.Get("Floating.StatusFailed");
             LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
             return;
@@ -159,8 +170,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
 
         if (snapshot is null || snapshot.Metrics.Count == 0)
         {
-            BalanceText = "—";
-            UnitText = string.Empty;
+            SetAmount("—", string.Empty);
             StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
             return;
@@ -170,8 +180,7 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         if (metric is null)
         {
             // 无可显示主额度：显示“未知”，绝不用 0 或旧值。
-            BalanceText = L10n.Get("Floating.Unknown");
-            UnitText = string.Empty;
+            SetAmount(L10n.Get("Floating.Unknown"), string.Empty);
             StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = FormatTime(snapshot.RetrievedAt);
             return;
@@ -181,15 +190,13 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         if (amount is null)
         {
             // 无可显示主额度：显示“未知”，绝不用 0 或旧值。
-            BalanceText = L10n.Get("Floating.Unknown");
-            UnitText = metric.Unit;
+            SetAmount(L10n.Get("Floating.Unknown"), metric.Unit);
             StatusText = L10n.Get("Floating.StatusUnknown");
             LastUpdatedText = FormatTime(snapshot.RetrievedAt);
             return;
         }
 
-        BalanceText = BalanceFormatter.Format(amount.Value);
-        UnitText = metric.Unit;
+        SetAmount(BalanceFormatter.Format(amount.Value), metric.Unit);
 
         var rule = account.Monitoring.Thresholds.FirstOrDefault(r =>
             string.Equals(r.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase));
@@ -200,6 +207,14 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
             _ => L10n.Get("Floating.StatusUnknown"),
         };
         LastUpdatedText = L10n.Format("Floating.LastUpdatedFormat", FormatTime(snapshot.RetrievedAt));
+    }
+
+    private void SetAmount(string amountText, string unitText)
+    {
+        BalanceText = amountText;
+        UnitText = unitText;
+        AmountFontSize = FloatingAmountDisplay.SelectFontSize(amountText, unitText);
+        OnPropertyChanged(nameof(CurrentDisplay));
     }
 
     private async Task PersistSelectedAccountAsync(string accountId, CancellationToken cancellationToken)

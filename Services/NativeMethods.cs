@@ -112,29 +112,6 @@ internal static partial class NativeMethods
         int cy,
         uint flags);
 
-    [DllImport("gdi32.dll", SetLastError = true)]
-    public static extern IntPtr CreateRoundRectRgn(
-        int left,
-        int top,
-        int right,
-        int bottom,
-        int width,
-        int height);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
-
-    [DllImport("gdi32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeleteObject(IntPtr hObject);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool ReleaseCapture();
-
-    [DllImport("user32.dll", EntryPoint = "SendMessageW")]
-    public static extern IntPtr SendMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
     public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_CLOSE = 0x0010;
@@ -145,8 +122,6 @@ internal static partial class NativeMethods
     public const uint WM_LBUTTONDBLCLK = 0x0203;
     public const uint WM_RBUTTONUP = 0x0205;
     public const uint WM_RBUTTONDBLCLK = 0x0206;
-    public const uint WM_NCLBUTTONDOWN = 0x00A1;
-    public const int HTCAPTION = 2;
 
     public const uint CS_HREDRAW = 0x0002;
     public const uint CS_VREDRAW = 0x0001;

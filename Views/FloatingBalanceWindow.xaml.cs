@@ -1,9 +1,10 @@
 using ApiMonitor.Services;
 using ApiMonitor.ViewModels;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
+using Windows.Graphics;
 
 namespace ApiMonitor.Views;
 
@@ -18,8 +19,13 @@ public sealed partial class FloatingBalanceWindow : Window
     private readonly IDisplayAreaProvider _displayAreas;
     private readonly AppLog _log;
     private readonly CancellationTokenSource _lifetime = new();
+    private readonly InputNonClientPointerSource _nonClientPointerSource;
+    private CancellationTokenSource? _positionSaveDebounce;
+    private PointInt32? _lastSavedPosition;
     private bool _boundsRestored;
     private bool _closing;
+    private bool _diagnosticLogged;
+    private int _positionSaveCount;
 
     public FloatingBalanceWindow(
         FloatingWindowViewModel viewModel,
@@ -34,16 +40,19 @@ public sealed partial class FloatingBalanceWindow : Window
 
         InitializeComponent();
         Title = string.Empty;
-        RootGrid.DataContext = viewModel;
+        SingleRootSurface.DataContext = viewModel;
+        _nonClientPointerSource = InputNonClientPointerSource.GetForWindowId(AppWindow.Id);
 
         Activated += OnWindowActivated;
         Closed += OnWindowClosed;
+        AppWindow.Changed += OnAppWindowChanged;
+        SingleRootSurface.Loaded += OnSurfaceLoaded;
 
         ApplyPresenter();
     }
 
-    /// <summary>窗口根元素（供主题服务注册；内部仅供 CompositionRoot 使用）。</summary>
-    internal Grid RootGridElement => RootGrid;
+    /// <summary>窗口唯一根 Surface（供主题服务注册；内部仅供 CompositionRoot 使用）。</summary>
+    internal FrameworkElement RootGridElement => SingleRootSurface;
 
     /// <summary>切换悬浮窗账户（宿主调用；初始化完成后应用）。</summary>
     internal void SelectAccount(string accountId)
@@ -77,6 +86,36 @@ public sealed partial class FloatingBalanceWindow : Window
         }
 
         ApplyToolWindowStyle();
+        _ = ApplyPhysicalSizeAfterActivationAsync();
+    }
+
+    private async Task ApplyPhysicalSizeAfterActivationAsync()
+    {
+        try
+        {
+            await Task.Delay(100, _lifetime.Token);
+            int physicalSize = GetPhysicalFixedSize();
+            AppWindow.Resize(new SizeInt32(physicalSize, physicalSize));
+
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _ = NativeMethods.SetWindowPos(
+                hwnd,
+                NativeMethods.HWND_TOPMOST,
+                AppWindow.Position.X,
+                AppWindow.Position.Y,
+                physicalSize,
+                physicalSize,
+                NativeMethods.SWP_NOACTIVATE
+                | NativeMethods.SWP_FRAMECHANGED);
+            RegisterCaptionRegion();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"鎮诞绐楀浐瀹氬昂瀵稿け璐? {ex.GetType().Name}");
+        }
     }
 
     /// <summary>无标题栏、无边框、固定尺寸并始终置顶。</summary>
@@ -125,16 +164,17 @@ public sealed partial class FloatingBalanceWindow : Window
                 hwnd,
                 NativeMethods.GWL_EXSTYLE,
                 style | (int)NativeMethods.WS_EX_TOOLWINDOW);
+            AppWindow.Resize(new SizeInt32(GetPhysicalFixedSize(), GetPhysicalFixedSize()));
             _ = NativeMethods.SetWindowPos(
                 hwnd,
                 NativeMethods.HWND_TOPMOST,
                 AppWindow.Position.X,
                 AppWindow.Position.Y,
-                (int)FloatingWindowDefaults.FixedSize,
-                (int)FloatingWindowDefaults.FixedSize,
+                GetPhysicalFixedSize(),
+                GetPhysicalFixedSize(),
                 NativeMethods.SWP_NOACTIVATE
                 | NativeMethods.SWP_FRAMECHANGED);
-            ApplyRoundedWindowRegion(hwnd);
+            RegisterCaptionRegion();
         }
         catch (Exception ex)
         {
@@ -142,49 +182,64 @@ public sealed partial class FloatingBalanceWindow : Window
         }
     }
 
-    private static void ApplyRoundedWindowRegion(IntPtr hwnd)
+    private void RegisterCaptionRegion()
     {
-        const int radius = 22;
-        IntPtr region = NativeMethods.CreateRoundRectRgn(
-            0,
-            0,
-            (int)FloatingWindowDefaults.FixedSize + 1,
-            (int)FloatingWindowDefaults.FixedSize + 1,
-            radius * 2,
-            radius * 2);
-        if (region == IntPtr.Zero)
-        {
-            return;
-        }
-
-        if (NativeMethods.SetWindowRgn(hwnd, region, true) == 0)
-        {
-            NativeMethods.DeleteObject(region);
-        }
+        _nonClientPointerSource.SetRegionRects(
+            NonClientRegionKind.Caption,
+            new[]
+            {
+                new RectInt32(
+                    0,
+                    0,
+                    GetPhysicalFixedSize(),
+                    GetPhysicalFixedSize()),
+            });
     }
 
-    /// <summary>整个方块都是拖动命中区，不保留额外标题栏或拖动手柄。</summary>
-    private void OnRootPointerPressed(object sender, PointerRoutedEventArgs args)
+    private int GetPhysicalFixedSize()
     {
-        if (!args.GetCurrentPoint(RootGrid).Properties.IsLeftButtonPressed)
+        double scale = SingleRootSurface.XamlRoot?.RasterizationScale ?? 1;
+        return (int)Math.Round(FloatingWindowDefaults.FixedSize * scale);
+    }
+
+    private void OnSurfaceLoaded(object sender, RoutedEventArgs args)
+    {
+        if (_diagnosticLogged)
         {
             return;
         }
 
+        _diagnosticLogged = true;
+        _log.Info(
+            $"悬浮窗诊断: AppWindow={AppWindow.Size.Width}x{AppWindow.Size.Height}, " +
+            $"ClientSize={AppWindow.ClientSize.Width}x{AppWindow.ClientSize.Height}, " +
+            $"Surface={SingleRootSurface.ActualWidth:0.##}x{SingleRootSurface.ActualHeight:0.##}, " +
+            $"CornerRadius=22, Caption={GetPhysicalFixedSize()}x{GetPhysicalFixedSize()} physical, " +
+            $"Scale={SingleRootSurface.XamlRoot?.RasterizationScale ?? 1:0.##}, SaveCount={_positionSaveCount}.");
+    }
+
+    private void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        if (_closing || !args.DidPositionChange)
+        {
+            return;
+        }
+
+        _positionSaveDebounce?.Cancel();
+        _positionSaveDebounce?.Dispose();
+        _positionSaveDebounce = new CancellationTokenSource();
+        _ = SaveBoundsAfterDelayAsync(_positionSaveDebounce.Token);
+    }
+
+    private async Task SaveBoundsAfterDelayAsync(CancellationToken cancellationToken)
+    {
         try
         {
-            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            NativeMethods.ReleaseCapture();
-            _ = NativeMethods.SendMessageW(
-                hwnd,
-                NativeMethods.WM_NCLBUTTONDOWN,
-                new IntPtr(NativeMethods.HTCAPTION),
-                IntPtr.Zero);
-            args.Handled = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(600), cancellationToken);
+            await SaveBoundsAsync(cancellationToken);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _log.Error($"拖动悬浮窗失败: {ex.GetType().Name}");
         }
     }
 
@@ -193,16 +248,29 @@ public sealed partial class FloatingBalanceWindow : Window
         try
         {
             var settings = await _settingsStore.LoadAsync(_lifetime.Token);
-            var areas = _displayAreas.GetAll();
-            var restored = WindowPositionRestorer.Restore(
-                settings.X,
-                settings.Y,
-                settings.Width,
-                settings.Height,
-                settings.LastDisplayId,
-                areas);
+            try
+            {
+                var areas = _displayAreas.GetAll();
+                var restored = WindowPositionRestorer.Restore(
+                    settings.X,
+                    settings.Y,
+                    settings.Width,
+                    settings.Height,
+                    settings.LastDisplayId,
+                    areas);
 
-            ApplyWindowBounds(restored);
+                ApplyWindowBounds(restored);
+            }
+            catch (InvalidCastException)
+            {
+                // Some Windows App SDK builds can fail while projecting DisplayArea.
+                // Preserve the user's saved native coordinates even when monitor metadata is unavailable.
+                ApplyWindowBounds(new PixelRect(
+                    (int)Math.Round(settings.X ?? 0),
+                    (int)Math.Round(settings.Y ?? 0),
+                    (int)FloatingWindowDefaults.FixedSize,
+                    (int)FloatingWindowDefaults.FixedSize));
+            }
         }
         catch (OperationCanceledException)
         {
@@ -226,8 +294,8 @@ public sealed partial class FloatingBalanceWindow : Window
             NativeMethods.HWND_TOPMOST,
             bounds.X,
             bounds.Y,
-            bounds.Width,
-            bounds.Height,
+            GetPhysicalFixedSize(),
+            GetPhysicalFixedSize(),
             NativeMethods.SWP_NOACTIVATE
             | NativeMethods.SWP_FRAMECHANGED);
     }
@@ -240,29 +308,52 @@ public sealed partial class FloatingBalanceWindow : Window
         }
 
         _closing = true;
-        _ = SaveBoundsAsync();
+        AppWindow.Changed -= OnAppWindowChanged;
+        SingleRootSurface.Loaded -= OnSurfaceLoaded;
+        _nonClientPointerSource.ClearRegionRects(NonClientRegionKind.Caption);
+        _positionSaveDebounce?.Cancel();
+        _positionSaveDebounce?.Dispose();
+        _ = SaveBoundsAsync(CancellationToken.None);
         _viewModel.Shutdown();
         _lifetime.Cancel();
         _lifetime.Dispose();
     }
 
-    private async Task SaveBoundsAsync()
+    private async Task SaveBoundsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var settings = await _settingsStore.LoadAsync(CancellationToken.None);
-            settings.Width = AppWindow.Size.Width;
-            settings.Height = AppWindow.Size.Height;
-            settings.X = AppWindow.Position.X;
-            settings.Y = AppWindow.Position.Y;
-            settings.LastDisplayId = _displayAreas
-                .GetContaining(new PixelRect(
-                    AppWindow.Position.X,
-                    AppWindow.Position.Y,
-                    AppWindow.Size.Width,
-                    AppWindow.Size.Height))
-                .DisplayId;
-            await _settingsStore.SaveAsync(settings, CancellationToken.None);
+            PointInt32 position = AppWindow.Position;
+            if (_lastSavedPosition is { } last
+                && last.X == position.X
+                && last.Y == position.Y)
+            {
+                return;
+            }
+
+            var settings = await _settingsStore.LoadAsync(cancellationToken);
+            settings.Width = FloatingWindowDefaults.FixedSize;
+            settings.Height = FloatingWindowDefaults.FixedSize;
+            settings.X = position.X;
+            settings.Y = position.Y;
+            try
+            {
+                settings.LastDisplayId = _displayAreas
+                    .GetContaining(new PixelRect(
+                        position.X,
+                        position.Y,
+                        GetPhysicalFixedSize(),
+                        GetPhysicalFixedSize()))
+                    .DisplayId;
+            }
+            catch (Exception)
+            {
+                // Coordinate persistence remains valid even if monitor metadata is unavailable.
+                settings.LastDisplayId = null;
+            }
+            await _settingsStore.SaveAsync(settings, cancellationToken);
+            _lastSavedPosition = position;
+            _positionSaveCount++;
         }
         catch (Exception ex)
         {
