@@ -63,8 +63,8 @@ public sealed class FloatingWindowContentTests
     public void FloatingWindow_UsesCompactSquareCardAndShortStatusResources()
     {
         string xaml = File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml"));
-        Assert.Contains("Width=\"208\"", xaml);
-        Assert.Contains("Height=\"208\"", xaml);
+        Assert.Contains("HorizontalAlignment=\"Stretch\"", xaml);
+        Assert.Contains("VerticalAlignment=\"Stretch\"", xaml);
         Assert.Contains("CornerRadius=\"26\"", xaml);
         Assert.Contains("AppCardBackgroundBrush", xaml);
         Assert.Contains("Text=\"{Binding BalanceText}\"", xaml);
@@ -97,6 +97,7 @@ public sealed class FloatingWindowContentTests
         Assert.Contains("PointerPressed=\"OnRootPointerPressed\"", File.ReadAllText(Path.Combine(RepoRoot, "Views", "FloatingBalanceWindow.xaml")));
         Assert.Contains("WM_NCLBUTTONDOWN", code);
         Assert.Contains("SetWindowPos", native);
+        Assert.Contains("ApplyWindowBounds", code);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultWidth);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.DefaultHeight);
         Assert.Equal(FloatingWindowDefaults.FixedSize, FloatingWindowDefaults.MinWidth);

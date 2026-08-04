@@ -129,13 +129,11 @@ public sealed partial class FloatingBalanceWindow : Window
             _ = NativeMethods.SetWindowPos(
                 hwnd,
                 NativeMethods.HWND_TOPMOST,
-                0,
-                0,
-                0,
-                0,
-                NativeMethods.SWP_NOMOVE
-                | NativeMethods.SWP_NOSIZE
-                | NativeMethods.SWP_NOACTIVATE
+                AppWindow.Position.X,
+                AppWindow.Position.Y,
+                (int)FloatingWindowDefaults.FixedSize,
+                (int)FloatingWindowDefaults.FixedSize,
+                NativeMethods.SWP_NOACTIVATE
                 | NativeMethods.SWP_FRAMECHANGED);
         }
         catch (Exception ex)
@@ -183,11 +181,7 @@ public sealed partial class FloatingBalanceWindow : Window
                 settings.LastDisplayId,
                 areas);
 
-            AppWindow.MoveAndResize(new RectInt32(
-                restored.X,
-                restored.Y,
-                restored.Width,
-                restored.Height));
+            ApplyWindowBounds(restored);
         }
         catch (OperationCanceledException)
         {
@@ -197,6 +191,24 @@ public sealed partial class FloatingBalanceWindow : Window
             // 位置恢复失败不影响启动。
             _log.Error($"恢复悬浮窗位置失败: {ex.GetType().Name}");
         }
+    }
+
+    /// <summary>
+    /// 直接调整无边框宿主的实际窗口矩形。无标题栏后客户区与窗口外框一致，
+    /// 因此这里保证宿主、根布局和圆角方块使用同一个固定尺寸。
+    /// </summary>
+    private void ApplyWindowBounds(PixelRect bounds)
+    {
+        IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        _ = NativeMethods.SetWindowPos(
+            hwnd,
+            NativeMethods.HWND_TOPMOST,
+            bounds.X,
+            bounds.Y,
+            bounds.Width,
+            bounds.Height,
+            NativeMethods.SWP_NOACTIVATE
+            | NativeMethods.SWP_FRAMECHANGED);
     }
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
