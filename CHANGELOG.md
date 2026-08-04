@@ -2,28 +2,33 @@
 
 ## [Unreleased]
 
-## [0.7.0.12] - 2026-08-04（v0.7.0 悬浮窗圆角、拖动和额度显示修复）
+## [0.7.0] - 2026-08-04
 
 ### Added
 
-- 悬浮余额窗替代原紧凑窗口：轻量、始终置顶、不在任务栏占位的小窗口，只显示一个选定账户的主额度数字（账户名、Provider、单位、状态与最近更新时间），全局单实例，关闭不退出应用
-- 账户卡片新增“设为悬浮窗”入口：记录该账户为悬浮窗账户并显示/切换；托盘菜单“打开紧凑窗口”改为“打开悬浮窗”
-- 主额度数字统一选择规则集中封装（MainBalanceMetricSelector）：DeepSeek 用可用总余额、OpenRouter 普通 API Key 用剩余额度、OpenRouter Management Key 用剩余 Credits、无剩余值时选最合理可用指标、累计使用量不作为主数字
-- floating-window-settings.json 持久化（位置/尺寸/选中账户/置顶），旧 compact-window-settings.json 首次启动一次性幂等迁移，不删除旧文件、不影响启动
-- 应用图标整体替换为 TerminalShare 资产包：多尺寸 ICO（EXE/托盘）、Square44x44/Square71x71/Square150x150/Wide310x150/Square310x310/StoreLogo/SplashScreen 全 scale 与 targetsize/altform 变体、Store 列表图标 300×300
+- Floating balance window for a selected account
+- Account-card command for selecting the floating account
+- Persistent floating-window position and selected account
+- Updated application icon assets
 
 ### Changed
 
-- 主页 UI 整理：删除顶部副标题行与“打开紧凑窗口”按钮，保留主标题“ApiMonitor”与主要操作，压缩顶部间距
-- 便携备份使用 floating-window-settings.json；兼容读取含旧 compact-window-settings.json 的 v0.6.0 备份
-- 安装/卸载工具与备份校验接受 floating-window-settings.json（同时兼容旧文件名）
-- 版本：DisplayVersion 0.7.0 / PackageVersion 0.7.0.12（集中版本来源 Directory.Build.props 与 Package.appxmanifest）
-- 修复启动语言偏好未应用以及多语言资源未进入 MSIX 候选包的问题。
-- 进一步将悬浮窗调整为黑白主题的小方块额度窗，整理主页顶部间距，并显式应用自定义图标到标题栏/窗口图标层。
+- Replaced the former compact window with a smaller floating balance widget
+- Simplified the home-page header
+- Reduced the floating window to a fixed-size, single-surface design
+- Changed the floating window to a monochrome visual style
+- Updated window, taskbar, Start menu, package and notification-area icons
 
 ### Fixed
 
-- 清理所有旧“紧凑窗口”用户可见文案与入口（主页按钮、托盘菜单、设置/文档/备份说明），统一为“悬浮窗”
+- Floating window showing a large outer background
+- Mismatched inner and outer corner radii
+- Severe lag while dragging the floating window
+- Truncated account names, statuses, balances and currency units
+- Old icon remaining in the main-window title bar
+- Unused spacing remaining after removal of the home-page subtitle
+
+> Historical note: the former compact window was replaced by the floating balance window.
 
 ## [0.6.0.1] - 2026-08-03（v0.6.0 主题统一修订包）
 

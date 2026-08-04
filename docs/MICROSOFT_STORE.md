@@ -42,8 +42,8 @@ self-signed MSIX sideload package from GitHub Releases.
 
 ## v0.7.0 update notes (for the future v1.0 listing)
 
-- EN: Floating balance window (one selected account's main balance number, always on top, single instance, no taskbar slot, position/size/selected-account persistence) replacing the compact window; simplified home-page header; refreshed app icons (TerminalShare asset set, multi-size ICO + full WinUI/MSIX logo scales); in-place upgrade from v0.6.0 preserving accounts, credentials, history and settings (floating-window settings migrated from the old compact-window settings).
-- 中文：悬浮余额窗（只显示一个选定账户的主额度数字、始终置顶、单实例、不占任务栏、位置/尺寸/选中账户持久化）替代紧凑窗口；主页头部简化；应用图标整体更新（TerminalShare 资产包，多尺寸 ICO + 完整 WinUI/MSIX 各缩放图标）；从 v0.6.0 原地升级，保留账户、凭据、历史与设置（悬浮窗设置由旧紧凑窗口设置自动迁移）。
+- EN: Floating balance window (one selected account's main balance number, always on top, single instance, no taskbar slot, fixed-size monochrome single-surface design, smooth native Windows dragging, position/selected-account persistence) replacing the compact window; simplified home-page header; refreshed app icons (TerminalShare asset set, multi-size ICO + full WinUI/MSIX logo scales); in-place upgrade from v0.6.0 preserving accounts, credentials, history and settings (floating-window settings migrated from the old compact-window settings).
+- 中文：悬浮余额窗（只显示一个选定账户的主额度数字、始终置顶、单实例、不占任务栏、固定尺寸黑白单层设计、Windows 原生流畅拖动、位置/选中账户持久化）替代紧凑窗口；主页头部简化；应用图标整体更新（TerminalShare 资产包，多尺寸 ICO + 完整 WinUI/MSIX 各缩放图标）；从 v0.6.0 原地升级，保留账户、凭据、历史与设置（悬浮窗设置由旧紧凑窗口设置自动迁移）。
 
 ## v0.6.0 update notes (for the future v1.0 listing)
 
