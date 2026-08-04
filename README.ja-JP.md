@@ -7,7 +7,7 @@
 
 **ApiMonitor** は WinUI 3 製の軽量 Windows デスクトップアプリで、自分自身の API アカウント残高を照会し、ローカルに記録します。**DeepSeek** の残高照会と **OpenRouter** のキー割当て / Credits 照会に対応し、複数アカウント管理と Windows 通知センターの残高不足アラート（任意）を備えています。
 
-- 現在のバージョン: **v0.7.0**（DisplayVersion `0.7.0` / PackageVersion `0.7.0.1`）
+- 現在のバージョン: **v0.7.0**（DisplayVersion `0.7.0` / PackageVersion `0.7.0.2`）
 - ランタイム: .NET 10 / Windows App SDK 2.x、x64
 - 配布: MSIX サイドロード（自己署名開発者証明書）、Microsoft Store は v1.0 で計画
 - ライセンス: [MIT](LICENSE)

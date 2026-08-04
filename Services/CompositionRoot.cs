@@ -115,6 +115,24 @@ public sealed class CompositionRoot
         // 该 API 在未打包与部分打包场景不可靠），通过全局 Language qualifier
         // 驱动 ResourceLoader 按目标语言解析三语资源。
 
+        string dataDirectory = AppPaths.GetLocalDataDirectory();
+        Directory.CreateDirectory(dataDirectory);
+
+        string persistedLanguage = ReadPersistedLanguage(dataDirectory);
+        if (!string.IsNullOrWhiteSpace(persistedLanguage))
+        {
+            try
+            {
+                Windows.ApplicationModel.Resources.Core.ResourceContext.SetGlobalQualifierValue(
+                    "Language",
+                    persistedLanguage);
+            }
+            catch
+            {
+                // ResourceLoader will fall back to the system language if the qualifier is unavailable.
+            }
+        }
+
         L10n.Initialize(key =>
         {
             try
@@ -130,9 +148,6 @@ public sealed class CompositionRoot
                 return null;
             }
         });
-
-        string dataDirectory = AppPaths.GetLocalDataDirectory();
-        Directory.CreateDirectory(dataDirectory);
 
         Log = new AppLog(dataDirectory);
         var time = TimeProvider.System;

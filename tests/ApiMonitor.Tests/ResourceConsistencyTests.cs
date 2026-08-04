@@ -71,6 +71,25 @@ public sealed class ResourceConsistencyTests
     }
 
     [Fact]
+    public void PackagedLanguageSelection_UsesPersistedQualifierAndKeepsAllLanguagesInMainPackage()
+    {
+        string compositionRoot = File.ReadAllText(Path.Combine(RepoRoot, "Services", "CompositionRoot.cs"));
+        Assert.Contains("ReadPersistedLanguage(dataDirectory)", compositionRoot);
+        Assert.Contains("ResourceContext.SetGlobalQualifierValue", compositionRoot);
+        Assert.Contains("persistedLanguage", compositionRoot);
+
+        string project = File.ReadAllText(Path.Combine(RepoRoot, "ApiMonitor.csproj"));
+        Assert.Contains("BuildAppxSideloadPackageForUap", project);
+        Assert.Contains("AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel<", project);
+
+        string manifest = File.ReadAllText(Path.Combine(RepoRoot, "Package.appxmanifest"));
+        foreach (string language in new[] { "zh-CN", "en-US", "ja-JP" })
+        {
+            Assert.Contains($"Resource Language=\"{language}\"", manifest);
+        }
+    }
+
+    [Fact]
     public void ResourceKeys_UseDotNotation_AndMatchKnownNamespaces()
     {
         var keys = ReadKeys("zh-CN").Keys;

@@ -13,6 +13,10 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Include generated zh-CN/ja-JP resource packages in sideload bundles. -->
+    <BuildAppxSideloadPackageForUap>true</BuildAppxSideloadPackageForUap>
+    <!-- Keep the three UI languages in the main sideload MSIX; scale assets may split. -->
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- MVVMTK0045 only matters for AOT/trimmed WinRT scenarios; this app is not AOT. -->
