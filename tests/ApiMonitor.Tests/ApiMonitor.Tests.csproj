@@ -43,10 +43,14 @@
     <Compile Include="../../Providers/Dto/DeepSeekBalanceDtos.cs" Link="Providers/Dto/DeepSeekBalanceDtos.cs" />
     <Compile Include="../../Providers/OpenRouterBalanceProvider.cs" Link="Providers/OpenRouterBalanceProvider.cs" />
     <Compile Include="../../Providers/Dto/OpenRouterBalanceDtos.cs" Link="Providers/Dto/OpenRouterBalanceDtos.cs" />
+    <Compile Include="../../Providers/MoonshotBalanceProvider.cs" Link="Providers/MoonshotBalanceProvider.cs" />
+    <Compile Include="../../Providers/SiliconFlowBalanceProvider.cs" Link="Providers/SiliconFlowBalanceProvider.cs" />
+    <Compile Include="../../Providers/XaiBalanceProvider.cs" Link="Providers/XaiBalanceProvider.cs" />
     <Compile Include="../../Providers/ProviderRegistry.cs" Link="Providers/ProviderRegistry.cs" />
     <Compile Include="../../Services/AppLog.cs" Link="Services/AppLog.cs" />
     <Compile Include="../../Services/IHttpRequestService.cs" Link="Services/IHttpRequestService.cs" />
     <Compile Include="../../Services/HttpRequestService.cs" Link="Services/HttpRequestService.cs" />
+    <Compile Include="../../Services/ProviderHttpClient.cs" Link="Services/ProviderHttpClient.cs" />
     <Compile Include="../../Services/ISecretStore.cs" Link="Services/ISecretStore.cs" />
     <Compile Include="../../Services/CredentialLockerSecretStore.cs" Link="Services/CredentialLockerSecretStore.cs" />
     <Compile Include="../../Services/AppPaths.cs" Link="Services/AppPaths.cs" />

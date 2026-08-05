@@ -41,7 +41,17 @@ public sealed class DeepSeekBalanceProvider : IApiBalanceProvider
         },
         ApiKeyInputHint: "sk-…",
         HelpUrl: "https://platform.deepseek.com/",
-        SupportsTestConnection: true);
+        SupportsTestConnection: true,
+        DefaultBaseUrl: "https://api.deepseek.com",
+        ConfigFields: Array.Empty<ProviderConfigField>(),
+        // DeepSeek 支持多币种：主指标为“各币种总余额”系列（deepseek:{currency}:total），
+        // 快照内按币种选择主指标，不跨币种相加。
+        PrimaryMetricId: "deepseek:*:total",
+        Currency: null,
+        SupportsMultiCurrency: true,
+        SupportsBreakdown: true,
+        SupportsCredentialValidation: true,
+        AllowCustomEndpoint: false);
 
     string IApiBalanceProvider.ProviderId => ProviderId;
 

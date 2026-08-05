@@ -232,6 +232,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = string.Empty,
             HasStoredCredential = false,
             CredentialMode = null,
+            ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal),
             InitialMonitoring = new MonitoringSettings(),
             CurrentMetrics = Array.Empty<BalanceMetric>(),
         };
@@ -252,7 +253,8 @@ public sealed partial class MainViewModel : ObservableObject
                 result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token,
-                result.Notification);
+                result.Notification,
+                result.ProviderConfig);
             await ReloadAccountsAsync(_lifetime.Token);
             // 新账户可能被当前筛选隐藏：自动恢复为可见筛选，体验更直接。
             ResetFiltersToAll();
@@ -286,6 +288,7 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = account.DisplayName,
             HasStoredCredential = account.HasCredential,
             CredentialMode = account.CredentialMode,
+            ProviderConfig = account.ProviderConfig,
             InitialMonitoring = CloneMonitoring(account.Monitoring),
             InitialNotification = account.Notification,
             CurrentMetrics = item is { HasSnapshot: true } ? item.LatestMetricsForEditor : Array.Empty<BalanceMetric>(),
@@ -307,7 +310,8 @@ public sealed partial class MainViewModel : ObservableObject
                 result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token,
-                result.Notification);
+                result.Notification,
+                result.ProviderConfig);
             await ReloadAccountsAsync(_lifetime.Token);
             ShowStatus(StatusSeverity.Success, L10n.Get("Status.AccountSavedTitle"), L10n.Format("Status.AccountUpdatedMessage", result.DisplayName));
         }

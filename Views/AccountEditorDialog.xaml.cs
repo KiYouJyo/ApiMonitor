@@ -22,11 +22,18 @@ public sealed partial class AccountEditorDialog : ContentDialog
 
     public string AccountNamePlaceholderText => Services.L10n.Get("Dialog.AccountNamePlaceholder");
 
+    public string ApiKeyHeaderText => Services.L10n.Get("Dialog.ApiKey.Header");
+
+    public string TestConnectionText => Services.L10n.Get("Dialog.TestConnection.Content");
+
     public AccountEditorDialog(AccountEditorViewModel viewModel)
     {
         ViewModel = viewModel;
         InitializeComponent();
         DataContext = viewModel;
+
+        // 切换 Provider 时清空密码框，避免残留上一供应商的敏感输入。
+        ViewModel.ApiKeyCleared += ClearApiKey;
 
         // 对话框自身的 Resources 需在 InitializeComponent 之后才可用，
         // 因此局部圆角样式在此应用，而不是在 XAML 根元素上引用。
@@ -41,6 +48,14 @@ public sealed partial class AccountEditorDialog : ContentDialog
         if (sender is PasswordBox box)
         {
             ViewModel.SetApiKey(box.Password);
+        }
+    }
+
+    private void ClearApiKey()
+    {
+        if (ApiKeyPasswordBox is not null)
+        {
+            ApiKeyPasswordBox.Password = string.Empty;
         }
     }
 

@@ -1,4 +1,5 @@
 using ApiMonitor.Models;
+using ApiMonitor.Providers;
 using ApiMonitor.Tests.TestDoubles;
 using ApiMonitor.Tests.TestHelpers;
 using ApiMonitor.ViewModels;
@@ -275,5 +276,148 @@ public sealed class AccountEditorViewModelTests
 
         Assert.True(vm.ShowThresholdEmptyHint);
         Assert.Empty(vm.ThresholdItems);
+    }
+
+    [Fact]
+    public void XaiProvider_BuildsTeamIdConfigFieldAndRequiresIt()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = new[]
+            {
+                new XaiBalanceProvider(FakeHttpRequestService.Returning("{}")).Info,
+            },
+            InitialProviderId = "xai",
+            InitialDisplayName = string.Empty,
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+
+        Assert.True(vm.ShowConfigFields);
+        var teamId = Assert.Single(vm.ConfigFieldItems);
+        Assert.Equal("teamId", teamId.FieldId);
+        Assert.True(teamId.IsRequired);
+        Assert.False(string.IsNullOrWhiteSpace(teamId.Label));
+
+        // 密钥已填但 Team ID 未填：不能保存、不能测试。
+        vm.DisplayName = "xAI Team";
+        vm.ApiKey = "xai-test-only";
+        Assert.False(vm.CanSave);
+        Assert.False(vm.CanTest);
+
+        teamId.Value = "65c1e471-205f-4566-9c5a-07198bcdf4ce";
+        Assert.True(vm.CanSave);
+        Assert.True(vm.CanTest);
+    }
+
+    [Fact]
+    public void XaiProvider_ResultContainsProviderConfig()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = new[]
+            {
+                new XaiBalanceProvider(FakeHttpRequestService.Returning("{}")).Info,
+            },
+            InitialProviderId = "xai",
+            InitialDisplayName = "xAI Team",
+            HasStoredCredential = false,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        vm.ApiKey = "xai-test-only";
+        vm.ConfigFieldItems.Single().Value = "team-123";
+
+        Assert.True(vm.TryBuildResult(out var result));
+        Assert.Equal("team-123", result!.ProviderConfig["teamId"]);
+    }
+
+    [Fact]
+    public void EditingXai_PrefillsTeamIdFromStoredConfig()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = new[]
+            {
+                new XaiBalanceProvider(FakeHttpRequestService.Returning("{}")).Info,
+            },
+            AccountId = "acct-xai",
+            InitialProviderId = "xai",
+            InitialDisplayName = "xAI Team",
+            HasStoredCredential = true,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
+            ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["teamId"] = "existing-team-9",
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+
+        Assert.Equal("existing-team-9", vm.ConfigFieldItems.Single().Value);
+    }
+
+    [Fact]
+    public void SwitchingProvider_WhileEditing_ClearsKeyAndRequiresRetest()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = manager.Providers,
+            AccountId = "acct-1",
+            InitialProviderId = "deepseek",
+            InitialDisplayName = "Test",
+            HasStoredCredential = true,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        Assert.True(vm.CanSave);
+
+        // 切换到 OpenRouter：必须清除上一 Provider 的敏感输入，旧凭据不得沿用。
+        vm.SelectedProviderId = "openrouter";
+
+        Assert.True(vm.ProviderChanged);
+        Assert.True(vm.ProviderChangedRequiresRetest);
+        Assert.Equal(string.Empty, vm.ApiKey);
+        Assert.False(vm.CanSave);
+        Assert.False(vm.TryBuildResult(out _));
+    }
+
+    [Fact]
+    public void SwitchingProvider_DoesNotLeakPriorConfigFieldValues()
+    {
+        var manager = new FakeAccountManager();
+        var context = new AccountEditorContext
+        {
+            Providers = new[]
+            {
+                new XaiBalanceProvider(FakeHttpRequestService.Returning("{}")).Info,
+                new DeepSeekBalanceProvider(FakeHttpRequestService.Returning("{}")).Info,
+            },
+            AccountId = "acct-1",
+            InitialProviderId = "xai",
+            InitialDisplayName = "xAI",
+            HasStoredCredential = true,
+            InitialMonitoring = new MonitoringSettings(),
+            CurrentMetrics = Array.Empty<BalanceMetric>(),
+            ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["teamId"] = "secret-team-value",
+            },
+        };
+        var vm = new AccountEditorViewModel(manager, context);
+        Assert.Single(vm.ConfigFieldItems);
+
+        vm.SelectedProviderId = "deepseek";
+
+        Assert.Empty(vm.ConfigFieldItems);
+        Assert.False(vm.ShowConfigFields);
     }
 }

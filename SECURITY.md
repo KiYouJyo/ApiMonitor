@@ -2,7 +2,21 @@
 
 ## Supported versions
 
-The latest formal release (currently v0.2.0) is the supported version for security fixes. `main` is in development for v0.3.0 and receives fixes through the normal review process.
+The latest formal release (currently v0.7.0) is the supported version for security fixes. The v0.8.0 acceptance candidate branch is under review and receives fixes through the normal review process.
+
+## Credential handling and host whitelist
+
+- All API keys and Management Keys are stored only in the Windows Credential Locker under the `ApiMonitor` resource; they never appear in JSON, logs, diagnostics, backups, CSV exports, tray tooltips, notification arguments, or activation parameters.
+- Every credential-bearing balance request is validated against the provider's official HTTPS host whitelist before the Authorization header is attached:
+  - DeepSeek key → `api.deepseek.com`
+  - OpenRouter key / Management Key → `openrouter.ai`
+  - Moonshot key → `api.moonshot.cn`
+  - SiliconFlow key → `api.siliconflow.cn` / `api.siliconflow.com`
+  - xAI Management Key → `management-api.x.ai` (never the inference endpoint)
+- Non-HTTPS or non-whitelisted destinations are rejected; official providers do not allow user-customized Base URLs.
+- Timeout, 429 and 5xx responses are retried a limited number of times with cancellation; 401, 403, 404 and configuration errors are never retried.
+- Balance queries only call side-effect-free official GET endpoints; ApiMonitor never sends model inference requests, so a balance query cannot consume tokens or generate charges.
+- Do not paste real API keys, Management Keys, Credential Locker data, or unredacted logs into issues, backups, or pull requests.
 
 ## Reporting a vulnerability
 

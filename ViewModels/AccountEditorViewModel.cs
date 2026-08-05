@@ -8,6 +8,38 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ApiMonitor.ViewModels;
 
+/// <summary>
+/// Provider 需要的非敏感配置字段编辑项（如 xAI Team ID）。
+/// 标签/提示/占位符来自 ProviderInfo 声明的 RESW 键，不在 XAML 写死。
+/// </summary>
+public sealed partial class ProviderConfigFieldItem : ObservableObject
+{
+    public string FieldId { get; }
+
+    public string Label { get; }
+
+    public string Hint { get; }
+
+    public bool IsRequired { get; }
+
+    public string Placeholder { get; }
+
+    [ObservableProperty]
+    private string _value = string.Empty;
+
+    public ProviderConfigFieldItem(ProviderConfigField field, string? initialValue)
+    {
+        FieldId = field.FieldId;
+        Label = L10n.Get(field.LabelKey);
+        Hint = L10n.Get(field.HintKey);
+        IsRequired = field.IsRequired;
+        Placeholder = string.IsNullOrWhiteSpace(field.PlaceholderKey)
+            ? string.Empty
+            : L10n.Get(field.PlaceholderKey);
+        Value = initialValue ?? string.Empty;
+    }
+}
+
 /// <summary>添加/编辑账户对话框的 ViewModel（测试连接只预览结果，保存才写入）。</summary>
 public sealed partial class AccountEditorViewModel : ObservableObject
 {
@@ -86,9 +118,21 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public string ApiKeyInputHint { get; private set; } = string.Empty;
 
+    /// <summary>当前 Provider 需要的非敏感配置字段（动态，来自注册表）。</summary>
+    public ObservableCollection<ProviderConfigFieldItem> ConfigFieldItems { get; } = new();
+
+    public bool ShowConfigFields => ConfigFieldItems.Count > 0;
+
     public bool IsEditing => _context.AccountId is not null;
 
     public bool HasStoredCredential => _context.HasStoredCredential;
+
+    /// <summary>编辑中切换了 Provider：禁止沿用旧凭据，必须重新录入并测试。</summary>
+    public bool ProviderChanged => _providerChanged;
+
+    public bool ShowKeepCredentialHint => IsEditing && HasStoredCredential && !_providerChanged;
+
+    public bool ShowMissingCredentialHint => IsEditing && !HasStoredCredential;
 
     public string Title => IsEditing ? L10n.Get("Dialog.EditAccountTitle") : L10n.Get("Dialog.AddAccountTitle");
 
@@ -107,6 +151,14 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _modeChangedRequiresRetest;
+
+    /// <summary>编辑中切换 Provider 后必须重新录入密钥并测试连接才能保存。</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
+    private bool _providerChangedRequiresRetest;
+
+    /// <summary>Provider 切换时通知视图清空密码框（避免残留上一供应商的敏感输入）。</summary>
+    public event Action? ApiKeyCleared;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSave))]
@@ -154,17 +206,28 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     public bool ThresholdsValid => ThresholdItems.All(i =>
         string.IsNullOrWhiteSpace(i.ThresholdText) || i.TryParseAmount(out _));
 
+    public bool RequiredConfigFieldsFilled => ConfigFieldItems
+        .Where(i => i.IsRequired)
+        .All(i => !string.IsNullOrWhiteSpace(i.Value.Trim()));
+
+    private bool _providerChanged;
+
     public bool CanSave =>
         !IsTesting
         && !ModeChangedRequiresRetest
+        && !ProviderChangedRequiresRetest
         && !string.IsNullOrWhiteSpace(DisplayName)
-        && (!string.IsNullOrWhiteSpace(ApiKey) || (IsEditing && HasStoredCredential))
+        && (!string.IsNullOrWhiteSpace(ApiKey) || KeepExistingCredentialAllowed)
+        && RequiredConfigFieldsFilled
         && ThresholdsValid
         && MonitoringIntervals.Options.Contains(RefreshIntervalMinutes);
 
     public bool CanTest =>
         !IsTesting
-        && (!string.IsNullOrWhiteSpace(ApiKey) || (IsEditing && HasStoredCredential));
+        && (!string.IsNullOrWhiteSpace(ApiKey) || KeepExistingCredentialAllowed)
+        && RequiredConfigFieldsFilled;
+
+    private bool KeepExistingCredentialAllowed => IsEditing && HasStoredCredential && !_providerChanged;
 
     public AsyncRelayCommand TestCommand { get; }
 
@@ -213,6 +276,13 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             OnPropertyChanged(nameof(ShowThresholdEmptyHint));
             OnPropertyChanged(nameof(CanSave));
         };
+
+        ConfigFieldItems.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ShowConfigFields));
+            OnPropertyChanged(nameof(CanSave));
+            OnPropertyChanged(nameof(CanTest));
+        };
     }
 
     partial void OnDisplayNameChanged(string value) =>
@@ -227,8 +297,27 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     partial void OnSelectedProviderIdChanged(string value)
     {
         ApplyProviderCapabilities(value);
+        // 编辑中切换 Provider：不得沿用上一 Provider 的密钥，清空敏感输入并要求重测。
+        _providerChanged = IsEditing
+            && !string.Equals(value, _context.InitialProviderId, StringComparison.OrdinalIgnoreCase);
         // 切换 Provider 时恢复该 Provider 的默认凭据模式（编辑中切换 Provider 视为新配置）。
         SelectedCredentialMode = ProviderInfoFor(value)?.DefaultCredentialOption.CredentialTypeId ?? string.Empty;
+        if (_providerChanged)
+        {
+            SetApiKey(string.Empty);
+            ApiKeyCleared?.Invoke();
+            HasTestResult = false;
+            HasValidationMessage = false;
+            ProviderChangedRequiresRetest = true;
+        }
+        else
+        {
+            ProviderChangedRequiresRetest = false;
+        }
+
+        RebuildConfigFields();
+        OnPropertyChanged(nameof(ShowKeepCredentialHint));
+        OnPropertyChanged(nameof(ShowMissingCredentialHint));
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(CanTest));
     }
@@ -265,12 +354,14 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                 SelectedCredentialMode,
                 string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
                 _context.AccountId,
-                cancellationToken);
+                cancellationToken,
+                BuildProviderConfig());
 
             HasTestResult = true;
             if (result.IsSuccess)
             {
                 ModeChangedRequiresRetest = false;
+                ProviderChangedRequiresRetest = false;
             }
             if (result.IsSuccess && result.Snapshot is { } snapshot)
             {
@@ -326,9 +417,15 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(ApiKey) && !(IsEditing && HasStoredCredential))
+        if (string.IsNullOrWhiteSpace(ApiKey) && !KeepExistingCredentialAllowed)
         {
             ShowValidation(L10n.Get("Dialog.ValidationKeyRequired"));
+            return false;
+        }
+
+        if (!RequiredConfigFieldsFilled)
+        {
+            ShowValidation(L10n.Get("Dialog.ValidationConfigRequired"));
             return false;
         }
 
@@ -352,6 +449,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             DisplayName = DisplayName.Trim(),
             ApiKey = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
             CredentialMode = SelectedCredentialMode,
+            ProviderConfig = BuildProviderConfig(),
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = AutoRefreshEnabled,
@@ -449,6 +547,46 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(ProviderDescription));
         OnPropertyChanged(nameof(ApiKeyInputHint));
     }
+
+    private void RebuildConfigFields()
+    {
+        foreach (var item in ConfigFieldItems)
+        {
+            item.PropertyChanged -= OnConfigFieldChanged;
+        }
+
+        ConfigFieldItems.Clear();
+
+        var info = ProviderInfoFor(SelectedProviderId);
+        if (info is null)
+        {
+            return;
+        }
+
+        foreach (var field in info.EffectiveConfigFields)
+        {
+            string? existing = null;
+            if (IsEditing && !_providerChanged)
+            {
+                _context.ProviderConfig.TryGetValue(field.FieldId, out existing);
+            }
+
+            var item = new ProviderConfigFieldItem(field, existing);
+            item.PropertyChanged += OnConfigFieldChanged;
+            ConfigFieldItems.Add(item);
+        }
+    }
+
+    private void OnConfigFieldChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanTest));
+    }
+
+    private IReadOnlyDictionary<string, string> BuildProviderConfig() =>
+        ConfigFieldItems
+            .Where(i => !string.IsNullOrWhiteSpace(i.Value.Trim()))
+            .ToDictionary(i => i.FieldId, i => i.Value.Trim(), StringComparer.Ordinal);
 
     private ProviderInfo? ProviderInfoFor(string providerId) =>
         _context.Providers.FirstOrDefault(p =>

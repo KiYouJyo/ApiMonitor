@@ -21,6 +21,10 @@ public sealed class AccountEditorContext
     /// <summary>编辑时当前账户保存的凭据模式（新增时为 null）。</summary>
     public string? CredentialMode { get; init; }
 
+    /// <summary>编辑时当前账户保存的非敏感 Provider 配置（如 xAI Team ID）。</summary>
+    public IReadOnlyDictionary<string, string> ProviderConfig { get; init; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
     /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
     public required MonitoringSettings InitialMonitoring { get; init; }
 
@@ -46,6 +50,10 @@ public sealed class AccountEditorResult
 
     /// <summary>用户选择的 Provider 凭据模式（如 openrouter 的 api-key / management-key）。</summary>
     public string? CredentialMode { get; set; }
+
+    /// <summary>用户填写的非敏感 Provider 配置字段（如 xAI Team ID）。</summary>
+    public IReadOnlyDictionary<string, string> ProviderConfig { get; set; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
 
     public MonitoringSettings Monitoring { get; set; } = new();
 

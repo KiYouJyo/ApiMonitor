@@ -497,4 +497,41 @@
   <data name="Floating.StatusLow" xml:space="preserve"><value>Low</value></data>
   <data name="Floating.StatusFailed" xml:space="preserve"><value>Failed</value></data>
   <data name="Floating.StatusUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Dialog.NoStoredCredentialHint" xml:space="preserve"><value>This account has no saved key yet: enter an API key before saving.</value></data>
+  <data name="Dialog.ProviderChangedRequiresRetest" xml:space="preserve"><value>Provider changed: the old credential is not reused. Enter a key for the new provider and test the connection.</value></data>
+  <data name="Dialog.ValidationConfigRequired" xml:space="preserve"><value>Please fill in the required configuration fields for this provider.</value></data>
+  <data name="Dialog.ApiKey.Header" xml:space="preserve"><value>API Key</value></data>
+  <data name="Dialog.TestConnection.Content" xml:space="preserve"><value>Test connection</value></data>
+  <data name="Dialog.RefreshNote" xml:space="preserve"><value>Balance reminders are generated locally by ApiMonitor while the app is running. No queries or reminders continue after ApiMonitor exits.</value></data>
+  <data name="Provider.MoonshotDescription" xml:space="preserve"><value>Queries the available balance of a Moonshot / Kimi account (CNY). Calls only the official balance API and never a model endpoint.</value></data>
+  <data name="Provider.MoonshotKeyHint" xml:space="preserve"><value>Moonshot platform API key (sk-…), used only to call the official balance API.</value></data>
+  <data name="Provider.MoonshotKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.MoonshotAvailableMetricName" xml:space="preserve"><value>Available balance</value></data>
+  <data name="Provider.MoonshotCashMetricName" xml:space="preserve"><value>Cash balance</value></data>
+  <data name="Provider.MoonshotVoucherMetricName" xml:space="preserve"><value>Voucher balance</value></data>
+  <data name="Provider.SiliconFlowDescription" xml:space="preserve"><value>Queries the total balance of a SiliconFlow account (CNY). Reads only balance fields and never stores user profile data.</value></data>
+  <data name="Provider.SiliconFlowKeyHint" xml:space="preserve"><value>SiliconFlow platform API key (sk-…), used only to call the official balance API.</value></data>
+  <data name="Provider.SiliconFlowKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.SiliconFlowTotalMetricName" xml:space="preserve"><value>Total balance</value></data>
+  <data name="Provider.SiliconFlowChargeMetricName" xml:space="preserve"><value>Top-up balance</value></data>
+  <data name="Provider.SiliconFlowGrantedMetricName" xml:space="preserve"><value>Granted balance</value></data>
+  <data name="Provider.SiliconFlowBalanceMetricName" xml:space="preserve"><value>Available balance</value></data>
+  <data name="Provider.XaiDescription" xml:space="preserve"><value>Queries team prepaid credits (USD) using an xAI Management Key. A regular model API key cannot be used for balance queries.</value></data>
+  <data name="Provider.XaiKeyHint" xml:space="preserve"><value>A Management Key with billing read permission is required; a regular xAI model API key cannot query balances. Keys stay in the Windows Credential Locker.</value></data>
+  <data name="Provider.XaiKeyInputHint" xml:space="preserve"><value>xai-… (Management Key)</value></data>
+  <data name="Provider.XaiTeamIdLabel" xml:space="preserve"><value>Team ID</value></data>
+  <data name="Provider.XaiTeamIdHint" xml:space="preserve"><value>The Team ID of your xAI team (not a secret; stored in account data). Find it in the team settings of the xAI Console.</value></data>
+  <data name="Provider.XaiTeamIdPlaceholder" xml:space="preserve"><value>e.g. 65c1e471-205f-4566-9c5a-07198bcdf4ce</value></data>
+  <data name="Provider.XaiPrepaidMetricName" xml:space="preserve"><value>Prepaid credits</value></data>
+  <data name="Provider.ErrorMissingTeamId" xml:space="preserve"><value>Missing xAI Team ID. Enter it in the account settings.</value></data>
+  <data name="Provider.ErrorMissingBalanceFields" xml:space="preserve"><value>The API response is missing balance fields.</value></data>
+  <data name="Provider.ErrorUnsupportedFormat" xml:space="preserve"><value>The official response format is not supported yet. Update the app or try again later.</value></data>
+  <data name="Provider.ErrorUnsupportedBalanceFormat" xml:space="preserve"><value>Unsupported balance format (official amount semantics could not be confirmed); no balance is shown.</value></data>
+  <data name="Provider.Error404" xml:space="preserve"><value>Endpoint or account not found (404).</value></data>
+  <data name="Provider.Error401Xai" xml:space="preserve"><value>Management Key is invalid or expired (401). Balance queries require an xAI Management Key; a regular model API key does not work.</value></data>
+  <data name="Provider.Error403Xai" xml:space="preserve"><value>Permission denied (403): make sure the Management Key has billing read permission.</value></data>
+  <data name="Provider.Error404Team" xml:space="preserve"><value>Team or endpoint not found (404): check the Team ID.</value></data>
+  <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>Unable to reach the Moonshot service. Check network or DNS.</value></data>
+  <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>Unable to reach the SiliconFlow service. Check network or DNS.</value></data>
+  <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>Unable to reach the xAI Management API. Check network or DNS.</value></data>
 </root>

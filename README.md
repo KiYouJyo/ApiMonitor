@@ -5,9 +5,9 @@
 ![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
+**ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek**, **OpenRouter**, **Moonshot / Kimi**, **SiliconFlow** and **xAI** balance queries, with multi-account management and optional Windows notification-center low-balance alerts.
 
-- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.12`)
+- Current version: **v0.8.0** (DisplayVersion `0.8.0`, PackageVersion `0.8.0.0`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
 - Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
 - License: [MIT](LICENSE)
@@ -15,6 +15,7 @@
 
 ## Upgrading
 
+- **v0.8.0** upgrades **in place** over v0.7.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Non-sensitive provider configuration (such as the xAI Team ID) is kept as well; keys stay only in the Credential Locker. No data schema version bump is required for v0.7.0 files.
 - **v0.7.0** upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch. The installer never enables notifications or sign-in startup automatically.
 - **v0.6.0** upgraded **in place** over v0.5.0 (historical).
 - **v0.5.0** upgrades **in place** over v0.4.0 (historical).
@@ -23,10 +24,14 @@
 ## Features
 
 - Multiple accounts per provider (e.g., several DeepSeek accounts, several OpenRouter keys)
-- **DeepSeek** and **OpenRouter** providers, selected dynamically from the provider registry (not hardcoded in the UI)
+- **DeepSeek**, **OpenRouter**, **Moonshot / Kimi**, **SiliconFlow** and **xAI** providers, selected dynamically from the provider registry (not hardcoded in the UI)
 - **OpenRouter two credential modes**:
   - **普通 API Key**: key quota remaining / limit, and total / daily / weekly / monthly usage
   - **Management Key**: account Credits (remaining = total − usage, never clamped to zero)
+- **Moonshot / Kimi** (v0.8.0): queries `GET https://api.moonshot.cn/v1/users/me/balance` with a regular API key and shows the available balance (CNY, official `available_balance` = cash + voucher), cash balance and voucher balance. Missing fields are `null` (never `0`); the available balance is the primary metric and cash/voucher are never added again.
+- **SiliconFlow** (v0.8.0): queries `GET https://api.siliconflow.cn/v1/user/info` with a regular API key. It reads only the balance fields (`totalBalance` primary, plus `balance` / `chargeBalance` / optional `grantedBalance`) and ignores user profile data. The full response is never logged; when the official structure changes, the app returns "官方响应结构暂不支持" instead of showing a wrong zero.
+- **xAI** (v0.8.0): uses the **Management API**, not the inference API — `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance` with a **Management Key** and the **Team ID**. A regular model API key cannot query balances. The documented "Representation of USD Cents" ledger value is converted to the remaining prepaid credits in USD; negative (overdrawn) values are preserved and never clamped or passed through `Math.Abs`.
+- Provider capability metadata (v0.8.0): each provider declares its default official Base URL, required non-sensitive config fields (e.g., xAI Team ID), primary metric, currency, multi-currency / breakdown support and credential-validation support. Custom endpoints are **not** allowed for official providers.
 - Multi-account summary (total / low-balance / failed), provider filter, and status filter (all / normal / low / unknown / failed)
 - Refresh one account or all accounts (reuses per-account concurrency locks; one failure never affects others)
 - Per-account history, thresholds, automatic refresh, and notification settings
@@ -42,7 +47,7 @@
 - The application icon set was replaced end to end: the EXE/window (title-bar) icon, taskbar/Start menu package logos, splash screen, notification-area (tray) icon and store listing asset all use the new `ApiMonitor.ico` / `TrayIcon.ico` and package logo assets.
 - **Data Insights** page (v0.6.0): account / metric / time-range selection, a lightweight local trend chart (WinUI-native, no chart framework), current value, range change, first/latest/min/max values, a collapsible history table, and CSV export
 - **Consumption estimates** (v0.6.0): estimated daily consumption (median of valid intervals) and estimated days left, computed only from local history; clearly labeled "估算值" with a disclaimer, and explicit reasons when estimation is not possible (not enough data, no consumption observed, recent top-ups, unsupported metric, unknown current value)
-- **Portable backup** (v0.6.0, updated in v0.7.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
+- **Portable backup** (v0.6.0, updated in v0.7.0/v0.8.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata, including the xAI Team ID), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.8.0/v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys, Management Keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
 - **Themes** (v0.6.0): follow system / light / dark, applied immediately to the main and floating windows and persisted.
 - **Unified app shell** (v0.6.0): the title bar, navigation pane and page backgrounds share one consistent theme surface across light, dark and high-contrast.
 - **Trilingual UI** (v0.6.0): 简体中文 / English / 日本語. Switching the language saves the preference, asks to restart, and restarts via `AppInstance.Restart`; it never partially localizes the window.
@@ -52,7 +57,9 @@
 ## Security and privacy design
 
 - API keys are stored in the **Windows Credential Locker** under the ApiMonitor resource, never in JSON, logs, or diagnostics.
-- Keys are only sent to the matching provider's official endpoint (DeepSeek balance API, OpenRouter key/credits APIs). OpenRouter Management Keys are only used for the Credits endpoint and are never sent elsewhere.
+- Keys are only sent to the matching provider's official HTTPS host (DeepSeek `api.deepseek.com`, OpenRouter `openrouter.ai`, Moonshot `api.moonshot.cn`, SiliconFlow `api.siliconflow.cn` / `api.siliconflow.com`, xAI Management API `management-api.x.ai`). A shared credential host whitelist validates every request before the key is attached; non-HTTPS or non-whitelisted destinations are refused. OpenRouter Management Keys are only used for the Credits endpoint and are never sent elsewhere. xAI Management Keys are only sent to `management-api.x.ai` and never to the inference endpoint.
+- Balance queries use GET-only, side-effect-free official endpoints; ApiMonitor never sends model inference requests, so querying a balance never consumes tokens or generates charges.
+- Timeout / 429 / 5xx responses are retried a limited number of times with cancellation support (401/403/404/config errors are never retried).
 - Account metadata, balance snapshots, history, settings, and notification state are stored only in the local app data directory.
 - Notifications are generated locally by the running ApiMonitor process; notification arguments contain only non-sensitive identifiers (`action`, `accountId`, `providerId`, `metricId`) and never API keys, history text, Authorization headers, credential resources, or local file paths.
 - **No cloud push, no WNS remote push, no telemetry, no developer servers.** Notifications stop when you choose "退出 ApiMonitor".
@@ -71,7 +78,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.7.0.12_x64_Test.zip`.
+1. Download `ApiMonitor_0.8.0.0_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.
@@ -108,7 +115,7 @@ dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 
 The project uses the single-project MSIX tooling. The complete ApiMonitor identity (`ApiMonitor` / `CN=ApiMonitorDev`) is used from v0.3.0 onward; Package Family and the Credential Locker resource stay unchanged.
 
-Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek, OpenRouter, or Microsoft.
+Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI, or Microsoft.
 
 ## Project structure
 
@@ -120,7 +127,7 @@ Views/                    Main page, account editor dialog, history dialog
 Views/FloatingBalanceWindow  Lightweight always-on-top floating balance window
 ViewModels/               MVVM view models
 Models/                   Domain models (including generic BalanceMetric)
-Providers/                Balance providers (DeepSeek, OpenRouter) and registry
+Providers/                Balance providers (DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI) and registry
 Services/                 Storage, secrets, refresh, history, thresholds, notifications, clipboard, window management
 tests/ApiMonitor.Tests/   xUnit test suite
 tests/installer/          Installer tooling tests
@@ -136,7 +143,8 @@ tests/installer/          Installer tooling tests
 - Legacy stored metric display labels may retain their original text.
 - Update checks are manual only; the app never auto-downloads or auto-installs updates.
 - No Microsoft Store listing yet (planned for v1.0).
-- Exactly two providers (DeepSeek and OpenRouter); no third-party DLL provider loading.
+- The five official providers (DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI); no third-party DLL provider loading.
+- SiliconFlow's balance API does not return a currency field; CNY is assumed from the platform's pricing convention. If the official structure changes, the app returns "响应结构暂不支持" instead of guessing.
 - The GitHub sideload release is signed with the self-signed `CN=ApiMonitorDev` certificate.
 
 ## Roadmap

@@ -56,7 +56,17 @@ public sealed class OpenRouterBalanceProvider : IApiBalanceProvider
         },
         ApiKeyInputHint: L10n.Get("Provider.OpenRouterKeyInputHint"),
         HelpUrl: "https://openrouter.ai/settings/keys",
-        SupportsTestConnection: true);
+        SupportsTestConnection: true,
+        DefaultBaseUrl: "https://openrouter.ai",
+        ConfigFields: Array.Empty<ProviderConfigField>(),
+        // 账户主指标：Management Key 模式为剩余 Credits；普通 API Key 模式的主指标
+        // 为密钥剩余额度（openrouter:key:quota-remaining），由快照内选择器按模式取用。
+        PrimaryMetricId: "openrouter:credits:remaining",
+        Currency: null,
+        SupportsMultiCurrency: false,
+        SupportsBreakdown: true,
+        SupportsCredentialValidation: true,
+        AllowCustomEndpoint: false);
 
     string IApiBalanceProvider.ProviderId => ProviderId;
 

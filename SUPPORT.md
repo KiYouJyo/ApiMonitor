@@ -10,6 +10,10 @@ Since v0.3.1, `Install.cmd` performs all certificate steps automatically. The pu
 
 v0.7.0 upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. The old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch (the old file is kept untouched). The compact window itself is replaced by the lightweight floating balance window. Just run `Install.cmd` from the v0.7.0 `Test.zip` again. Do **not** uninstall and reinstall for a normal upgrade — that would destroy LocalState and remove Credential Locker entries.
 
+### Upgrading v0.7.0 to v0.8.0
+
+v0.8.0 upgrades **in place** over v0.7.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Non-sensitive provider configuration (such as the xAI Team ID) is also preserved; keys stay only in the Credential Locker. Just run `Install.cmd` from the v0.8.0 `Test.zip`. Do **not** uninstall and reinstall for a normal upgrade.
+
 ### Upgrading v0.3.1 to v0.4.0
 
 v0.4.0 upgrades **in place** over v0.3.1: accounts, balance history, thresholds, window settings, and Credential Locker API keys are preserved. Just run `Install.cmd` again. The installer never enables the "start with Windows" startup task automatically.
@@ -26,9 +30,9 @@ v0.6.0 upgraded **in place** over v0.5.0: accounts, AccountIds, Credential Locke
 
 A v0.6.0 portable backup (`.apimonitor-backup`) never contains API keys or Management Keys. During import, existing accounts keep their local credentials; **new accounts are marked as needing a re-entered key** — edit the imported account and save its API key (or Management Key) in the app, then test the connection. If a needed key is missing, queries for that account fail with a clear “需要重新输入凭据” prompt.
 
-### Candidate package revisions (0.6.0.1, 0.7.0.0, …)
+### Candidate package revisions (0.6.0.1, 0.7.0.0, 0.8.0.0, …)
 
-- The user-visible version stays **v0.6.0** / **v0.7.0**; only the MSIX four-part version advances for each acceptance candidate.
+- The user-visible version stays **v0.6.0** / **v0.7.0** / **v0.8.0**; only the MSIX four-part version advances for each acceptance candidate.
 - **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
 - If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
 
@@ -91,6 +95,33 @@ The button snoozes that account/metric for 24 hours without opening the app wind
 - **403 when using a normal API key on the Credits endpoint**: OpenRouter returns 403 because that key is not a Management Key. Edit the account, switch the credential mode to **Management Key**, and save the Management Key.
 - **`limit_remaining = null`**: means "no key quota is set, or the quota is not constrained by this field" — it is displayed as **无限额度** and never treated as 0, and it never triggers a low-balance alert.
 - Keys are never sent to two endpoints automatically; the endpoint is chosen strictly by the selected credential mode. ApiMonitor never requests, creates, deletes, or rotates OpenRouter API keys, and never manages your OpenRouter account.
+
+## New balance providers (v0.8.0)
+
+### Moonshot / Kimi
+
+- A regular Moonshot API key is required. ApiMonitor calls `GET https://api.moonshot.cn/v1/users/me/balance` only — never a chat/inference endpoint, so checking the balance never consumes tokens or generates charges.
+- The available balance (CNY) is the primary metric; cash and voucher balances are shown as secondary metrics. Missing fields are shown as unknown (`null`), never as `0`.
+- **401** means the API key is invalid or expired; **404** means the endpoint/account does not exist.
+
+### SiliconFlow
+
+- A regular SiliconFlow API key is required. ApiMonitor calls `GET https://api.siliconflow.cn/v1/user/info` and reads only the balance fields (`totalBalance` primary, plus `balance` / `chargeBalance` / optional `grantedBalance`). User profile data is ignored and never saved; the full response is never logged.
+- The balance API does not return a currency field; ApiMonitor assumes CNY per the platform's pricing convention.
+- If the official response structure changes, ApiMonitor returns “响应结构暂不支持” instead of showing a wrong balance; an app update may be required.
+
+### xAI
+
+- xAI balance queries use the **Management API**, not the inference API. You must provide both an **xAI Management Key** (with billing read permission) and the **Team ID**.
+- A regular xAI model API key cannot query balances; the app explains this clearly and never leaks the key.
+- The Team ID is non-sensitive account configuration stored locally (and included in portable backups); the Management Key stays only in the Windows Credential Locker.
+- ApiMonitor calls `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`; the documented USD-cents ledger value is converted to the remaining prepaid credits in USD. Negative (overdrawn) values are preserved.
+
+### Balance query error mapping
+
+- 401 → credential invalid/expired; 403 → insufficient permission; 404 → endpoint/Team/account not found; 429 → rate limited; 5xx → provider service error.
+- Timeout, 429 and 5xx are retried a limited number of times; 401/403/404/config errors are never retried automatically.
+- Error messages never include API keys, Authorization headers, full response bodies, or user profile data.
 
 ## Multi-account credential storage
 

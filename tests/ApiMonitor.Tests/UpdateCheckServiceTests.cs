@@ -8,7 +8,7 @@ namespace ApiMonitor.Tests;
 
 public sealed class UpdateCheckServiceTests
 {
-    private static string LatestJson(string tagName, string htmlUrl = "https://github.com/KiYouJyo/ApiMonitor/releases/tag/v0.7.0") =>
+    private static string LatestJson(string tagName, string htmlUrl = "https://github.com/KiYouJyo/ApiMonitor/releases/tag/v0.8.0") =>
         $$"""
         {
           "tag_name": "{{tagName}}",
@@ -31,13 +31,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task NewVersion_IsUpdateAvailable()
     {
-        var http = FakeHttpRequestService.Returning(LatestJson("v0.7.0"));
+        var http = FakeHttpRequestService.Returning(LatestJson("v0.8.0"));
         var service = new UpdateCheckService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
         Assert.Equal(UpdateCheckStatus.UpdateAvailable, result.Status);
-        Assert.Equal("0.7.0", result.LatestVersion);
+        Assert.Equal("0.8.0", result.LatestVersion);
         Assert.Contains("releases", result.ReleaseUrl);
     }
 

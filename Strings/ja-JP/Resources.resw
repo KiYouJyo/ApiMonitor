@@ -497,4 +497,41 @@
   <data name="Floating.StatusLow" xml:space="preserve"><value>残高不足</value></data>
   <data name="Floating.StatusFailed" xml:space="preserve"><value>失敗</value></data>
   <data name="Floating.StatusUnknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Dialog.NoStoredCredentialHint" xml:space="preserve"><value>このアカウントにはキーがまだ保存されていません。保存前に API キーを入力してください。</value></data>
+  <data name="Dialog.ProviderChangedRequiresRetest" xml:space="preserve"><value>Provider を変更しました：以前の資格情報は引き継がれません。新しい Provider のキーを入力して接続テストを行ってください。</value></data>
+  <data name="Dialog.ValidationConfigRequired" xml:space="preserve"><value>この Provider の必須設定項目を入力してください。</value></data>
+  <data name="Dialog.ApiKey.Header" xml:space="preserve"><value>API Key</value></data>
+  <data name="Dialog.TestConnection.Content" xml:space="preserve"><value>接続テスト</value></data>
+  <data name="Dialog.RefreshNote" xml:space="preserve"><value>残高リマインダーは ApiMonitor の実行中にローカルで生成されます。ApiMonitor を終了すると照会や新しいリマインダーは継続されません。</value></data>
+  <data name="Provider.MoonshotDescription" xml:space="preserve"><value>Moonshot / Kimi アカウントの利用可能残高（人民元）を照会します。公式の残高 API のみを呼び出し、モデル呼び出しは発生しません。</value></data>
+  <data name="Provider.MoonshotKeyHint" xml:space="preserve"><value>Moonshot プラットフォームの API キー（sk-…）。公式の残高 API の呼び出しにのみ使用します。</value></data>
+  <data name="Provider.MoonshotKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.MoonshotAvailableMetricName" xml:space="preserve"><value>利用可能残高</value></data>
+  <data name="Provider.MoonshotCashMetricName" xml:space="preserve"><value>現金残高</value></data>
+  <data name="Provider.MoonshotVoucherMetricName" xml:space="preserve"><value>バウチャー残高</value></data>
+  <data name="Provider.SiliconFlowDescription" xml:space="preserve"><value>SiliconFlow アカウントの総残高（人民元）を照会します。残高フィールドのみを読み取り、ユーザープロフィールは保存しません。</value></data>
+  <data name="Provider.SiliconFlowKeyHint" xml:space="preserve"><value>SiliconFlow プラットフォームの API キー（sk-…）。公式の残高 API の呼び出しにのみ使用します。</value></data>
+  <data name="Provider.SiliconFlowKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.SiliconFlowTotalMetricName" xml:space="preserve"><value>総残高</value></data>
+  <data name="Provider.SiliconFlowChargeMetricName" xml:space="preserve"><value>チャージ残高</value></data>
+  <data name="Provider.SiliconFlowGrantedMetricName" xml:space="preserve"><value>付与残高</value></data>
+  <data name="Provider.SiliconFlowBalanceMetricName" xml:space="preserve"><value>利用可能残高</value></data>
+  <data name="Provider.XaiDescription" xml:space="preserve"><value>xAI Management Key を使用してチームのプリペイド Credits（米ドル）を照会します。通常のモデル API キーは残高照会に使用できません。</value></data>
+  <data name="Provider.XaiKeyHint" xml:space="preserve"><value>請求情報の読み取り権限を持つ Management Key が必要です。通常の xAI モデル API キーでは残高を照会できません。キーは Windows Credential Locker にのみ保存されます。</value></data>
+  <data name="Provider.XaiKeyInputHint" xml:space="preserve"><value>xai-…（Management Key）</value></data>
+  <data name="Provider.XaiTeamIdLabel" xml:space="preserve"><value>Team ID</value></data>
+  <data name="Provider.XaiTeamIdHint" xml:space="preserve"><value>xAI チームの Team ID（秘密情報ではなく、アカウントデータに保存されます）。xAI Console のチーム設定で確認できます。</value></data>
+  <data name="Provider.XaiTeamIdPlaceholder" xml:space="preserve"><value>例: 65c1e471-205f-4566-9c5a-07198bcdf4ce</value></data>
+  <data name="Provider.XaiPrepaidMetricName" xml:space="preserve"><value>プリペイド Credits</value></data>
+  <data name="Provider.ErrorMissingTeamId" xml:space="preserve"><value>xAI Team ID がありません。アカウント設定で入力してください。</value></data>
+  <data name="Provider.ErrorMissingBalanceFields" xml:space="preserve"><value>API レスポンスに残高フィールドがありません。</value></data>
+  <data name="Provider.ErrorUnsupportedFormat" xml:space="preserve"><value>公式のレスポンス形式には現在対応していません。アプリを更新するか、後でもう一度お試しください。</value></data>
+  <data name="Provider.ErrorUnsupportedBalanceFormat" xml:space="preserve"><value>残高形式がサポートされていません（公式の金額セマンティクスを確認できません）。残高は表示されません。</value></data>
+  <data name="Provider.Error404" xml:space="preserve"><value>エンドポイントまたはアカウントが見つかりません（404）。</value></data>
+  <data name="Provider.Error401Xai" xml:space="preserve"><value>Management Key が無効または期限切れです（401）。残高照会には xAI Management Key が必要で、通常のモデル API キーは使用できません。</value></data>
+  <data name="Provider.Error403Xai" xml:space="preserve"><value>権限がありません（403）：Management Key に請求情報の読み取り権限があるか確認してください。</value></data>
+  <data name="Provider.Error404Team" xml:space="preserve"><value>チームまたはエンドポイントが見つかりません（404）：Team ID を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>Moonshot サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>SiliconFlow サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>xAI Management API に接続できません。ネットワークまたは DNS を確認してください。</value></data>
 </root>

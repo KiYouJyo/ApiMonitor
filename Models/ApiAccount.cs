@@ -24,6 +24,13 @@ public sealed class ApiAccount
     /// <summary>Provider 专属的非敏感设置（如 OpenRouter 凭据模式）。API Key 永不在此保存。</summary>
     public string? CredentialMode { get; set; }
 
+    /// <summary>
+    /// Provider 专属的非敏感配置字段（如 xAI Team ID）。
+    /// 与 CredentialMode 一样保存在 accounts.json / 备份中，绝不包含密钥。
+    /// </summary>
+    public IReadOnlyDictionary<string, string> ProviderConfig { get; init; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
     /// <summary>每账户通知设置（v0.5.0；null 字段表示继承全局通知设置）。</summary>
     public AccountNotificationSettings Notification { get; set; } = new();
 }

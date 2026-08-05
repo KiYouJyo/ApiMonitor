@@ -172,7 +172,17 @@ public sealed class CompositionRoot
         var http = new HttpRequestService(TimeSpan.FromSeconds(15));
         var deepSeek = new DeepSeekBalanceProvider(http, Log);
         var openRouter = new OpenRouterBalanceProvider(http, Log);
-        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek, openRouter });
+        var moonshot = new MoonshotBalanceProvider(http, Log);
+        var siliconFlow = new SiliconFlowBalanceProvider(http, Log);
+        var xai = new XaiBalanceProvider(http, Log);
+        var registry = new ProviderRegistry(new IApiBalanceProvider[]
+        {
+            deepSeek,
+            openRouter,
+            moonshot,
+            siliconFlow,
+            xai,
+        });
 
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);

@@ -49,7 +49,8 @@ public sealed class FakeHttpRequestService : IHttpRequestService
 
     public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        RequestUrls.Add(request.RequestUri?.ToString() ?? string.Empty);
+        // 记录实际发送的绝对 URI（保留转义），供测试校验主机与路径编码。
+        RequestUrls.Add(request.RequestUri?.AbsoluteUri ?? string.Empty);
         if (request.Headers.Authorization is { } authorization)
         {
             AuthorizationHeaders.Add(authorization.ToString());

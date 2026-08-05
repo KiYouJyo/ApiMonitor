@@ -148,7 +148,8 @@ public sealed class AccountManager : IAccountManager
         string? credentialMode,
         string? apiKey,
         string? accountId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? providerConfig = null)
     {
         var provider = _registry.GetById(providerId);
         if (provider is null)
@@ -180,6 +181,9 @@ public sealed class AccountManager : IAccountManager
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             CredentialMode = credentialMode,
+            ProviderConfig = providerConfig is { Count: > 0 }
+                ? new Dictionary<string, string>(providerConfig, StringComparer.Ordinal)
+                : new Dictionary<string, string>(StringComparer.Ordinal),
         };
 
         return await provider.QueryBalanceAsync(probe, key, cancellationToken);
@@ -193,7 +197,8 @@ public sealed class AccountManager : IAccountManager
         string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken,
-        AccountNotificationSettings? notification = null)
+        AccountNotificationSettings? notification = null,
+        IReadOnlyDictionary<string, string>? providerConfig = null)
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
@@ -243,6 +248,11 @@ public sealed class AccountManager : IAccountManager
             CreatedAtUtc = existing?.CreatedAtUtc ?? now,
             UpdatedAtUtc = now,
             CredentialMode = string.IsNullOrWhiteSpace(credentialMode) ? null : credentialMode.Trim(),
+            ProviderConfig = providerConfig is { Count: > 0 }
+                ? new Dictionary<string, string>(providerConfig, StringComparer.Ordinal)
+                : providerConfig is null && existing is not null
+                    ? new Dictionary<string, string>(existing.ProviderConfig, StringComparer.Ordinal)
+                    : new Dictionary<string, string>(StringComparer.Ordinal),
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = monitoring.AutoRefreshEnabled,

@@ -54,6 +54,8 @@ public enum BalanceErrorKind
     Busy,
     NotSupported,
     MissingCredential,
+    /// <summary>非敏感配置缺失（如 xAI Team ID）。</summary>
+    ConfigurationMissing,
     AccountNotFound,
     LocalData,
 }

@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-05
+
+### Added
+
+- Moonshot / Kimi 余额 Provider（`moonshot`）：GET `https://api.moonshot.cn/v1/users/me/balance`，主指标可用余额（CNY，官方 `available_balance` = 现金 + 代金券），次级现金 / 代金券余额；缺失字段为 null
+- SiliconFlow 余额 Provider（`siliconflow`）：GET `https://api.siliconflow.cn/v1/user/info`，主指标 `totalBalance`，次级 `balance` / `chargeBalance` / 可选 `grantedBalance`；忽略用户资料、完整响应不落日志、结构变化返回“响应结构暂不支持”
+- xAI 余额 Provider（`xai`）：Management API `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`，需要 Management Key 与 Team ID（非敏感账户配置）；按官方“USD Cents + 账务方向”文档换算预付费 Credits，负值保留、不钳制、不 `Math.Abs`
+- Provider 能力元数据：默认官方 Base URL、必填非敏感配置字段、主指标、币种、多币种 / 分项 / 凭据验证支持；官方 Provider 不允许自定义端点
+- 凭据请求统一 HTTPS 主机白名单 + 超时 / 429 / 5xx 有限重试（可取消；401 / 403 / 404 不重试）
+- 账户编辑器动态非敏感配置字段（xAI Team ID）；编辑中切换 Provider 清空密钥并要求重新测试，旧凭据不跨 Provider 沿用
+
+### Changed
+
+- Provider 注册表从 2 个扩展到 5 个（DeepSeek / OpenRouter / Moonshot / SiliconFlow / xAI）
+- 账户数据 schema 保持 v3：新增可空 `providerConfig`（Team ID 等非敏感字段），v0.7.0 文件无需迁移
+- 便携备份包含非敏感 Provider 配置（如 Team ID），仍绝不包含任何密钥
+
+### Fixed
+
+- 无
+
+### Security
+
+- 所有凭据请求发送前校验 HTTPS 与官方主机白名单；OpenRouter / xAI 的 Management Key 只发往对应官方主机
+- 错误信息、诊断、备份与日志均不含 API Key、Management Key、Authorization、完整响应正文或用户资料
+
 ## [0.7.0] - 2026-08-04
 
 ### Added

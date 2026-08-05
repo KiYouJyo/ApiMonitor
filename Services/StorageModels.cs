@@ -30,6 +30,13 @@ public sealed class AccountFileEntry
     /// <summary>v0.5.0：Provider 专属的非敏感设置（如 OpenRouter 凭据模式）。</summary>
     public string? CredentialMode { get; set; }
 
+    /// <summary>
+    /// v0.8.0：Provider 专属的非敏感配置字段（如 xAI Team ID）。
+    /// 可空：v0.7.0 及更早文件加载时自然得到 null，无需升级 schemaVersion。
+    /// 密钥绝不保存在这里。
+    /// </summary>
+    public Dictionary<string, string>? ProviderConfig { get; set; }
+
     /// <summary>v0.5.0：每账户通知设置（null 表示继承全局设置）。</summary>
     public AccountNotificationFileEntry? Notification { get; set; }
 }
@@ -353,6 +360,9 @@ internal static class StorageMapper
             UpdatedAtUtc = entry.UpdatedAtUtc,
             Monitoring = monitoring,
             CredentialMode = entry.CredentialMode,
+            ProviderConfig = entry.ProviderConfig is { } config
+                ? new Dictionary<string, string>(config, StringComparer.Ordinal)
+                : new Dictionary<string, string>(StringComparer.Ordinal),
             Notification = notification,
         };
     }
@@ -367,6 +377,9 @@ internal static class StorageMapper
             CreatedAtUtc = account.CreatedAtUtc,
             UpdatedAtUtc = account.UpdatedAtUtc,
             CredentialMode = account.CredentialMode,
+            ProviderConfig = account.ProviderConfig is { Count: > 0 }
+                ? new Dictionary<string, string>(account.ProviderConfig, StringComparer.Ordinal)
+                : null,
             Notification = account.Notification is { } n
                 ? new AccountNotificationFileEntry
                 {

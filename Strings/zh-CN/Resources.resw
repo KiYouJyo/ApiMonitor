@@ -497,4 +497,41 @@
   <data name="Floating.StatusLow" xml:space="preserve"><value>低余额</value></data>
   <data name="Floating.StatusFailed" xml:space="preserve"><value>失败</value></data>
   <data name="Floating.StatusUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Dialog.NoStoredCredentialHint" xml:space="preserve"><value>该账户尚未录入密钥：请输入 API Key 后再保存。</value></data>
+  <data name="Dialog.ProviderChangedRequiresRetest" xml:space="preserve"><value>已切换 Provider：旧凭据不会沿用，请重新输入新 Provider 的密钥并测试连接。</value></data>
+  <data name="Dialog.ValidationConfigRequired" xml:space="preserve"><value>请填写该 Provider 的必填配置项。</value></data>
+  <data name="Dialog.ApiKey.Header" xml:space="preserve"><value>API Key</value></data>
+  <data name="Dialog.TestConnection.Content" xml:space="preserve"><value>测试连接</value></data>
+  <data name="Dialog.RefreshNote" xml:space="preserve"><value>余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。</value></data>
+  <data name="Provider.MoonshotDescription" xml:space="preserve"><value>查询 Moonshot / Kimi 平台的可用余额（人民币元），仅调用官方余额接口，不产生模型调用费用。</value></data>
+  <data name="Provider.MoonshotKeyHint" xml:space="preserve"><value>Moonshot 平台 API Key（sk-…），仅用于请求官方余额接口。</value></data>
+  <data name="Provider.MoonshotKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.MoonshotAvailableMetricName" xml:space="preserve"><value>可用余额</value></data>
+  <data name="Provider.MoonshotCashMetricName" xml:space="preserve"><value>现金余额</value></data>
+  <data name="Provider.MoonshotVoucherMetricName" xml:space="preserve"><value>代金券余额</value></data>
+  <data name="Provider.SiliconFlowDescription" xml:space="preserve"><value>查询 SiliconFlow（硅基流动）账户总余额（人民币元），仅读取余额字段，不保存用户资料。</value></data>
+  <data name="Provider.SiliconFlowKeyHint" xml:space="preserve"><value>SiliconFlow 平台 API Key（sk-…），仅用于请求官方余额接口。</value></data>
+  <data name="Provider.SiliconFlowKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.SiliconFlowTotalMetricName" xml:space="preserve"><value>总余额</value></data>
+  <data name="Provider.SiliconFlowChargeMetricName" xml:space="preserve"><value>充值余额</value></data>
+  <data name="Provider.SiliconFlowGrantedMetricName" xml:space="preserve"><value>赠送余额</value></data>
+  <data name="Provider.SiliconFlowBalanceMetricName" xml:space="preserve"><value>可用余额</value></data>
+  <data name="Provider.XaiDescription" xml:space="preserve"><value>使用 xAI Management Key 查询团队预付费 Credits（美元）。普通模型 API Key 不能用于余额查询。</value></data>
+  <data name="Provider.XaiKeyHint" xml:space="preserve"><value>必须使用具有账单读取权限的 Management Key；普通 xAI 模型 API Key 无法查询余额。密钥只保存在 Windows Credential Locker。</value></data>
+  <data name="Provider.XaiKeyInputHint" xml:space="preserve"><value>xai-…（Management Key）</value></data>
+  <data name="Provider.XaiTeamIdLabel" xml:space="preserve"><value>Team ID</value></data>
+  <data name="Provider.XaiTeamIdHint" xml:space="preserve"><value>xAI 团队的 Team ID（非密钥，保存在账户数据中）。可在 xAI Console 的团队设置中查看。</value></data>
+  <data name="Provider.XaiTeamIdPlaceholder" xml:space="preserve"><value>例如 65c1e471-205f-4566-9c5a-07198bcdf4ce</value></data>
+  <data name="Provider.XaiPrepaidMetricName" xml:space="preserve"><value>预付费 Credits</value></data>
+  <data name="Provider.ErrorMissingTeamId" xml:space="preserve"><value>缺少 xAI Team ID，请在账户设置中填写。</value></data>
+  <data name="Provider.ErrorMissingBalanceFields" xml:space="preserve"><value>接口响应缺少余额字段。</value></data>
+  <data name="Provider.ErrorUnsupportedFormat" xml:space="preserve"><value>官方响应结构暂不支持，请更新应用或稍后重试。</value></data>
+  <data name="Provider.ErrorUnsupportedBalanceFormat" xml:space="preserve"><value>余额格式不支持（无法确认官方金额语义），未显示余额。</value></data>
+  <data name="Provider.Error404" xml:space="preserve"><value>接口或账户不存在（404）。</value></data>
+  <data name="Provider.Error401Xai" xml:space="preserve"><value>Management Key 无效或已过期（401）。余额查询必须使用 xAI Management Key，普通模型 API Key 无效。</value></data>
+  <data name="Provider.Error403Xai" xml:space="preserve"><value>权限不足（403）：请确认 Management Key 具有账单读取权限。</value></data>
+  <data name="Provider.Error404Team" xml:space="preserve"><value>Team 或接口不存在（404）：请检查 Team ID。</value></data>
+  <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>无法连接 Moonshot 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>无法连接 SiliconFlow 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>无法连接 xAI Management API，请检查网络或 DNS。</value></data>
 </root>

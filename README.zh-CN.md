@@ -2,11 +2,11 @@
 
 [English](README.md) · [日本語](README.ja-JP.md)
 
-**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。支持 **DeepSeek** 余额查询、**OpenRouter** 密钥额度 / Credits 查询，以及多账户管理与可选的 Windows 通知中心低余额提醒。
+**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。支持 **DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow** 与 **xAI** 余额查询，以及多账户管理与可选的 Windows 通知中心低余额提醒。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前版本：**v0.7.0**（DisplayVersion `0.7.0` / PackageVersion `0.7.0.12`）
+- 当前版本：**v0.8.0**（DisplayVersion `0.8.0` / PackageVersion `0.8.0.0`）
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
 - 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store（计划 v1.0）
 - 许可证：[MIT](LICENSE)
@@ -14,6 +14,7 @@
 
 ## 升级说明
 
+- **v0.8.0** 在 v0.7.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留；非敏感 Provider 配置（如 xAI Team ID）一并保留，密钥仍只保存在 Credential Locker。v0.7.0 数据文件无需提升 schema 版本。
 - **v0.7.0** 在 v0.6.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留。旧 `compact-window-settings.json` 在首次启动时一次性、幂等迁移为 `floating-window-settings.json`。安装程序**不会**自动开启系统提醒，也**不会**自动开启登录启动。
 - **v0.6.0** 在 v0.5.0 之上原地升级（历史版本）。
 - **v0.2.0 侧载包不会原地升级**：请先卸载旧包，再重新添加账户。
@@ -21,10 +22,14 @@
 ## 主要功能
 
 - 同一 Provider 支持多个账户（如多个 DeepSeek 账户、多个 OpenRouter 密钥）
-- **DeepSeek** 与 **OpenRouter** 两个 Provider，选择项由 Provider 注册表动态生成（不写死在 XAML）
+- **DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow** 与 **xAI** 五个 Provider，选择项由 Provider 注册表动态生成（不写死在 XAML）
 - **OpenRouter 两种凭据模式**：
   - **普通 API Key**：密钥剩余额度 / 额度上限，以及累计、今日、本周、本月使用量
   - **Management Key**：账户总 Credits（剩余 = 总充值 − 总使用，负值不钳制为 0）
+- **Moonshot / Kimi**（v0.8.0）：使用普通 API Key 查询 `GET https://api.moonshot.cn/v1/users/me/balance`，显示可用余额（人民币元，官方 `available_balance` = 现金 + 代金券）、现金余额与代金券余额。缺失字段映射为 null（绝不显示为 0）；主指标为可用余额，现金与代金券不重复相加。
+- **SiliconFlow**（v0.8.0）：使用普通 API Key 查询 `GET https://api.siliconflow.cn/v1/user/info`，只读取余额字段（主指标 `totalBalance`，次级 `balance` / `chargeBalance` / 可选 `grantedBalance`），用户资料一律忽略；完整响应绝不写入日志；官方结构变化时返回“响应结构暂不支持”，不误显示为 0。
+- **xAI**（v0.8.0）：使用 **Management API** 而非推理 API —— `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`，需要 **Management Key** 与 **Team ID**。普通模型 API Key 不能查询余额。官方“Representation of USD Cents”账务值按文档转换为美元预付费 Credits；透支负值原样保留，不钳制、不 `Math.Abs`。
+- Provider 能力元数据（v0.8.0）：每个 Provider 声明默认官方 Base URL、必填非敏感配置字段（如 xAI Team ID）、主指标、币种、是否支持多币种 / 余额分项 / 凭据验证；官方 Provider 默认**不允许**自定义端点。
 - 多账户汇总（总数 / 低余额数 / 查询失败数）、Provider 筛选与状态筛选（全部 / 正常 / 低余额 / 未知 / 失败）
 - 逐账户刷新与“刷新全部账户”（复用账户级并发锁，一个账户失败不影响其他账户）
 - 逐账户历史、阈值、自动刷新与通知设置
@@ -40,7 +45,7 @@
 - 应用图标已整体替换：EXE/窗口（标题栏）图标、任务栏/开始菜单包徽标、启动画面、托盘图标与 Store 列表图资全部更新为新的 `ApiMonitor.ico` / `TrayIcon.ico` 与包徽标资产。
 - **数据洞察页**（v0.6.0）：账户 / 指标 / 时间范围选择、轻量本地趋势图（WinUI 原生，不引入图表框架）、当前值、区间变化、首末与极值、可折叠历史表、CSV 导出
 - **消费估算**（v0.6.0）：按有效区间中位数估算每日消耗与预计可用天数，仅基于本机历史；明确标注“估算值”并附说明，数据不足 / 未观察到消耗 / 最近充值 / 指标不支持预测 / 当前值未知等显示明确原因
-- **便携备份**（v0.6.0，v0.7.0 更新）：设置 → 数据管理 中导出 / 导入 `.apimonitor-backup`（ZIP+JSON）——账户元数据、Provider 非敏感设置、余额历史、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 外观设置。v0.7.0 备份使用 `floating-window-settings.json`，仍可导入含旧 `compact-window-settings.json` 的 v0.6.0 备份。**绝不包含 API Key 或凭据**；导入为安全合并（已有账户保留本机凭据、新账户标记需重新输入密钥、历史按稳定 Id 去重、失败回滚）
+- **便携备份**（v0.6.0，v0.7.0 / v0.8.0 更新）：设置 → 数据管理 中导出 / 导入 `.apimonitor-backup`（ZIP+JSON）——账户元数据（含 xAI Team ID 等非敏感配置）、Provider 非敏感设置、余额历史、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 外观设置。v0.8.0 / v0.7.0 备份使用 `floating-window-settings.json`，仍可导入含旧 `compact-window-settings.json` 的 v0.6.0 备份。**绝不包含 API Key、Management Key 或凭据**；导入为安全合并（已有账户保留本机凭据、新账户标记需重新输入密钥、历史按稳定 Id 去重、失败回滚）
 - **主题设置**（v0.6.0）：跟随系统 / 浅色 / 深色，立即应用到主窗口与悬浮窗并持久化
 - **统一应用外壳**（v0.6.0）：标题栏、导航面板与页面背景共享统一主题表面（浅色 / 深色 / 高对比度一致）
 - **三语界面**（v0.6.0）：简体中文 / English / 日本語。切换语言会保存偏好、提示重启并通过 `AppInstance.Restart` 重启，不会出现半本地化
@@ -50,7 +55,9 @@
 ## 安全与隐私设计
 
 - API Key 保存在 **Windows 凭据管理器（Credential Locker）** 的 ApiMonitor 资源中，绝不写入 JSON、日志或诊断信息。
-- 密钥只发送给对应 Provider 的官方接口（DeepSeek 余额接口、OpenRouter key/credits 接口）。OpenRouter Management Key 只用于 Credits 接口，绝不发送到其他接口。
+- 密钥只发送给对应 Provider 的官方 HTTPS 主机（DeepSeek `api.deepseek.com`、OpenRouter `openrouter.ai`、Moonshot `api.moonshot.cn`、SiliconFlow `api.siliconflow.cn` / `api.siliconflow.com`、xAI Management API `management-api.x.ai`）。共享的凭据主机白名单在发送前校验每个请求，非 HTTPS 或非白名单目标一律拒绝。OpenRouter Management Key 只用于 Credits 接口；xAI Management Key 只发往 `management-api.x.ai`，绝不发往推理端点。
+- 余额查询只调用 GET 且无副作用的官方接口；ApiMonitor 绝不发送模型推理请求，因此查询余额不会消耗 Token 或产生调用费用。
+- 超时、429 与 5xx 响应会做有限次数、可取消的重试；401 / 403 / 404 与配置类错误绝不自动重试。
 - 账户元数据、余额快照、历史记录、设置与通知状态仅保存在本机应用数据目录。
 - 通知由本机 ApiMonitor 进程在运行期间生成；通知参数只包含非敏感标识（`action`、`accountId`、`providerId`、`metricId`），绝不包含 API Key、余额正文、Authorization、凭据资源或本机路径。
 - **无云端推送、无 WNS 远程推送、无遥测、无开发者服务器**。选择“退出 ApiMonitor”后不再查询或发送新提醒。
@@ -69,7 +76,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.7.0.12_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.8.0.0_x64_Test.zip`。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
@@ -106,7 +113,7 @@ dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 
 项目使用单项目 MSIX 工具链。自 v0.3.0 起使用完整 ApiMonitor 身份（`ApiMonitor` / `CN=ApiMonitorDev`）；Package Family 与 Credential Locker 资源保持不变。
 
-第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、OpenRouter、Microsoft 均无隶属关系。
+第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、OpenRouter、Moonshot、SiliconFlow、xAI、Microsoft 均无隶属关系。
 
 ## 项目结构
 
@@ -118,7 +125,7 @@ Views/                     主页面、账户编辑对话框、历史记录对�
 Views/FloatingBalanceWindow  轻量置顶悬浮余额窗
 ViewModels/                MVVM 视图模型
 Models/                    领域模型（含通用 BalanceMetric）
-Providers/                 余额 Provider（DeepSeek、OpenRouter）与注册表
+Providers/                 余额 Provider（DeepSeek、OpenRouter、Moonshot、SiliconFlow、xAI）与注册表
 Services/                  存储、密钥、刷新、历史、阈值、通知、剪贴板、窗口管理服务
 tests/ApiMonitor.Tests/    xUnit 测试套件
 tests/installer/           安装工具测试
@@ -134,7 +141,8 @@ tests/installer/           安装工具测试
 - 旧指标的历史显示标签可能保留原有文本。
 - 更新检查仅手动触发，应用不会自动下载或安装更新。
 - Microsoft Store 上架计划在 v1.0 进行。
-- 仅支持 DeepSeek 与 OpenRouter 两个 Provider，不支持第三方 DLL Provider 动态加载。
+- 官方支持 DeepSeek、OpenRouter、Moonshot、SiliconFlow 与 xAI 五个 Provider，不支持第三方 DLL Provider 动态加载。
+- SiliconFlow 余额接口不返回币种字段，按平台计价惯例视为人民币（CNY）；官方结构变化时应用返回“响应结构暂不支持”，不做猜测显示。
 - GitHub 侧载版使用自签名开发证书（`CN=ApiMonitorDev`）。
 
 ## 路线图

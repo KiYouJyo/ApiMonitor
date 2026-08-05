@@ -1,11 +1,12 @@
 # ApiMonitor 隐私说明 / Privacy Policy
 
-最后更新：2026-08-04 · 对应：v0.7.0（正式 Release）
+最后更新：2026-08-05 · 对应：v0.8.0（验收候选）
 
-ApiMonitor 是一款本地运行的 Windows 桌面应用，用于查询并记录你自己的 API 账户余额，支持 **DeepSeek** 与 **OpenRouter** 两个 Provider。
+ApiMonitor 是一款本地运行的 Windows 桌面应用，用于查询并记录你自己的 API 账户余额，支持 **DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow** 与 **xAI** 五个 Provider。
 
 ## 版本说明
 
+- **v0.8.0（验收候选）**：新增 Moonshot / Kimi、SiliconFlow、xAI 三个余额 Provider；余额查询只调用官方 GET 接口，不发送模型推理请求；新增凭据请求 HTTPS 主机白名单与有限重试；账户编辑器支持动态非敏感配置字段（xAI Team ID），编辑中切换 Provider 不会沿用旧凭据；在 v0.7.0 之上原地升级，保留全部账户、凭据、历史与设置，数据 schema 保持 v3。
 - **v0.7.0（正式 Release）**：主页顶部布局精简（移除副标题与“打开紧凑窗口”按钮）、悬浮余额窗替代紧凑窗口（固定尺寸、黑白单层小方块，只展示一个选定账户的核心额度数字，支持 Windows 原生流畅拖动并记住账户与位置，全部本地展示）、应用/标题栏/任务栏/开始菜单/托盘图标整体替换；在 v0.6.0 之上原地升级，保留全部账户、凭据、历史与设置；旧紧凑窗口设置自动迁移为悬浮窗设置。
 - **v0.6.0（正式 Release）**：数据洞察与消费估算（仅本机历史）、便携备份（不含密钥）、主题与三语（简体中文/English/日本語）、完整“关于”页与手动更新检查；在 v0.5.0 之上原地升级，保留全部账户、凭据、历史与设置。
 - **v0.5.0（历史开发版本）**：通用余额指标（BalanceMetric）、多账户管理、OpenRouter Provider、Windows 通知中心低余额提醒。
@@ -16,12 +17,18 @@ ApiMonitor 是一款本地运行的 Windows 桌面应用，用于查询并记录
 
 - 应用不要求你注册开发者账户，也不要求你自建服务器；**不新增任何遥测或开发者服务器**。
 - 应用不向开发者服务器上传任何数据。
-- 支持 DeepSeek 与 OpenRouter；**凭据只保存在 Windows Credential Locker（凭据管理器）** 的 ApiMonitor 资源中，只用于请求对应 Provider 的官方接口：
+- 支持 DeepSeek、OpenRouter、Moonshot / Kimi、SiliconFlow 与 xAI；**凭据只保存在 Windows Credential Locker（凭据管理器）** 的 ApiMonitor 资源中，只用于请求对应 Provider 的官方 HTTPS 接口：
   - DeepSeek：`https://api.deepseek.com/user/balance`
   - OpenRouter 普通 API Key：`https://openrouter.ai/api/v1/key`
   - OpenRouter Management Key：`https://openrouter.ai/api/v1/credits`
+  - Moonshot / Kimi：`https://api.moonshot.cn/v1/users/me/balance`（普通 API Key）
+  - SiliconFlow：`https://api.siliconflow.cn/v1/user/info`（普通 API Key）
+  - xAI：`https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`（Management Key；需要 Team ID）
 - **OpenRouter Management Key 权限高于普通 API Key**，仅在需要查询账户总 Credits 时使用；密钥仍只保存在 Windows Credential Locker。OpenRouter 密钥只发送给 OpenRouter 官方接口，绝不发送到其他服务。
+- **xAI 余额查询必须使用 Management Key 并填写 Team ID**：普通 xAI 模型 API Key 无法查询余额；xAI Management Key 只发往 `management-api.x.ai` 官方主机，绝不发往模型推理端点。Team ID 属于非敏感账户配置，保存在本机账户数据与备份中。
+- 所有凭据请求在发送前都会校验目标必须是官方 HTTPS 主机（白名单）；任何非 HTTPS 或非白名单目标都会被拒绝。余额查询只调用 GET 且无副作用的官方接口，不会产生 Token 消费或调用费用。
 - API Key 不会写入任何配置文件（JSON）、日志、托盘 Tooltip、托盘菜单、命令行参数、StartupTask 或激活参数。
+- SiliconFlow 余额接口只读取余额字段；用户昵称、头像、邮箱等资料不会被读取保存，完整响应不会写入日志或本地文件。
 - 账户元数据、余额快照、历史记录、阈值、通知设置与通知状态只保存在本机应用数据目录，不会上传。
 - 自动刷新只在应用运行期间执行；关闭应用后不会在后台运行。
 - **关闭主窗口并隐藏到通知区域后，应用进程仍在运行**，自动刷新继续执行；只有选择“退出 ApiMonitor”或系统结束进程时才停止全部刷新并退出。
@@ -45,7 +52,7 @@ ApiMonitor 是一款本地运行的 Windows 桌面应用，用于查询并记录
 
 ## 便携备份（v0.6.0）
 
-- 便携备份（`.apimonitor-backup`，ZIP+JSON）只包含账户非敏感元数据、Provider 非敏感设置、余额历史、阈值与各类设置；**明确标记 containsSecrets=false**。
+- 便携备份（`.apimonitor-backup`，ZIP+JSON）只包含账户非敏感元数据、Provider 非敏感设置（含 xAI Team ID）、余额历史、阈值与各类设置；**明确标记 containsSecrets=false**。
 - **不导出**：API Key、Management Key、Credential Locker 内容、Authorization、日志、PFX、证书私钥、临时缓存、活动通知 Tag 与短期通知去重状态。
 - 导入为安全合并：已有账户保留本机凭据；新账户标记“需要重新输入凭据”；历史按稳定 Id 去重；导入失败回滚。
 
