@@ -5,17 +5,18 @@
 ![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**ApiMonitor** は WinUI 3 製の軽量 Windows デスクトップアプリで、自分自身の API アカウント残高を照会し、ローカルに記録します。**DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow**、**xAI** の残高照会に対応し、複数アカウント管理と Windows 通知センターの残高不足アラート（任意）を備えています。
+**ApiMonitor** は WinUI 3 製の軽量 Windows デスクトップアプリで、自分自身の API アカウント残高とサービス健全性を照会し、ローカルに記録します。**DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow**、**xAI** の残高照会に加え、国内地図プラットフォーム（**高德**、**百度地図**、**テンセント位置情報**、**天地図**）とセルフホスト GIS サービス（**SuperMap iServer**、汎用 **OGC** WMS/WMTS/WFS）の健全性監視に対応し、複数アカウント管理と Windows 通知センターのアラート（任意）を備えています。
 
-- 現在のバージョン: **v0.8.0**（DisplayVersion `0.8.0` / PackageVersion `0.8.0.0`）
+- 現在のバージョン: **v0.9.0**（DisplayVersion `0.9.0` / PackageVersion `0.9.0.0`）
 - ランタイム: .NET 10 / Windows App SDK 2.x、x64
-- 配布: MSIX サイドロード（自己署名開発者証明書）、Microsoft Store は v1.0 で計画
+- 配布: MSIX サイドロード（自己署名開発者証明書）、Microsoft Store の掲載準備中（Store 版は Microsoft Store による署名・更新配信）
 - ライセンス: [MIT](LICENSE)
 - 言語: 简体中文 · English · 日本語（設定 → 外観と言語 で切替）
 
 ## アップグレード
 
-- **v0.8.0** は v0.7.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker の API キー、最新残高、履歴、しきい値、自動更新・通知・トレイ・フローティングウィンドウ・サインイン起動・外観（テーマと言語）の設定はすべて保持されます。非機密の Provider 設定（xAI Team ID など）も保持され、キーは Credential Locker にのみ残ります。v0.7.0 のデータファイルの schema バージョン変更は不要です。
+- **v0.9.0** は v0.8.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker のエントリ（新しいマルチスロット資格情報を含む）、最新残高/履歴、しきい値、自動更新・通知・トレイ・フローティングウィンドウ・サインイン起動・外観（テーマと言語）の設定はすべて保持されます。既存 5 つの AI Provider とその Metric ID は一切変更されません。accounts/history JSON の schema は v3 のままです（新フィールドはすべて任意）。
+- **v0.8.0** は v0.7.0 の上にその場でアップグレードしました（履歴）。
 - **v0.7.0** は v0.6.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker の API キー、最新残高、履歴、しきい値、自動更新・通知・トレイ・フローティングウィンドウ・サインイン起動・外観（テーマと言語）の設定はすべて保持されます。旧 `compact-window-settings.json` は初回起動時に一度だけ冪等に `floating-window-settings.json` へ移行されます。インストーラーは通知やサインイン起動を自動的に有効化しません。
 - v0.6.0 は v0.5.0 の上にその場でアップグレードします（過去の経緯）。
 - v0.5.0 は v0.4.0 の上にその場でアップグレードします（過去の経緯）。
@@ -24,11 +25,17 @@
 ## 主な機能
 
 - Provider ごとに複数アカウント（例: DeepSeek 複数、OpenRouter キー複数）
-- Provider はレジストリから動的に取得（UI にハードコードしない）。v0.8.0 では DeepSeek・OpenRouter・Moonshot / Kimi・SiliconFlow・xAI の 5 つを提供
+- Provider はレジストリから動的に取得（UI にハードコードしない）。v0.9.0 では DeepSeek・OpenRouter・Moonshot / Kimi・SiliconFlow・xAI の 5 つの AI に加え、高德・百度地図・テンセント位置情報・天地図・SuperMap iServer・OGC の 6 つを提供
 - OpenRouter の 2 つの資格情報モード（通常 API Key / Management Key）
 - **Moonshot / Kimi**（v0.8.0）: 通常の API キーで `GET https://api.moonshot.cn/v1/users/me/balance` を照会し、利用可能残高（人民元。公式の `available_balance` = 現金 + バウチャー）、現金残高、バウチャー残高を表示。欠落フィールドは `null`（決して `0` にしない）。主指標は利用可能残高で、現金とバウチャーを再集計しません。
 - **SiliconFlow**（v0.8.0）: 通常の API キーで `GET https://api.siliconflow.cn/v1/user/info` を照会し、残高フィールドのみを読み取ります（主指標 `totalBalance`、補助 `balance` / `chargeBalance` / 任意の `grantedBalance`）。ユーザープロフィールは無視し、完全なレスポンスをログに書きません。公式の構造が変わった場合は「応答構造が未対応」を返し、誤って 0 を表示しません。
 - **xAI**（v0.8.0）: 推論 API ではなく **Management API** を使用 — `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance` を **Management Key** と **Team ID** で照会します。通常のモデル API キーでは照会できません。公式の「Representation of USD Cents」台帳値をドキュメントに従って米ドルのプリペイド Credits に換算し、マイナス（超過利用）は保持して切り捨てや `Math.Abs` を行いません。
+- **高德 / 百度地図 / テンセント位置情報 / 天地図**（v0.9.0）: 公式 Web サービス API で固定の公開入力を使用した健全性プローブ — 高德ジオコーディング `/v3/geocode/geo`、百度ジオコーディング `/geocoding/v3/`、テンセント行政区画一覧 `/ws/district/v1/list`、天地図地名検索 V2.0 `/v2/search`。各プローブは API 呼び出しを 1 回消費します（UI に表示）。ステータスコードは公式エラーテーブルに従ってマッピングし、未知のコードは数値付きの安全な ProviderError として表示します（意味は推測しません）。4 サービスとも正確な残りクォータ API は公開されておらず、`quota.remaining/used/limit/reset_at` は null のまま 0 と表示しません。
+- **SuperMap iServer**（v0.9.0）: サービスカタログ `{baseUrl}/iserver/services.json` を使ったセルフホスト健全性監視。任意の期待サービス確認と、既定オフの管理状態プローブ（権限のある資格情報が必要）`/iserver/manager/serverstatus.json`。HTTP は明示的なユーザー確認が必要です。空カタログはオフラインとはみなしません。
+- **汎用 OGC サービス**（v0.9.0）: WMS 1.1.1/1.3.0、WMTS 1.0.0、WFS 1.0.0/2.0.0 の GetCapabilities 健全性プローブ。安全な XML 解析（DTD/外部実体/エンティティ展開を無効化、サイズと深さを制限、XSLT なし）。MapGIS Server、GeoServer、SuperMap などに対応。既定では GetCapabilities のみを使用し、GetMap/GetFeature は呼びません。
+- 統一地理指標モデル（v0.9.0）: 地図/GIS アカウントは `service.availability`、`service.latency.ms`、`credential.status`、`permission.status`、`quota.state` を公開（SuperMap は `services.count` / `expected-service.present`、OGC は `layers.count` / `expected-layer.present` / `service.type` / `service.version` も）。サービスアカウントは残高サマリーに一切入らず、偽の ¥/Credits/パーセントも表示しません。
+- クォータ保護（v0.9.0）: 新規地図アカウントは自動更新**オフ**が既定。有効時は既定 6 時間・最小 1 時間。セルフホスト GIS は最小 5 分のまま。429/QPS 超過/クォータ枯渇/401/403/キー無効は自動リトライしません。
+- サービス健全性通知（v0.9.0）: 資格情報無効、権限不足、サービス未有効、クォータ枯渇、サービス利用不可、サービス復旧、期待サービス欠落、期待サービス復旧。新規地図/GIS アカウントは通知**オフ**が既定。一時的エラーは連続 2 回後、復旧は成功 1 回後に通知。手動テスト失敗は通知しません。通知にキー、トークン、完全な URL、イントラネットのパス、カタログ内容は含まれません。
 - Provider 能力メタデータ（v0.8.0）: 各 Provider が公式 Base URL、必須の非機密設定フィールド（xAI Team ID など）、主指標、通貨、複数通貨 / 残高内訳 / 資格情報検証の有無を宣言。公式 Provider ではカスタムエンドポイントは**不可**です。
 - アカウント概要（合計/残高不足/照会失敗）、Provider・状態フィルター
 - 単一または全アカウント更新（アカウント単位の同時実行ロックを再利用）
@@ -59,6 +66,8 @@
 - ポータブルバックアップと CSV エクスポートに API キー・資格情報・Authorization ヘッダー・ログ・ローカルパスは含まれません
 - 更新チェックは「更新を確認」をクリックしたときのみ実行。アカウント/残高/デバイスデータは送信せず、自動ダウンロード・インストールもしません
 - サインイン起動はユーザーが有効化した場合のみ（既定オフ）で、サインイン時はトレイに常駐するだけです
+- 地理セキュリティ（v0.9.0）: 4 つの地図 Provider は公式 HTTPS ホスト（`restapi.amap.com`、`api.map.baidu.com`、`apis.map.qq.com`、`api.tianditu.gov.cn`）に固定され、カスタム Base URL は不可。リダイレクトは一切追わず、資格情報が別オリジンへ転送されることはありません。セルフホスト GIS は http/https のみ（HTTP は明示確認）、file/ftp/data/カスタムスキームを拒否。資格情報はクロスホスト・ポート違い・HTTPS→HTTP リダイレクトに従いません。ログから `key/ak/tk/sig/sn/token` などの機密クエリを除去し、例外に完全なリクエスト URI を含めません。ベンダーコンソールは取得せず、LAN スキャン・ポート探索も行わず、サービスアドレスを外部へ送信しません。
+- マルチスロット資格情報（v0.9.0）: Key+SK（高德/百度/テンセント）、Basic ユーザー名+パスワード、Bearer トークン、クエリトークンを、変更されない `ApiMonitor` リソース配下の独立した Credential Locker エントリとして保存。アカウント JSON は存在フラグのみを記録し、旧単一キーのエントリは読み取り可能のまま、バックアップに資格情報の値は一切含まれません。
 
 ## 動作環境
 
@@ -81,6 +90,18 @@ dotnet restore ApiMonitor.slnx -p:Platform=x64 -p:RuntimeIdentifier=win-x64
 dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug --no-restore
 dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 ```
+
+## 現在の制限
+
+- 通知は ApiMonitor プロセス実行中に取得した結果からのみ生成されます。「ApiMonitor を終了」を選ぶと監視も停止します（Windows サービスや終了後の定期照会はありません）。
+- クラウドプッシュ（WNS）、メール、SMS、Webhook はありません。
+- 高德・百度・テンセント・天地図には正確な残りクォータを照会する公開 API がなく、関連値は常に不明（`null`）で、捏造はしません。アクティブなプローブは API 呼び出しを 1 回消費し、新規地図アカウントは自動更新オフが既定です。
+- 天地図はトークン無効・権限不足・呼び出し超過のステータスコードを公式公開していないため、認識できないコードは数値付きの安全な ProviderError として表示します（意味は推測しません）。
+- MapGIS Server には公式に証明された安定した公開カタログ/健全性インターフェースがないため、汎用 OGC Provider（WMS/WMTS/WFS GetCapabilities）で監視します。検証されていない `mapgis-server` Provider は追加しません。
+- SuperMap 管理状態プローブは既定オフで、権限のある資格情報を提供し明示的に有効化した場合のみ使用します。
+- Microsoft Store への掲載は準備中で、まだ公開されていません。Store 版は Microsoft Store による署名と更新配信が行われます。
+- GitHub サイドロード版は自己署名開発者証明書（`CN=ApiMonitorDev`）で署名されています。
+- 本プロジェクトは高德、百度、テンセント、天地図、SuperMap、MapGIS（中地数码）および各 AI プラットフォームとは一切の所属・公式提携関係はありません。
 
 ## ドキュメント
 

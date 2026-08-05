@@ -2,19 +2,20 @@
 
 [English](README.md) · [日本語](README.ja-JP.md)
 
-**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，用于查询并记录你自己的 API 账户余额。支持 **DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow** 与 **xAI** 余额查询，以及多账户管理与可选的 Windows 通知中心低余额提醒。
+**ApiMonitor** 是一款基于 WinUI 3 的轻量 Windows 桌面应用，在本地统一监测你自己的 API 账户余额、Credits、凭据状态与地图/GIS 服务健康。支持 **11 个 Provider**——5 个 AI 余额 Provider（**DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow**、**xAI**）与 6 个地图/GIS 健康 Provider（地图开放平台 **高德**、**百度地图**、**腾讯位置服务**、**天地图**，以及自托管 GIS 服务 **SuperMap iServer** 与通用 **OGC** WMS/WMTS/WFS）——余额、Credits 与服务健康分开统计，并支持多账户管理与可选的 Windows 通知中心提醒。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前版本：**v0.8.0**（DisplayVersion `0.8.0` / PackageVersion `0.8.0.0`）
+- 当前版本：**v0.9.0**（DisplayVersion `0.9.0` / PackageVersion `0.9.0.0`）
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
-- 分发：MSIX 侧载（自签名开发证书）以及未来的 Microsoft Store（计划 v1.0）
+- 分发：MSIX 侧载（自签名开发证书）；Microsoft Store 上架准备中（Store 版将由 Microsoft Store 完成签名与更新分发）
 - 许可证：[MIT](LICENSE)
 - 语言：简体中文 · English · 日本語（设置 → 外观与语言 中切换）
 
 ## 升级说明
 
-- **v0.8.0** 在 v0.7.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留；非敏感 Provider 配置（如 xAI Team ID）一并保留，密钥仍只保存在 Credential Locker。v0.7.0 数据文件无需提升 schema 版本。
+- **v0.9.0** 在 v0.8.0 之上**原地升级**：账户、AccountId、Credential Locker 条目（含新增多槽位凭据）、最新余额/历史、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留；五个既有 AI Provider 与其 Metric ID 完全不变；accounts/history JSON schema 保持 v3（新增字段均可选）。
+- **v0.8.0** 在 v0.7.0 之上**原地升级**（历史版本）。
 - **v0.7.0** 在 v0.6.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留。旧 `compact-window-settings.json` 在首次启动时一次性、幂等迁移为 `floating-window-settings.json`。安装程序**不会**自动开启系统提醒，也**不会**自动开启登录启动。
 - **v0.6.0** 在 v0.5.0 之上原地升级（历史版本）。
 - **v0.2.0 侧载包不会原地升级**：请先卸载旧包，再重新添加账户。
@@ -29,6 +30,12 @@
 - **Moonshot / Kimi**（v0.8.0）：使用普通 API Key 查询 `GET https://api.moonshot.cn/v1/users/me/balance`，显示可用余额（人民币元，官方 `available_balance` = 现金 + 代金券）、现金余额与代金券余额。缺失字段映射为 null（绝不显示为 0）；主指标为可用余额，现金与代金券不重复相加。
 - **SiliconFlow**（v0.8.0）：使用普通 API Key 查询 `GET https://api.siliconflow.cn/v1/user/info`，只读取余额字段（主指标 `totalBalance`，次级 `balance` / `chargeBalance` / 可选 `grantedBalance`），用户资料一律忽略；完整响应绝不写入日志；官方结构变化时返回“响应结构暂不支持”，不误显示为 0。
 - **xAI**（v0.8.0）：使用 **Management API** 而非推理 API —— `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`，需要 **Management Key** 与 **Team ID**。普通模型 API Key 不能查询余额。官方“Representation of USD Cents”账务值按文档转换为美元预付费 Credits；透支负值原样保留，不钳制、不 `Math.Abs`。
+- **高德 / 百度地图 / 腾讯位置服务 / 天地图**（v0.9.0）：使用官方 Web 服务接口做健康探测，固定公开输入——高德地理编码 `/v3/geocode/geo`、百度地理编码 `/geocoding/v3/`、腾讯行政区划列表 `/ws/district/v1/list`、天地图地名搜索 V2.0 `/v2/search`。每次探测消耗一次调用额度（UI 明确提示）。状态码按官方错误表映射；未知码以“带数值的安全 ProviderError”呈现，不猜测含义。四家平台均无公开精确剩余配额接口，因此 `quota.remaining/used/limit/reset_at` 保持 null，绝不以 0 显示。
+- **SuperMap iServer**（v0.9.0）：自托管健康监测，读取服务目录 `{baseUrl}/iserver/services.json`，可选预期服务检查与（默认关闭、需有权限凭据的）管理状态探测 `/iserver/manager/serverstatus.json`。HTTP 必须由用户显式确认；空服务目录不视为离线。
+- **通用 OGC 服务**（v0.9.0）：WMS 1.1.1/1.3.0、WMTS 1.0.0、WFS 1.0.0/2.0.0 的 GetCapabilities 健康探测，安全 XML 解析（禁用 DTD/外部实体/实体扩展，限制大小与深度，不执行 XSLT）。适用于 MapGIS Server、GeoServer、SuperMap 等；默认只用 GetCapabilities，绝不调用 GetMap/GetFeature。
+- 统一地理指标模型（v0.9.0）：地图/GIS 账户统一暴露 `service.availability`、`service.latency.ms`、`credential.status`、`permission.status`、`quota.state`（SuperMap 另有 `services.count` / `expected-service.present`，OGC 另有 `layers.count` / `expected-layer.present` / `service.type` / `service.version`）。服务账户绝不进入资金余额汇总，也不显示伪造的 ¥/Credits/百分比。
+- 配额保护（v0.9.0）：新建地图账户默认**关闭**自动刷新；启用后默认 6 小时、最短 1 小时；自托管 GIS 保持最短 5 分钟。429/QPS 超限/配额耗尽/401/403/Key 无效一律不自动重试。
+- 服务健康通知（v0.9.0）：凭据无效、权限不足、服务未启用、配额耗尽、服务不可用、服务恢复、预期服务缺失、预期服务恢复。新地图/GIS 账户默认**关闭**通知；瞬时错误连续两次后才通知；恢复成功一次即通知；手动测试失败不通知。通知中不含 Key、Token、完整 URL、内网路径或服务目录。
 - Provider 能力元数据（v0.8.0）：每个 Provider 声明默认官方 Base URL、必填非敏感配置字段（如 xAI Team ID）、主指标、币种、是否支持多币种 / 余额分项 / 凭据验证；官方 Provider 默认**不允许**自定义端点。
 - 多账户汇总（总数 / 低余额数 / 查询失败数）、Provider 筛选与状态筛选（全部 / 正常 / 低余额 / 未知 / 失败）
 - 逐账户刷新与“刷新全部账户”（复用账户级并发锁，一个账户失败不影响其他账户）
@@ -65,6 +72,8 @@
 - 更新检查仅在点击“检查更新”时运行，不上传账户 / 余额 / 设备数据，绝不自动下载或安装。
 - 自动刷新只在应用运行期间执行；关闭主窗口并隐藏到通知区域后进程仍在运行，自动刷新继续；只有选择“退出 ApiMonitor”才完全结束程序。
 - 登录启动为用户可选功能（默认关闭），仅驻留通知区域，不自动弹出主窗口。
+- 地理安全（v0.9.0）：四个地图 Provider 锁定官方 HTTPS 主机（`restapi.amap.com`、`api.map.baidu.com`、`apis.map.qq.com`、`api.tianditu.gov.cn`），不允许自定义 Base URL；不跟随任何重定向，凭据不会转发到其他 Origin。自托管 GIS 仅允许 http/https（HTTP 需显式确认），拒绝 file/ftp/data/自定义协议；凭据不跟随跨主机、跨端口或 HTTPS→HTTP 重定向。日志剥离 `key/ak/tk/sig/sn/token` 等敏感查询参数，异常不含完整请求 URI。不抓取任何厂商控制台，不扫描局域网、不探测其他端口，服务地址不上传任何开发者服务器。
+- 多槽位凭据（v0.9.0）：Key+SK（高德/百度/腾讯）、Basic 用户名+密码、Bearer Token、Query Token 作为独立 Credential Locker 条目存储在不变的 `ApiMonitor` 资源下；账户 JSON 只保存存在标志，旧单密钥条目保持可读，备份绝不包含任何凭据值。
 
 ## 系统要求
 
@@ -76,7 +85,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.8.0.0_x64_Test.zip`。
+1. 下载 `ApiMonitor_0.9.0.0_x64_Test.zip`。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
@@ -125,7 +134,7 @@ Views/                     主页面、账户编辑对话框、历史记录对�
 Views/FloatingBalanceWindow  轻量置顶悬浮余额窗
 ViewModels/                MVVM 视图模型
 Models/                    领域模型（含通用 BalanceMetric）
-Providers/                 余额 Provider（DeepSeek、OpenRouter、Moonshot、SiliconFlow、xAI）与注册表
+Providers/                 余额/健康 Provider（5 个 AI + 高德、百度地图、腾讯位置、天地图、SuperMap iServer、OGC）与注册表
 Services/                  存储、密钥、刷新、历史、阈值、通知、剪贴板、窗口管理服务
 tests/ApiMonitor.Tests/    xUnit 测试套件
 tests/installer/           安装工具测试
@@ -140,10 +149,15 @@ tests/installer/           安装工具测试
 - 语言切换需要重启应用。
 - 旧指标的历史显示标签可能保留原有文本。
 - 更新检查仅手动触发，应用不会自动下载或安装更新。
-- Microsoft Store 上架计划在 v1.0 进行。
+- Microsoft Store 上架正在准备中，尚未上架；Store 版将由 Store 完成签名与更新分发。
 - 官方支持 DeepSeek、OpenRouter、Moonshot、SiliconFlow 与 xAI 五个 Provider，不支持第三方 DLL Provider 动态加载。
+- 高德、百度、腾讯、天地图没有公开的精确剩余配额查询接口，相关值一律未知（null），绝不编造；一次主动探测消耗一次 API 调用；新地图账户默认关闭自动刷新。
+- 天地图官方未公开 Token 无效/权限不足/调用超限的状态码；无法识别的状态码显示为带数值的安全 ProviderError，不做语义猜测。
+- MapGIS Server 目前没有官方公开且稳定的目录/健康接口，因此通过通用 OGC Provider（WMS/WMTS/WFS GetCapabilities）监测，不新增未经验证的 `mapgis-server` Provider。
+- SuperMap 管理状态探测默认关闭，仅在用户提供有权限凭据并主动开启时调用。
 - SiliconFlow 余额接口不返回币种字段，按平台计价惯例视为人民币（CNY）；官方结构变化时应用返回“响应结构暂不支持”，不做猜测显示。
 - GitHub 侧载版使用自签名开发证书（`CN=ApiMonitorDev`）。
+- 本项目与高德、百度、腾讯、天地图、超图、中地数码（MapGIS）及各 AI 平台均无隶属或官方合作关系。
 
 ## 路线图
 

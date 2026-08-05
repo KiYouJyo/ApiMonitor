@@ -12,7 +12,20 @@ v0.7.0 upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locke
 
 ### Upgrading v0.7.0 to v0.8.0
 
-v0.8.0 upgrades **in place** over v0.7.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Non-sensitive provider configuration (such as the xAI Team ID) is also preserved; keys stay only in the Credential Locker. Just run `Install.cmd` from the v0.8.0 `Test.zip`. Do **not** uninstall and reinstall for a normal upgrade.
+v0.8.0 upgraded **in place** over v0.7.0 (historical).
+
+### Upgrading v0.8.0 to v0.9.0
+
+v0.9.0 upgrades **in place** over v0.8.0: accounts, AccountIds, Credential Locker entries (including the new multi-slot credentials), latest balances/history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. The five existing AI providers and their metric IDs are unchanged; the accounts/history JSON schema stays at v3 (new fields are optional). Just run `Install.cmd` from the v0.9.0 `Test.zip`. Do **not** uninstall and reinstall for a normal upgrade.
+
+#### Geospatial / GIS accounts (v0.9.0)
+
+- New map accounts (AMap, Baidu Maps, Tencent Location, Tianditu) default to auto-refresh **off**; each active probe consumes one API call (shown in the UI). When enabled, the default interval is 6 hours with a 1-hour minimum. Self-hosted SuperMap iServer and generic OGC services keep the 5-minute minimum.
+- Exact remaining quotas are **not** available from any of the four map platforms' public APIs; those values stay unknown (`null`) and are never shown as `0`.
+- Tianditu does not officially document token-invalid/permission/quota-limit status codes; unrecognized codes are shown as a safe provider error with the numeric code rather than a guessed meaning.
+- MapGIS Server is monitored through the generic OGC provider (WMS/WMTS/WFS GetCapabilities); there is no proprietary `mapgis-server` provider.
+- SuperMap manager-status probing is off by default and only enabled with an authorized credential.
+- Self-hosted HTTP (plaintext) requires explicit confirmation in the account configuration.
 
 ### Upgrading v0.3.1 to v0.4.0
 
@@ -32,7 +45,7 @@ A v0.6.0 portable backup (`.apimonitor-backup`) never contains API keys or Manag
 
 ### Candidate package revisions (0.6.0.1, 0.7.0.0, 0.8.0.0, …)
 
-- The user-visible version stays **v0.6.0** / **v0.7.0** / **v0.8.0**; only the MSIX four-part version advances for each acceptance candidate.
+- The user-visible version stays **v0.6.0** / **v0.7.0** / **v0.8.0** / **v0.9.0**; only the MSIX four-part version advances for each acceptance candidate.
 - **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
 - If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
 
@@ -96,7 +109,7 @@ The button snoozes that account/metric for 24 hours without opening the app wind
 - **`limit_remaining = null`**: means "no key quota is set, or the quota is not constrained by this field" — it is displayed as **无限额度** and never treated as 0, and it never triggers a low-balance alert.
 - Keys are never sent to two endpoints automatically; the endpoint is chosen strictly by the selected credential mode. ApiMonitor never requests, creates, deletes, or rotates OpenRouter API keys, and never manages your OpenRouter account.
 
-## New balance providers (v0.8.0)
+## New providers (v0.8.0 / v0.9.0)
 
 ### Moonshot / Kimi
 

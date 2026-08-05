@@ -49,6 +49,10 @@ packaging/output/
 packaging/**/*.log
 packaging/tmp_*/
 
+# Microsoft Store preparation materials (local, Partner Center manual upload)
+packaging/store/
+store-listing/
+
 # User and local data
 LocalState/
 *.json
