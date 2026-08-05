@@ -21,6 +21,31 @@ public static class MonitoringIntervals
     public const int DefaultMinutes = 30;
 
     public static readonly IReadOnlyList<int> Options = new[] { 5, 15, 30, 60, 180, 360, 720, 1440 };
+
+    // ------------------------------------------------------------------
+    // v0.9.0：公共地图 Provider 主动探测消耗一次调用额度：
+    //   - 新地图账户默认关闭自动刷新；
+    //   - 用户启用后默认 6 小时，最短 1 小时；
+    // 自托管 GIS 服务可允许更短间隔，但默认仍不低于 5 分钟。
+    // ------------------------------------------------------------------
+    public const int GeospatialDefaultMinutes = 360;
+
+    public const int GeospatialMinimumMinutes = 60;
+
+    public const int SelfHostedMinimumMinutes = 5;
+
+    public static readonly IReadOnlyList<int> GeospatialOptions =
+        new[] { 60, 180, 360, 720, 1440 };
+
+    /// <summary>按 Provider 分类返回可选的自动刷新间隔。</summary>
+    public static IReadOnlyList<int> OptionsFor(ProviderCategory category) =>
+        category == ProviderCategory.Geospatial ? GeospatialOptions : Options;
+
+    /// <summary>按 Provider 分类返回最短自动刷新间隔（分钟）。</summary>
+    public static int MinimumFor(ProviderCategory category) =>
+        category == ProviderCategory.Geospatial
+            ? GeospatialMinimumMinutes
+            : SelfHostedMinimumMinutes;
 }
 
 /// <summary>

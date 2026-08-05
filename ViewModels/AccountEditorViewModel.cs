@@ -11,6 +11,7 @@ namespace ApiMonitor.ViewModels;
 /// <summary>
 /// Provider 需要的非敏感配置字段编辑项（如 xAI Team ID）。
 /// 标签/提示/占位符来自 ProviderInfo 声明的 RESW 键，不在 XAML 写死。
+/// v0.9.0：支持布尔字段（自托管“允许 HTTP”等显式确认）。
 /// </summary>
 public sealed partial class ProviderConfigFieldItem : ObservableObject
 {
@@ -24,6 +25,12 @@ public sealed partial class ProviderConfigFieldItem : ObservableObject
 
     public string Placeholder { get; }
 
+    public bool IsBoolean { get; }
+
+    public string OnContentText => L10n.Get("Settings.On");
+
+    public string OffContentText => L10n.Get("Settings.Off");
+
     [ObservableProperty]
     private string _value = string.Empty;
 
@@ -33,10 +40,90 @@ public sealed partial class ProviderConfigFieldItem : ObservableObject
         Label = L10n.Get(field.LabelKey);
         Hint = L10n.Get(field.HintKey);
         IsRequired = field.IsRequired;
+        IsBoolean = field.Kind == ProviderConfigFieldKind.Boolean;
         Placeholder = string.IsNullOrWhiteSpace(field.PlaceholderKey)
             ? string.Empty
             : L10n.Get(field.PlaceholderKey);
         Value = initialValue ?? string.Empty;
+    }
+
+    public bool BooleanValue
+    {
+        get => bool.TryParse(Value, out bool value) && value;
+        set
+        {
+            Value = value ? "true" : "false";
+            OnPropertyChanged();
+        }
+    }
+}
+
+/// <summary>
+/// 多槽位凭据输入项（v0.9.0）：Key+SK、Basic 用户名+密码、Bearer/QueryToken。
+/// 支持按配置字段条件显示（如 OGC 仅 authMode=basic 时显示用户名/密码）。
+/// </summary>
+public sealed partial class CredentialSlotItem : ObservableObject
+{
+    private readonly ProviderCredentialSlot _slot;
+    private readonly IReadOnlyDictionary<string, string> _configValues;
+
+    public string SlotId { get; }
+
+    public string Label { get; }
+
+    public string Hint { get; }
+
+    public bool IsRequired { get; }
+
+    public bool IsSecret { get; }
+
+    public string Placeholder { get; }
+
+    public string OnContentText => L10n.Get("Settings.On");
+
+    public string OffContentText => L10n.Get("Settings.Off");
+
+    [ObservableProperty]
+    private string _value = string.Empty;
+
+    [ObservableProperty]
+    private bool _isVisible = true;
+
+    public CredentialSlotItem(
+        ProviderCredentialSlot slot,
+        string? initialValue,
+        IReadOnlyDictionary<string, string> configValues)
+    {
+        _slot = slot;
+        _configValues = configValues;
+        SlotId = slot.SlotId;
+        Label = L10n.Get(slot.LabelKey);
+        Hint = L10n.Get(slot.HintKey);
+        IsRequired = slot.IsRequired;
+        IsSecret = slot.IsSecret;
+        Placeholder = string.IsNullOrWhiteSpace(slot.PlaceholderKey)
+            ? string.Empty
+            : L10n.Get(slot.PlaceholderKey);
+        Value = initialValue ?? string.Empty;
+        RefreshVisibility(_configValues);
+    }
+
+    /// <summary>按当前配置字段值刷新条件显示（如 authMode 切换后）。</summary>
+    public void RefreshVisibility(IReadOnlyDictionary<string, string> configValues)
+    {
+        if (string.IsNullOrWhiteSpace(_slot.ConditionalOnConfigFieldId))
+        {
+            IsVisible = true;
+            return;
+        }
+
+        string? current = configValues.TryGetValue(_slot.ConditionalOnConfigFieldId, out var raw)
+            ? raw?.Trim().ToLowerInvariant()
+            : null;
+        IsVisible = string.Equals(
+            current,
+            _slot.ConditionalOnConfigValue,
+            StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -48,7 +135,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public IReadOnlyList<ProviderInfo> Providers => _context.Providers;
 
-    public IReadOnlyList<int> RefreshIntervals => MonitoringIntervals.Options;
+    public IReadOnlyList<int> RefreshIntervals =>
+        MonitoringIntervals.OptionsFor(SelectedProviderCategory);
 
     /// <summary>通知开关选项（0=继承全局，1=开启，2=关闭）。</summary>
     public sealed record NotificationPreferenceOption(string Label, int Value);
@@ -122,6 +210,21 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     public ObservableCollection<ProviderConfigFieldItem> ConfigFieldItems { get; } = new();
 
     public bool ShowConfigFields => ConfigFieldItems.Count > 0;
+
+    /// <summary>当前 Provider 需要的凭据槽位输入项（动态，来自注册表）。</summary>
+    public ObservableCollection<CredentialSlotItem> CredentialSlotItems { get; } = new();
+
+    public bool ShowCredentialSlots => CredentialSlotItems.Count > 0;
+
+    /// <summary>是否显示“本次探测可能消耗一次 API 调用”提示。</summary>
+    public bool ShowProbeConsumesQuotaHint =>
+        SelectedProviderInfo?.EffectiveProbeConsumesQuota == true;
+
+    public ProviderCategory SelectedProviderCategory =>
+        SelectedProviderInfo?.EffectiveCategory ?? ProviderCategory.ArtificialIntelligence;
+
+    private ProviderInfo? SelectedProviderInfo =>
+        ProviderInfoFor(SelectedProviderId);
 
     public bool IsEditing => _context.AccountId is not null;
 
@@ -217,17 +320,54 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         && !ModeChangedRequiresRetest
         && !ProviderChangedRequiresRetest
         && !string.IsNullOrWhiteSpace(DisplayName)
-        && (!string.IsNullOrWhiteSpace(ApiKey) || KeepExistingCredentialAllowed)
+        && VisibleRequiredSlotsSatisfied
         && RequiredConfigFieldsFilled
         && ThresholdsValid
-        && MonitoringIntervals.Options.Contains(RefreshIntervalMinutes);
+        && MonitoringIntervals.OptionsFor(SelectedProviderCategory).Contains(RefreshIntervalMinutes);
 
     public bool CanTest =>
         !IsTesting
-        && (!string.IsNullOrWhiteSpace(ApiKey) || KeepExistingCredentialAllowed)
+        && VisibleRequiredSlotsSatisfied
         && RequiredConfigFieldsFilled;
 
     private bool KeepExistingCredentialAllowed => IsEditing && HasStoredCredential && !_providerChanged;
+
+    /// <summary>
+    /// 所有当前可见且必填的凭据槽位都已填写，或编辑中沿用已有凭据。
+    /// </summary>
+    private bool VisibleRequiredSlotsSatisfied
+    {
+        get
+        {
+            foreach (var item in CredentialSlotItems)
+            {
+                if (!item.IsVisible || !item.IsRequired)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(item.Value))
+                {
+                    continue;
+                }
+
+                bool kept = IsEditing
+                    && !_providerChanged
+                    && (string.Equals(item.SlotId, CredentialSlots.Primary, StringComparison.Ordinal)
+                        ? HasStoredCredential
+                            || (_context.CredentialSlots.TryGetValue(item.SlotId, out bool primaryPresent)
+                                && primaryPresent)
+                        : _context.CredentialSlots.TryGetValue(item.SlotId, out bool present)
+                            && present);
+                if (!kept)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
 
     public AsyncRelayCommand TestCommand { get; }
 
@@ -255,6 +395,18 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         RecoveryEnabledIndex = EnabledIndex(context.InitialNotification.RecoveryNotificationsEnabled);
 
         ApplyProviderCapabilities(context.InitialProviderId);
+        // v0.9.0：新地图账户默认关闭自动刷新（启用后 6 小时、最短 1 小时）。
+        if (!IsEditing && SelectedProviderCategory == ProviderCategory.Geospatial)
+        {
+            AutoRefreshEnabled = false;
+            RefreshIntervalMinutes = MonitoringIntervals.GeospatialDefaultMinutes;
+        }
+
+        // v0.9.0：新地图/GIS 服务账户默认关闭健康通知（用户必须主动开启）。
+        if (!IsEditing && SelectedProviderCategory != ProviderCategory.ArtificialIntelligence)
+        {
+            NotificationEnabledIndex = 2;
+        }
         SelectedCredentialMode = context.CredentialMode ?? ProviderInfoFor(context.InitialProviderId)?.DefaultCredentialOption.CredentialTypeId ?? string.Empty;
         // 旧账户未保存凭据模式时按该 Provider 默认模式视为“未更改”，避免升级后要求重测。
         _effectiveOriginalMode = IsEditing
@@ -282,14 +434,31 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             OnPropertyChanged(nameof(ShowConfigFields));
             OnPropertyChanged(nameof(CanSave));
             OnPropertyChanged(nameof(CanTest));
+            RefreshCredentialSlotVisibility();
+        };
+
+        CredentialSlotItems.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ShowCredentialSlots));
+            OnPropertyChanged(nameof(CanSave));
+            OnPropertyChanged(nameof(CanTest));
         };
     }
 
     partial void OnDisplayNameChanged(string value) =>
         TestCommand.NotifyCanExecuteChanged();
 
-    partial void OnApiKeyChanged(string value) =>
+    partial void OnApiKeyChanged(string value)
+    {
         TestCommand.NotifyCanExecuteChanged();
+        // 旧单密码框入口同步到 primary 槽位（多槽位模型）。
+        var primary = CredentialSlotItems.FirstOrDefault(i =>
+            string.Equals(i.SlotId, CredentialSlots.Primary, StringComparison.OrdinalIgnoreCase));
+        if (primary is not null && !string.Equals(primary.Value, value, StringComparison.Ordinal))
+        {
+            primary.Value = value;
+        }
+    }
 
     partial void OnIsTestingChanged(bool value) =>
         TestCommand.NotifyCanExecuteChanged();
@@ -316,6 +485,10 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         }
 
         RebuildConfigFields();
+        RebuildCredentialSlots();
+        OnPropertyChanged(nameof(RefreshIntervals));
+        OnPropertyChanged(nameof(SelectedProviderCategory));
+        OnPropertyChanged(nameof(ShowProbeConsumesQuotaHint));
         OnPropertyChanged(nameof(ShowKeepCredentialHint));
         OnPropertyChanged(nameof(ShowMissingCredentialHint));
         OnPropertyChanged(nameof(CanSave));
@@ -342,6 +515,24 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     public void SetApiKey(string password) => ApiKey = password;
 
+    /// <summary>v0.9.0：把指定槽位设置为输入值（旧单密码框入口保持可用）。</summary>
+    public void SetCredentialSlotValue(string slotId, string value)
+    {
+        var item = CredentialSlotItems.FirstOrDefault(i =>
+            string.Equals(i.SlotId, slotId, StringComparison.OrdinalIgnoreCase));
+        if (item is not null)
+        {
+            item.Value = value;
+            OnPropertyChanged(nameof(CanSave));
+            OnPropertyChanged(nameof(CanTest));
+        }
+
+        if (string.Equals(slotId, CredentialSlots.Primary, StringComparison.OrdinalIgnoreCase))
+        {
+            ApiKey = value;
+        }
+    }
+
     private async Task TestConnectionAsync(CancellationToken cancellationToken)
     {
         IsTesting = true;
@@ -355,7 +546,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                 string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
                 _context.AccountId,
                 cancellationToken,
-                BuildProviderConfig());
+                BuildProviderConfig(),
+                BuildCredentialSlots());
 
             HasTestResult = true;
             if (result.IsSuccess)
@@ -419,6 +611,24 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(ApiKey) && !KeepExistingCredentialAllowed)
         {
+            // 保持旧校验：primary 槽位未填写且不能沿用时不保存。
+            if (CredentialSlotItems.Count > 0
+                && CredentialSlotItems.Any(i =>
+                    string.Equals(i.SlotId, CredentialSlots.Primary, StringComparison.OrdinalIgnoreCase)))
+            {
+                ShowValidation(L10n.Get("Dialog.ValidationKeyRequired"));
+                return false;
+            }
+
+            if (CredentialSlotItems.Count == 0)
+            {
+                ShowValidation(L10n.Get("Dialog.ValidationKeyRequired"));
+                return false;
+            }
+        }
+
+        if (!VisibleRequiredSlotsSatisfied)
+        {
             ShowValidation(L10n.Get("Dialog.ValidationKeyRequired"));
             return false;
         }
@@ -435,7 +645,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             return false;
         }
 
-        if (!MonitoringIntervals.Options.Contains(RefreshIntervalMinutes))
+        if (!MonitoringIntervals.OptionsFor(SelectedProviderCategory).Contains(RefreshIntervalMinutes))
         {
             ShowValidation(L10n.Get("Dialog.ValidationIntervalInvalid"));
             return false;
@@ -450,6 +660,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             ApiKey = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey,
             CredentialMode = SelectedCredentialMode,
             ProviderConfig = BuildProviderConfig(),
+            CredentialSlots = BuildCredentialSlots(),
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = AutoRefreshEnabled,
@@ -577,8 +788,77 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         }
     }
 
+    private void RebuildCredentialSlots()
+    {
+        foreach (var item in CredentialSlotItems)
+        {
+            item.PropertyChanged -= OnCredentialSlotChanged;
+        }
+
+        CredentialSlotItems.Clear();
+
+        var info = ProviderInfoFor(SelectedProviderId);
+        if (info is null)
+        {
+            return;
+        }
+
+        foreach (var slot in info.EffectiveCredentialSlots)
+        {
+            // 编辑中绝不回显已存凭据值（只显示“已保存”提示）；新增时为空输入。
+            var item = new CredentialSlotItem(slot, initialValue: null, BuildConfigValueMap());
+            item.PropertyChanged += OnCredentialSlotChanged;
+            CredentialSlotItems.Add(item);
+        }
+
+        // 同步旧单密码框入口（primary 槽位）。
+        ApiKey = CredentialSlotItems.FirstOrDefault(i =>
+            string.Equals(i.SlotId, CredentialSlots.Primary, StringComparison.OrdinalIgnoreCase))?.Value ?? string.Empty;
+    }
+
+    private void RefreshCredentialSlotVisibility()
+    {
+        var config = BuildConfigValueMap();
+        foreach (var item in CredentialSlotItems)
+        {
+            item.RefreshVisibility(config);
+        }
+
+        OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanTest));
+    }
+
+    private IReadOnlyDictionary<string, string> BuildConfigValueMap()
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var field in ConfigFieldItems)
+        {
+            map[field.FieldId] = field.Value.Trim();
+        }
+
+        return map;
+    }
+
+    private void OnCredentialSlotChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (sender is CredentialSlotItem item
+            && string.Equals(item.SlotId, CredentialSlots.Primary, StringComparison.OrdinalIgnoreCase))
+        {
+            ApiKey = item.Value;
+        }
+
+        OnPropertyChanged(nameof(CanSave));
+        OnPropertyChanged(nameof(CanTest));
+    }
+
+    private IReadOnlyDictionary<string, string> BuildCredentialSlots() =>
+        CredentialSlotItems
+            .Where(i => i.IsVisible && !string.IsNullOrWhiteSpace(i.Value))
+            .ToDictionary(i => i.SlotId, i => i.Value.Trim(), StringComparer.Ordinal);
+
     private void OnConfigFieldChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        RefreshCredentialSlotVisibility();
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(CanTest));
     }

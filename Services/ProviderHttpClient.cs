@@ -15,11 +15,13 @@ public sealed class ProviderHttpClient
     private readonly IHttpRequestService _http;
     private readonly IReadOnlyList<string> _allowedHosts;
     private readonly Func<int, TimeSpan> _backoff;
+    private readonly bool _retryOnRateLimit;
 
     public ProviderHttpClient(
         IHttpRequestService http,
         IEnumerable<string> allowedHosts,
-        Func<int, TimeSpan>? backoff = null)
+        Func<int, TimeSpan>? backoff = null,
+        bool retryOnRateLimit = true)
     {
         _http = http;
         _allowedHosts = allowedHosts
@@ -28,6 +30,7 @@ public sealed class ProviderHttpClient
             .Distinct(StringComparer.Ordinal)
             .ToList();
         _backoff = backoff ?? (attempt => TimeSpan.FromMilliseconds(150 * (1 << (attempt - 1))));
+        _retryOnRateLimit = retryOnRateLimit;
     }
 
     /// <summary>
@@ -73,8 +76,8 @@ public sealed class ProviderHttpClient
         }
     }
 
-    private static bool ShouldRetry(HttpStatusCode statusCode) =>
-        statusCode == (HttpStatusCode)429 || (int)statusCode >= 500;
+    private bool ShouldRetry(HttpStatusCode statusCode) =>
+        (_retryOnRateLimit && statusCode == (HttpStatusCode)429) || (int)statusCode >= 500;
 
     private void EnsureOfficialHost(HttpRequestMessage request)
     {

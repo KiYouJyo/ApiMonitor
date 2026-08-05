@@ -50,6 +50,8 @@ public sealed class JsonNotificationStateStore : INotificationStateStore
                 LastRecoveryNotifiedAt = s.LastRecoveryNotifiedAt,
                 SnoozedUntil = s.SnoozedUntil,
                 LastNotificationTag = s.LastNotificationTag,
+                LastStatusValue = s.LastStatusValue,
+                ConsecutiveFailures = s.ConsecutiveFailures ?? 0,
             })
             .ToList();
     }
@@ -71,6 +73,8 @@ public sealed class JsonNotificationStateStore : INotificationStateStore
                     LastRecoveryNotifiedAt = s.LastRecoveryNotifiedAt,
                     SnoozedUntil = s.SnoozedUntil,
                     LastNotificationTag = s.LastNotificationTag,
+                    LastStatusValue = s.LastStatusValue,
+                    ConsecutiveFailures = s.ConsecutiveFailures,
                 })
                 .ToList(),
         };
@@ -111,4 +115,9 @@ public sealed class NotificationStateFileEntry
     public DateTimeOffset? SnoozedUntil { get; set; }
 
     public string? LastNotificationTag { get; set; }
+
+    public string? LastStatusValue { get; set; }
+
+    /// <summary>可空以兼容 v0.8.0 及更早文件（缺省 0）。</summary>
+    public int? ConsecutiveFailures { get; set; }
 }

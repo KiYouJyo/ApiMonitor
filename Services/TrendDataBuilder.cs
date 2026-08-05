@@ -1,4 +1,5 @@
 using ApiMonitor.Models;
+using ApiMonitor.Helpers;
 
 namespace ApiMonitor.Services;
 
@@ -75,7 +76,10 @@ public sealed class TrendDataBuilder : ITrendDataBuilder
             {
                 if (string.Equals(metric.MetricId, metricId, StringComparison.OrdinalIgnoreCase))
                 {
-                    points.Add(new TrendPoint(entry.SucceededAtUtc, metric.AvailableAmount));
+                    // v0.9.0：按 MetricValueKind 取值（Decimal/Integer；其余为 null）。
+                    points.Add(new TrendPoint(
+                        entry.SucceededAtUtc,
+                        MetricValueProvider.NumericValue(metric)));
                     break;
                 }
             }

@@ -146,7 +146,8 @@ public sealed class FakeAccountManager : IAccountManager
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? providerConfig = null) =>
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null) =>
         Task.FromResult(RefreshResult);
 
     public Task<ApiAccount> SaveAccountAsync(
@@ -158,7 +159,8 @@ public sealed class FakeAccountManager : IAccountManager
         MonitoringSettings monitoring,
         CancellationToken cancellationToken,
         AccountNotificationSettings? notification = null,
-        IReadOnlyDictionary<string, string>? providerConfig = null)
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null)
     {
         if (SaveException is not null)
         {

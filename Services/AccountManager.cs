@@ -82,6 +82,25 @@ public sealed class AccountManager : IAccountManager
             _records[record.AccountId] = record;
         }
 
+        // v0.9.0：从 Credential Locker 读取各账户实际存在的凭据槽位，
+        // 保证编辑对话框能显示“已有哪些凭据”（账户 JSON 只保存存在标志）。
+        foreach (var account in _accounts)
+        {
+            var present = _secretStore.GetPresentSlots(account.AccountId);
+            if (present.Count == 0)
+            {
+                if (account.HasCredential)
+                {
+                    present = new List<string> { CredentialSlots.Primary };
+                }
+            }
+
+            if (present.Count > 0)
+            {
+                account.CredentialSlots = BuildSlotPresence(account.CredentialSlots, present);
+            }
+        }
+
         // v0.1.0 迁移/旧账户：为已启用但无下次刷新时间的账户按上次查询时间回填。
         bool settingsChanged = false;
         foreach (var account in _accounts)
@@ -149,7 +168,8 @@ public sealed class AccountManager : IAccountManager
         string? apiKey,
         string? accountId,
         CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? providerConfig = null)
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null)
     {
         var provider = _registry.GetById(providerId);
         if (provider is null)
@@ -165,7 +185,24 @@ public sealed class AccountManager : IAccountManager
             key = await _secretStore.GetAsync(accountId, cancellationToken);
         }
 
-        if (string.IsNullOrWhiteSpace(key))
+        var slots = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (key is not null)
+        {
+            slots[CredentialSlots.Primary] = key;
+        }
+
+        if (credentialSlots is not null)
+        {
+            foreach (var pair in credentialSlots)
+            {
+                if (!string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    slots[pair.Key] = pair.Value.Trim();
+                }
+            }
+        }
+
+        if (slots.Count == 0)
         {
             return BalanceQueryResult.Failure(
                 BalanceErrorKind.MissingCredential,
@@ -184,9 +221,12 @@ public sealed class AccountManager : IAccountManager
             ProviderConfig = providerConfig is { Count: > 0 }
                 ? new Dictionary<string, string>(providerConfig, StringComparer.Ordinal)
                 : new Dictionary<string, string>(StringComparer.Ordinal),
+            CredentialSlots = BuildSlotPresence(
+                new Dictionary<string, bool>(StringComparer.Ordinal),
+                slots.Keys),
         };
 
-        return await provider.QueryBalanceAsync(probe, key, cancellationToken);
+        return await provider.QueryBalanceAsync(probe, slots, cancellationToken);
     }
 
     public async Task<ApiAccount> SaveAccountAsync(
@@ -198,7 +238,8 @@ public sealed class AccountManager : IAccountManager
         MonitoringSettings monitoring,
         CancellationToken cancellationToken,
         AccountNotificationSettings? notification = null,
-        IReadOnlyDictionary<string, string>? providerConfig = null)
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null)
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
@@ -210,17 +251,47 @@ public sealed class AccountManager : IAccountManager
             throw new ArgumentException(L10n.Format("Account.ErrorUnsupportedProviderId", providerId), nameof(providerId));
         }
 
+        // v0.9.0：按 Provider 分类校验自动刷新间隔（地图最短 1 小时，
+        // 自托管 GIS 最短 5 分钟），防止 UI 之外传入更频繁的调度。
+        var providerInfo = _registry.GetById(providerId)!.Info;
+        var allowedIntervals = MonitoringIntervals.OptionsFor(providerInfo.EffectiveCategory);
+        if (!allowedIntervals.Contains(monitoring.RefreshIntervalMinutes))
+        {
+            throw new ArgumentException(
+                L10n.Format("Account.ErrorIntervalUnsupported", monitoring.RefreshIntervalMinutes),
+                nameof(monitoring));
+        }
+
         string id = accountId ?? Guid.NewGuid().ToString("N");
         var existing = _accounts.FirstOrDefault(a =>
             string.Equals(a.AccountId, id, StringComparison.OrdinalIgnoreCase));
 
         var now = NowUtc;
         bool hasCredential = existing?.HasCredential ?? false;
+        var slotPresence = new Dictionary<string, bool>(
+            existing?.CredentialSlots ?? new Dictionary<string, bool>(StringComparer.Ordinal),
+            StringComparer.Ordinal);
 
         if (!string.IsNullOrWhiteSpace(newApiKey))
         {
             await _secretStore.SetAsync(id, newApiKey.Trim(), cancellationToken);
+            slotPresence[CredentialSlots.Primary] = true;
             hasCredential = true;
+        }
+
+        if (credentialSlots is not null)
+        {
+            foreach (var pair in credentialSlots)
+            {
+                if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    continue;
+                }
+
+                await _secretStore.SetAsync(id, pair.Value.Trim(), cancellationToken, pair.Key);
+                slotPresence[pair.Key] = true;
+                hasCredential = true;
+            }
         }
 
         var thresholds = monitoring.Thresholds
@@ -253,6 +324,7 @@ public sealed class AccountManager : IAccountManager
                 : providerConfig is null && existing is not null
                     ? new Dictionary<string, string>(existing.ProviderConfig, StringComparer.Ordinal)
                     : new Dictionary<string, string>(StringComparer.Ordinal),
+            CredentialSlots = slotPresence,
             Monitoring = new MonitoringSettings
             {
                 AutoRefreshEnabled = monitoring.AutoRefreshEnabled,
@@ -350,8 +422,17 @@ public sealed class AccountManager : IAccountManager
             }
             else
             {
-                var apiKey = await _secretStore.GetAsync(accountId, cancellationToken);
-                if (string.IsNullOrWhiteSpace(apiKey))
+                var credentials = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (string slot in account.CredentialSlots.Where(kv => kv.Value).Select(kv => kv.Key))
+                {
+                    string? value = await _secretStore.GetAsync(accountId, cancellationToken, slot);
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        credentials[slot] = value;
+                    }
+                }
+
+                if (credentials.Count == 0)
                 {
                     result = BalanceQueryResult.Failure(
                         BalanceErrorKind.MissingCredential,
@@ -366,7 +447,7 @@ public sealed class AccountManager : IAccountManager
                     Interlocked.Increment(ref _activeRefreshCount);
                     try
                     {
-                        result = await provider.QueryBalanceAsync(account, apiKey, cancellationToken);
+                        result = await provider.QueryBalanceAsync(account, credentials, cancellationToken);
                     }
                     finally
                     {
@@ -387,6 +468,31 @@ public sealed class AccountManager : IAccountManager
                             Source = source,
                             IsAvailable = snapshot.IsAvailable,
                             Metrics = snapshot.Metrics,
+                        });
+                        record.History = HistoryRetention.Apply(record.History, NowUtc).ToList();
+                    }
+                    else if (!result.IsSuccess
+                        && provider.Info.EffectiveCategory != ProviderCategory.ArtificialIntelligence)
+                    {
+                        // v0.9.0：地理/GIS 探测失败也写入历史（探测时间 + 状态 +
+                        // 错误类别），供状态历史/成功率洞察；绝不保存响应内容。
+                        var status = result.Error is { } error
+                            ? MapErrorToStatus(error.Kind)
+                            : GeospatialStatus.Unknown;
+                        record.History.Add(new BalanceHistoryEntry
+                        {
+                            Id = Guid.NewGuid().ToString("N"),
+                            AccountId = accountId,
+                            ProviderId = account.ProviderId,
+                            SucceededAtUtc = NowUtc,
+                            Source = source,
+                            IsAvailable = false,
+                            Metrics = new[]
+                            {
+                                GeospatialMetricFactory.ServiceAvailability(
+                                    account.ProviderId,
+                                    status),
+                            },
                         });
                         record.History = HistoryRetention.Apply(record.History, NowUtc).ToList();
                     }
@@ -554,4 +660,38 @@ public sealed class AccountManager : IAccountManager
         await _accountStore.SaveAsync(_accounts, cancellationToken);
         await _snapshotStore.SaveAsync(_records.Values.ToList(), cancellationToken);
     }
+
+    private static IReadOnlyDictionary<string, bool> BuildSlotPresence(
+        IReadOnlyDictionary<string, bool> existing,
+        IEnumerable<string> present)
+    {
+        var result = new Dictionary<string, bool>(existing, StringComparer.Ordinal);
+        foreach (string slot in present)
+        {
+            result[slot] = true;
+        }
+
+        return result;
+    }
+
+    private static GeospatialStatus MapErrorToStatus(BalanceErrorKind kind) =>
+        kind switch
+        {
+            BalanceErrorKind.Network => GeospatialStatus.NetworkUnavailable,
+            BalanceErrorKind.Timeout => GeospatialStatus.Timeout,
+            BalanceErrorKind.TlsFailure => GeospatialStatus.TlsFailure,
+            BalanceErrorKind.CredentialInvalid or BalanceErrorKind.KeyTypeMismatch
+                or BalanceErrorKind.SignatureInvalid or BalanceErrorKind.Unauthorized
+                => GeospatialStatus.CredentialInvalid,
+            BalanceErrorKind.PermissionDenied or BalanceErrorKind.IpWhitelistDenied
+                or BalanceErrorKind.RefererDomainDenied or BalanceErrorKind.Forbidden
+                => GeospatialStatus.PermissionDenied,
+            BalanceErrorKind.ServiceNotEnabled => GeospatialStatus.ServiceNotEnabled,
+            BalanceErrorKind.QuotaExceeded or BalanceErrorKind.PaymentRequired
+                => GeospatialStatus.QuotaExceeded,
+            BalanceErrorKind.RateLimited => GeospatialStatus.RateLimited,
+            BalanceErrorKind.ConfigurationMissing or BalanceErrorKind.MissingCredential
+                => GeospatialStatus.ConfigurationMissing,
+            _ => GeospatialStatus.ProviderError,
+        };
 }

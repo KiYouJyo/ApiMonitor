@@ -156,6 +156,12 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
     {
         var snapshot = record?.LastSuccessfulSnapshot;
 
+        if (IsServiceAccount(account.ProviderId))
+        {
+            UpdateServiceDisplay(account, record);
+            return;
+        }
+
         // 查询失败：显示失败状态，而不是错误的旧数字。
         if (record?.LastQueryAttemptAt is { } attempt
             && (record.LastSuccessfulSnapshot is null
@@ -208,6 +214,60 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         };
         LastUpdatedText = L10n.Format("Floating.LastUpdatedFormat", FormatTime(snapshot.RetrievedAt));
     }
+
+    /// <summary>
+    /// v0.9.0：地理/GIS 服务账户悬浮窗显示状态 + 延迟 + 简短错误，
+    /// 绝不强行显示 ¥0 或 0 Credits。
+    /// </summary>
+    private void UpdateServiceDisplay(ApiAccount account, AccountBalanceRecord? record)
+    {
+        var snapshot = record?.LastSuccessfulSnapshot;
+
+        // 查询失败：显示失败状态与安全错误类别。
+        if (record?.LastQueryAttemptAt is { } attempt
+            && (record.LastSuccessfulSnapshot is null
+                || record.LastQuerySuccessAt is not { } success
+                || attempt > success))
+        {
+            SetAmount(L10n.Get("Floating.StatusFailed"), string.Empty);
+            StatusText = L10n.Get("Floating.StatusFailed");
+            LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
+            return;
+        }
+
+        if (snapshot is null || snapshot.Metrics.Count == 0)
+        {
+            SetAmount(L10n.Get("Geo.StatusUnknown"), string.Empty);
+            StatusText = L10n.Get("Geo.StatusUnknown");
+            LastUpdatedText = L10n.Get("Card.NotUpdatedYet");
+            return;
+        }
+
+        var availability = snapshot.Metrics.FirstOrDefault(m =>
+            m.DetailedKind == MetricKind.ServiceAvailability);
+        var status = availability?.StatusValue is { } value
+            ? GeospatialMetricFactory.Parse(value)
+            : GeospatialStatus.Unknown;
+
+        var latency = snapshot.Metrics.FirstOrDefault(m =>
+            m.DetailedKind == MetricKind.LatencyMilliseconds);
+        string latencyText = latency?.IntegerValue is { } ms
+            ? L10n.Format("Card.LatencyFormat", ms)
+            : "—";
+
+        SetAmount(
+            status == GeospatialStatus.Healthy
+                ? L10n.Get("Floating.StatusNormal")
+                : L10n.Get("Floating.StatusFailed"),
+            string.Empty);
+        StatusText = latencyText;
+        LastUpdatedText = L10n.Format("Floating.LastUpdatedFormat", FormatTime(snapshot.RetrievedAt));
+    }
+
+    private bool IsServiceAccount(string providerId) =>
+        _accountManager.Providers.Any(p =>
+            string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)
+            && p.EffectiveCategory != ProviderCategory.ArtificialIntelligence);
 
     private void SetAmount(string amountText, string unitText)
     {

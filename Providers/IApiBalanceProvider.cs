@@ -18,5 +18,26 @@ public interface IApiBalanceProvider
     Task<BalanceQueryResult> QueryBalanceAsync(
         ApiAccount account,
         string apiKey,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken) =>
+        QueryBalanceAsync(
+            account,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [CredentialSlots.Primary] = apiKey ?? string.Empty,
+            },
+            cancellationToken);
+
+    /// <summary>
+    /// v0.9.0：多槽位凭据查询入口。默认实现把 primary 槽位传给旧签名，
+    /// 保证五个既有 AI Provider 与它们的测试完全不变；
+    /// 新地理/GIS Provider 重写此方法以读取 Key+SK、用户名+密码等槽位。
+    /// </summary>
+    Task<BalanceQueryResult> QueryBalanceAsync(
+        ApiAccount account,
+        IReadOnlyDictionary<string, string> credentials,
+        CancellationToken cancellationToken)
+    {
+        credentials.TryGetValue(CredentialSlots.Primary, out var primary);
+        return QueryBalanceAsync(account, primary ?? string.Empty, cancellationToken);
+    }
 }

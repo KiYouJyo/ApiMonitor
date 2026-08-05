@@ -51,7 +51,19 @@ public sealed class NotificationCoordinator
         AccountRefreshCompletedEventArgs e,
         CancellationToken cancellationToken)
     {
-        if (!e.Result.IsSuccess || e.Result.Snapshot is not { } snapshot)
+        if (!e.Result.IsSuccess)
+        {
+            // v0.9.0：地理/GIS 服务账户的失败探测也可能触发健康通知
+            // （瞬时错误连续两次后才通知；手动测试失败不会进入此路径）。
+            if (e.Result.Error is { } error)
+            {
+                await HandleFailureAsync(e.AccountId, error, cancellationToken);
+            }
+
+            return;
+        }
+
+        if (e.Result.Snapshot is not { } snapshot)
         {
             return;
         }
@@ -106,6 +118,21 @@ public sealed class NotificationCoordinator
                     tag);
             }
 
+            if (decision.ShouldNotifyHealth)
+            {
+                foreach (var item in decision.HealthItems ?? Array.Empty<HealthNotificationItem>())
+                {
+                    _notifications.ShowHealthNotification(
+                        account.AccountId,
+                        account.ProviderId,
+                        providerName,
+                        account.DisplayName,
+                        item.Type,
+                        item.Message,
+                        tag);
+                }
+            }
+
             _states = decision.UpdatedStates.ToList();
             await _stateStore.SaveAsync(_states, cancellationToken);
         }
@@ -117,6 +144,69 @@ public sealed class NotificationCoordinator
         {
             // 通知/状态保存失败不影响余额保存。
             _log.Error($"通知评估失败: {ex.GetType().Name}");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// 探测失败（无快照）时评估健康通知。只针对地理/GIS 服务账户；
+    /// AI 账户保持 v0.8.0 行为（失败不通知）。
+    /// </summary>
+    private async Task HandleFailureAsync(
+        string accountId,
+        BalanceQueryError error,
+        CancellationToken cancellationToken)
+    {
+        var account = await _accounts.GetAccountAsync(accountId, cancellationToken);
+        if (account is null || !IsServiceProvider(account.ProviderId))
+        {
+            return;
+        }
+
+        var global = await _settingsStore.LoadAsync(cancellationToken);
+
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            var decision = _evaluator.EvaluateFailure(
+                account,
+                error,
+                global,
+                _states,
+                _time.GetUtcNow());
+
+            if (decision.NotificationsSuppressed)
+            {
+                return;
+            }
+
+            string tag = NotificationTags.AccountTag(account.AccountId);
+            string providerName = ProviderDisplayName(account.ProviderId);
+            foreach (var item in decision.HealthItems ?? Array.Empty<HealthNotificationItem>())
+            {
+                _notifications.ShowHealthNotification(
+                    account.AccountId,
+                    account.ProviderId,
+                    providerName,
+                    account.DisplayName,
+                    item.Type,
+                    item.Message,
+                    tag);
+            }
+
+            _states = decision.UpdatedStates.ToList();
+            await _stateStore.SaveAsync(_states, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"失败通知评估失败: {ex.GetType().Name}");
         }
         finally
         {
@@ -234,4 +324,9 @@ public sealed class NotificationCoordinator
         _accounts.Providers.FirstOrDefault(p =>
             string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))?.DisplayName
         ?? providerId;
+
+    private bool IsServiceProvider(string providerId) =>
+        _accounts.Providers.Any(p =>
+            string.Equals(p.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)
+            && p.EffectiveCategory != ProviderCategory.ArtificialIntelligence);
 }

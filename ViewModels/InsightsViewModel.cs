@@ -12,7 +12,13 @@ namespace ApiMonitor.ViewModels;
 public sealed record InsightsAccountOption(string AccountId, string DisplayName);
 
 /// <summary>数据洞察页指标选项（来自账户通用 BalanceMetric，不写死）。</summary>
-public sealed record InsightsMetricOption(string MetricId, string DisplayName, string Unit, BalanceMetricKind Kind);
+public sealed record InsightsMetricOption(
+    string MetricId,
+    string DisplayName,
+    string Unit,
+    BalanceMetricKind Kind,
+    MetricValueKind ValueKind,
+    MetricKind? DetailedKind);
 
 /// <summary>数据洞察页时间范围选项。</summary>
 public sealed record InsightsRangeOption(InsightsTimeRange Range, string DisplayName);
@@ -111,6 +117,13 @@ public sealed partial class InsightsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _estimateExplanationText = string.Empty;
+
+    /// <summary>v0.9.0：服务账户成功率（健康探测数 / 探测总数）。</summary>
+    [ObservableProperty]
+    private string _successRateText = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasSuccessRate;
 
     /// <summary>图表可访问摘要（AutomationProperties.Name 绑定）。</summary>
     [ObservableProperty]
@@ -272,6 +285,7 @@ public sealed partial class InsightsViewModel : ObservableObject
         {
             var history = await _historyProvider.GetHistoryAsync(accountId, ct);
             _loadedHistory = history;
+            UpdateSuccessRate(accountId, history);
 
             // 指标列表来自该账户历史中的通用 BalanceMetric（不得写死）。
             var metricSet = new Dictionary<string, InsightsMetricOption>(StringComparer.OrdinalIgnoreCase);
@@ -285,7 +299,9 @@ public sealed partial class InsightsViewModel : ObservableObject
                             metric.MetricId,
                             metric.DisplayName,
                             metric.Unit,
-                            metric.Kind);
+                            metric.Kind,
+                            metric.ValueKind,
+                            metric.DetailedKind);
                     }
                 }
             }
@@ -359,11 +375,10 @@ public sealed partial class InsightsViewModel : ObservableObject
                 TrendPoints.Add(point);
             }
 
-            HasData = points.Count > 0;
-            EmptyMessage = HasData ? string.Empty : L10n.Get("Insights.EmptyState");
-
             UpdateSummaryValues(points, ct);
             FillHistoryRows(ct);
+            HasData = points.Count > 0 || HistoryRows.Count > 0;
+            EmptyMessage = HasData ? string.Empty : L10n.Get("Insights.EmptyState");
         }
         catch (OperationCanceledException)
         {
@@ -381,7 +396,10 @@ public sealed partial class InsightsViewModel : ObservableObject
     {
         ct.ThrowIfCancellationRequested();
         var metric = SelectedMetric!;
-        var values = points.Where(p => p.Value is not null).Select(p => p.Value!.Value).ToList();
+        bool numericKind = metric.ValueKind is MetricValueKind.Decimal or MetricValueKind.Integer;
+        var values = numericKind
+            ? points.Where(p => p.Value is not null).Select(p => p.Value!.Value).ToList()
+            : new List<decimal>();
 
         if (values.Count == 0)
         {
@@ -396,6 +414,13 @@ public sealed partial class InsightsViewModel : ObservableObject
             EstimateExplanationText = string.Empty;
             ChartSummaryText = L10n.Get("Insights.NoData");
             HasChartSummary = false;
+
+            // v0.9.0：状态/布尔/时间戳指标显示最新状态文本，不伪造数值趋势。
+            if (metric.ValueKind != MetricValueKind.Decimal)
+            {
+                CurrentValueText = LatestStatusText();
+            }
+
             return;
         }
 
@@ -411,12 +436,27 @@ public sealed partial class InsightsViewModel : ObservableObject
         MaximumValueText = FormatValue(max, metric.Unit);
         ChangeInRangeText = FormatChange(current - first, metric.Unit);
 
-        // 估算（剩余类指标）。
-        var estimate = _estimateService.Estimate(
-            points.Select(p => new TimePoint(p.TimeUtc, p.Value)).ToList(),
-            metric.Kind,
-            current,
-            isUnlimited: false);
+        // 估算（仅剩余/额度类数值指标；状态、计数、延迟不估算消耗速度/天数）。
+        ConsumptionEstimate estimate;
+        if (metric.ValueKind is not (MetricValueKind.Decimal or MetricValueKind.Integer)
+            || metric.DetailedKind is MetricKind.CredentialStatus
+                or MetricKind.PermissionStatus or MetricKind.QuotaState
+                or MetricKind.ServiceAvailability)
+        {
+            estimate = new ConsumptionEstimate
+            {
+                IsAvailable = false,
+                UnavailableReason = EstimateUnavailableReason.UnsupportedMetric,
+            };
+        }
+        else
+        {
+            estimate = _estimateService.Estimate(
+                points.Select(p => new TimePoint(p.TimeUtc, p.Value)).ToList(),
+                metric.Kind,
+                current,
+                isUnlimited: false);
+        }
 
         if (estimate.IsAvailable && estimate.DailyConsumption > 0)
         {
@@ -474,15 +514,56 @@ public sealed partial class InsightsViewModel : ObservableObject
                     ProviderId = entry.ProviderId,
                     AccountDisplayName = SelectedAccount?.DisplayName ?? string.Empty,
                     MetricDisplayName = metric.DisplayName,
-                    ValueText = metric.AvailableAmount is { } v
-                        ? FormatValue(v, metric.Unit)
-                        : L10n.Get("Insights.UnknownValue"),
+                    ValueText = MetricValueProvider.ValueText(metric),
                     Unit = metric.Unit,
                     SourceText = entry.Source == BalanceQuerySource.Automatic ? L10n.Get("Insights.SourceAutomatic") : L10n.Get("Insights.SourceManual"),
                 });
                 break;
             }
         }
+    }
+
+    private string LatestStatusText()
+    {
+        var metric = SelectedMetric;
+        if (metric is null)
+        {
+            return L10n.Get("Insights.UnknownValue");
+        }
+
+        var latest = _loadedHistory
+            .Where(h => h.Metrics.Any(m =>
+                string.Equals(m.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase)))
+            .OrderByDescending(h => h.SucceededAtUtc)
+            .Select(h => h.Metrics.First(m =>
+                string.Equals(m.MetricId, metric.MetricId, StringComparison.OrdinalIgnoreCase)))
+            .FirstOrDefault();
+        return latest is null
+            ? L10n.Get("Insights.UnknownValue")
+            : MetricValueProvider.ValueText(latest);
+    }
+
+    /// <summary>服务成功率 = 健康探测数 / 探测总数（来自 service.availability 历史）。</summary>
+    private void UpdateSuccessRate(string accountId, IReadOnlyList<BalanceHistoryEntry> history)
+    {
+        var entries = history
+            .Where(h => h.Metrics.Any(m =>
+                m.DetailedKind == MetricKind.ServiceAvailability))
+            .ToList();
+        if (entries.Count == 0)
+        {
+            SuccessRateText = string.Empty;
+            HasSuccessRate = false;
+            return;
+        }
+
+        int healthy = entries.Count(h => h.Metrics.Any(m =>
+            m.DetailedKind == MetricKind.ServiceAvailability
+            && m.StatusValue is { } status
+            && string.Equals(status, nameof(GeospatialStatus.Healthy), StringComparison.OrdinalIgnoreCase)));
+        int percent = (int)Math.Round(healthy * 100.0 / entries.Count);
+        SuccessRateText = L10n.Format("Insights.SuccessRateFormat", percent, healthy, entries.Count);
+        HasSuccessRate = true;
     }
 
     private async Task ExportCsvAsync()

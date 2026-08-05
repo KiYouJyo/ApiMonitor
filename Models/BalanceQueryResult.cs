@@ -23,6 +23,13 @@ public sealed class BalanceQueryResult
 
     public static BalanceQueryResult Failure(BalanceErrorKind kind, string message) =>
         new(false, null, new BalanceQueryError(kind, message));
+
+    public static BalanceQueryResult Failure(
+        BalanceErrorKind kind,
+        string message,
+        int? httpStatusCode,
+        string? providerErrorCode = null) =>
+        new(false, null, new BalanceQueryError(kind, message, httpStatusCode, providerErrorCode));
 }
 
 public sealed class BalanceQueryError
@@ -31,10 +38,22 @@ public sealed class BalanceQueryError
 
     public string Message { get; }
 
-    public BalanceQueryError(BalanceErrorKind kind, string message)
+    /// <summary>HTTP 状态码（可选；安全展示，不含请求 URI）。</summary>
+    public int? HttpStatusCode { get; }
+
+    /// <summary>官方数值错误码（可选；如高德 10001、百度 4、腾讯 121）。</summary>
+    public string? ProviderErrorCode { get; }
+
+    public BalanceQueryError(
+        BalanceErrorKind kind,
+        string message,
+        int? httpStatusCode = null,
+        string? providerErrorCode = null)
     {
         Kind = kind;
         Message = message;
+        HttpStatusCode = httpStatusCode;
+        ProviderErrorCode = providerErrorCode;
     }
 }
 
@@ -58,4 +77,24 @@ public enum BalanceErrorKind
     ConfigurationMissing,
     AccountNotFound,
     LocalData,
+    // ------------------------------------------------------------------
+    // v0.9.0：地理/GIS 专用错误分类（与官方状态码映射，禁止猜测语义）。
+    // ------------------------------------------------------------------
+    TlsFailure,
+    CredentialInvalid,
+    KeyTypeMismatch,
+    IpWhitelistDenied,
+    RefererDomainDenied,
+    SignatureInvalid,
+    ServiceNotEnabled,
+    PermissionDenied,
+    QuotaExceeded,
+    NotFound,
+    InvalidXml,
+    TooLarge,
+    EmptyCatalog,
+    ExpectedServiceMissing,
+    ExpectedLayerMissing,
+    RedirectBlocked,
+    ProtocolViolation,
 }

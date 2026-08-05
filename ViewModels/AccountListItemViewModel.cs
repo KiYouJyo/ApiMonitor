@@ -1,5 +1,6 @@
 using ApiMonitor.Helpers;
 using ApiMonitor.Models;
+using ApiMonitor.Providers;
 using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,6 +25,29 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     public string DisplayName => Account.DisplayName;
 
     public bool HasStoredCredential => Account.HasCredential;
+
+    /// <summary>v0.9.0：Provider 元数据（分类/探测说明/配额提示）。</summary>
+    public ProviderInfo ProviderInfo { get; }
+
+    public ProviderCategory Category => ProviderInfo.EffectiveCategory;
+
+    /// <summary>是否为地理/GIS 服务账户（不进入余额汇总）。</summary>
+    public bool IsServiceAccount => Category != ProviderCategory.ArtificialIntelligence;
+
+    /// <summary>探测服务说明（如“地理编码探测”“GetCapabilities”）。</summary>
+    public string ProbeDescription => ProviderInfo.ProbeDescription;
+
+    /// <summary>本次探测是否可能消耗一次 API 调用额度。</summary>
+    public bool ProbeConsumesQuota => ProviderInfo.EffectiveProbeConsumesQuota;
+
+    public string ProbeConsumesQuotaText =>
+        ProbeConsumesQuota ? L10n.Get("Card.ProbeConsumesQuota") : string.Empty;
+
+    public bool ShowProbeConsumesQuotaText => ProbeConsumesQuota;
+
+    /// <summary>是否可复制主凭据（OGC 无 primary 槽位时不显示复制按钮）。</summary>
+    public bool HasCopyableCredential =>
+        Account.CredentialSlots.ContainsKey(CredentialSlots.Primary) || Account.HasCredential;
 
     /// <summary>当前最新指标（供编辑对话框设置阈值）。</summary>
     public IReadOnlyList<BalanceMetric> LatestMetricsForEditor => _latestMetrics;
@@ -52,6 +76,36 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     public string ThresholdSummaryText { get; private set; } = L10n.Get("Card.NoBalanceData");
 
     public bool IsLowBalance { get; private set; }
+
+    // ------------------------------------------------------------------
+    // v0.9.0：地理/GIS 服务状态展示
+    // ------------------------------------------------------------------
+
+    /// <summary>当前服务健康状态（服务账户；AI 账户为 null）。</summary>
+    public GeospatialStatus? ServiceStatus { get; private set; }
+
+    public string ServiceStatusText => ServiceStatus is { } status
+        ? GeospatialMetricFactory.StatusText(status)
+        : L10n.Get("Card.NotUpdatedYet");
+
+    public string CredentialStatusText { get; private set; } = "—";
+
+    public string PermissionStatusText { get; private set; } = "—";
+
+    public string QuotaStateText { get; private set; } = "—";
+
+    public string LatencyText { get; private set; } = "—";
+
+    /// <summary>服务账户的状态分类（健康/需注意/失败/未知）。</summary>
+    public AccountStatusKind ServiceStatusKind { get; private set; } = AccountStatusKind.Unknown;
+
+    public string ServiceStatusKindText => ServiceStatusKind switch
+    {
+        AccountStatusKind.Normal => L10n.Get("Home.StatusNormal"),
+        AccountStatusKind.Low => L10n.Get("Home.StatusNeedsAttention"),
+        AccountStatusKind.Failed => L10n.Get("Home.StatusFailed"),
+        _ => L10n.Get("Home.StatusUnknown"),
+    };
 
     /// <summary>当前状态分类（正常/低余额/未知/失败），由快照与最近错误派生。</summary>
     public AccountStatusKind StatusKind { get; private set; } = AccountStatusKind.Unknown;
@@ -145,6 +199,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     public AccountListItemViewModel(
         ApiAccount account,
         string providerDisplayName,
+        ProviderInfo providerInfo,
         AccountBalanceRecord? record,
         Func<Task> refreshAsync,
         Func<Task> editAsync,
@@ -156,6 +211,7 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     {
         Account = account;
         ProviderDisplayName = providerDisplayName;
+        ProviderInfo = providerInfo;
         _refreshAsync = refreshAsync;
         _editAsync = editAsync;
         _deleteAsync = deleteAsync;
@@ -196,6 +252,11 @@ public sealed partial class AccountListItemViewModel : ObservableObject
             LastErrorText = L10n.Get("Card.LastQueryFailed");
         }
 
+        if (IsServiceAccount)
+        {
+            ServiceStatus = GeospatialStatus.Unknown;
+        }
+
         RecomputeStatusKind();
     }
 
@@ -228,6 +289,10 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         BalanceLines = snapshot.Metrics
             .Select(b => new BalanceLine(b))
             .ToList();
+        if (IsServiceAccount)
+        {
+            ApplyServiceMetrics(snapshot.Metrics);
+        }
         RecomputeThresholdSummary();
         RecomputeStatusKind();
     }
@@ -235,6 +300,19 @@ public sealed partial class AccountListItemViewModel : ObservableObject
     public void ApplyError(BalanceQueryError? error)
     {
         LastErrorText = error?.Message ?? L10n.Get("Card.QueryFailed");
+        if (IsServiceAccount)
+        {
+            ServiceStatus = MapErrorToStatus(error?.Kind ?? BalanceErrorKind.Unknown);
+            ServiceStatusKind = ClassifyStatus(ServiceStatus.Value);
+            CredentialStatusText = "—";
+            PermissionStatusText = "—";
+            QuotaStateText = "—";
+            LatencyText = "—";
+            OnPropertyChanged(nameof(ServiceStatus));
+            OnPropertyChanged(nameof(ServiceStatusText));
+            OnPropertyChanged(nameof(ServiceStatusKind));
+            OnPropertyChanged(nameof(ServiceStatusKindText));
+        }
         if (!HasSnapshot)
         {
             AvailabilityText = L10n.Get("Card.Unavailable");
@@ -257,6 +335,14 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     private void RecomputeStatusKind()
     {
+        if (IsServiceAccount)
+        {
+            StatusKind = ServiceStatusKind;
+            OnPropertyChanged(nameof(StatusKind));
+            OnPropertyChanged(nameof(StatusKindText));
+            return;
+        }
+
         StatusKind = !string.IsNullOrEmpty(LastErrorText)
             ? AccountStatusKind.Failed
             : !HasSnapshot
@@ -270,6 +356,16 @@ public sealed partial class AccountListItemViewModel : ObservableObject
 
     private void RecomputeThresholdSummary()
     {
+        if (IsServiceAccount)
+        {
+            // 服务状态不参与低余额阈值；卡片由服务状态区展示。
+            IsLowBalance = false;
+            ThresholdSummaryText = L10n.Get("Card.NoBalanceData");
+            OnPropertyChanged(nameof(ThresholdSummaryText));
+            OnPropertyChanged(nameof(IsLowBalance));
+            return;
+        }
+
         if (!HasSnapshot || _latestMetrics.Count == 0)
         {
             ThresholdSummaryText = L10n.Get("Card.NoBalanceData");
@@ -313,6 +409,93 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         OnPropertyChanged(nameof(ThresholdSummaryText));
         OnPropertyChanged(nameof(IsLowBalance));
     }
+
+    private void ApplyServiceMetrics(IReadOnlyList<BalanceMetric> metrics)
+    {
+        var availability = metrics.FirstOrDefault(m =>
+            m.DetailedKind == MetricKind.ServiceAvailability);
+        ServiceStatus = availability?.StatusValue is { } statusValue
+            ? GeospatialMetricFactory.Parse(statusValue)
+            : GeospatialStatus.Unknown;
+
+        CredentialStatusText = StatusTextOf(metrics, MetricKind.CredentialStatus);
+        PermissionStatusText = StatusTextOf(metrics, MetricKind.PermissionStatus);
+        QuotaStateText = StatusTextOf(metrics, MetricKind.QuotaState);
+
+        var latency = metrics.FirstOrDefault(m =>
+            m.DetailedKind == MetricKind.LatencyMilliseconds);
+        LatencyText = latency?.IntegerValue is { } ms
+            ? L10n.Format("Card.LatencyFormat", ms)
+            : "—";
+
+        ServiceStatusKind = ClassifyStatus(ServiceStatus ?? GeospatialStatus.Unknown);
+
+        OnPropertyChanged(nameof(ServiceStatus));
+        OnPropertyChanged(nameof(ServiceStatusText));
+        OnPropertyChanged(nameof(ServiceStatusKind));
+        OnPropertyChanged(nameof(ServiceStatusKindText));
+        OnPropertyChanged(nameof(CredentialStatusText));
+        OnPropertyChanged(nameof(PermissionStatusText));
+        OnPropertyChanged(nameof(QuotaStateText));
+        OnPropertyChanged(nameof(LatencyText));
+    }
+
+    private static AccountStatusKind ClassifyStatus(GeospatialStatus status) =>
+        status switch
+        {
+            GeospatialStatus.Healthy => AccountStatusKind.Normal,
+            GeospatialStatus.CredentialInvalid or GeospatialStatus.KeyTypeMismatch
+                or GeospatialStatus.IpWhitelistDenied or GeospatialStatus.RefererDomainDenied
+                or GeospatialStatus.SignatureInvalid or GeospatialStatus.PermissionDenied
+                or GeospatialStatus.ServiceNotEnabled or GeospatialStatus.QuotaExceeded
+                or GeospatialStatus.RateLimited or GeospatialStatus.ConfigurationMissing
+                => AccountStatusKind.Low,
+            GeospatialStatus.NetworkUnavailable or GeospatialStatus.Timeout
+                or GeospatialStatus.TlsFailure or GeospatialStatus.ProviderError
+                or GeospatialStatus.InvalidResponse
+                => AccountStatusKind.Failed,
+            _ => AccountStatusKind.Unknown,
+        };
+
+    private static string StatusTextOf(
+        IReadOnlyList<BalanceMetric> metrics,
+        MetricKind kind)
+    {
+        var metric = metrics.FirstOrDefault(m => m.DetailedKind == kind);
+        return metric?.StatusValue is { } value
+            ? GeospatialMetricFactory.StatusText(GeospatialMetricFactory.Parse(value))
+            : "—";
+    }
+
+    private static GeospatialStatus MapErrorToStatus(BalanceErrorKind kind) =>
+        kind switch
+        {
+            BalanceErrorKind.Network => GeospatialStatus.NetworkUnavailable,
+            BalanceErrorKind.Timeout => GeospatialStatus.Timeout,
+            BalanceErrorKind.TlsFailure => GeospatialStatus.TlsFailure,
+            BalanceErrorKind.CredentialInvalid or BalanceErrorKind.KeyTypeMismatch
+                or BalanceErrorKind.SignatureInvalid or BalanceErrorKind.Unauthorized
+                => GeospatialStatus.CredentialInvalid,
+            BalanceErrorKind.PermissionDenied or BalanceErrorKind.IpWhitelistDenied
+                or BalanceErrorKind.RefererDomainDenied or BalanceErrorKind.Forbidden
+                => GeospatialStatus.PermissionDenied,
+            BalanceErrorKind.ServiceNotEnabled => GeospatialStatus.ServiceNotEnabled,
+            BalanceErrorKind.QuotaExceeded or BalanceErrorKind.PaymentRequired
+                => GeospatialStatus.QuotaExceeded,
+            BalanceErrorKind.RateLimited => GeospatialStatus.RateLimited,
+            BalanceErrorKind.ConfigurationMissing or BalanceErrorKind.MissingCredential
+                => GeospatialStatus.ConfigurationMissing,
+            BalanceErrorKind.ServerError
+                or BalanceErrorKind.Busy or BalanceErrorKind.InvalidResponse
+                or BalanceErrorKind.InvalidJson or BalanceErrorKind.InvalidXml
+                or BalanceErrorKind.EmptyContent or BalanceErrorKind.TooLarge
+                or BalanceErrorKind.RedirectBlocked or BalanceErrorKind.ProtocolViolation
+                or BalanceErrorKind.NotFound or BalanceErrorKind.EmptyCatalog
+                or BalanceErrorKind.ExpectedServiceMissing or BalanceErrorKind.ExpectedLayerMissing
+                or BalanceErrorKind.Unknown
+                => GeospatialStatus.ProviderError,
+            _ => GeospatialStatus.Unknown,
+        };
 
     private static string FormatTime(DateTimeOffset value) =>
         value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");

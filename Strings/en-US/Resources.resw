@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== Navigation ===================== -->
 
@@ -81,8 +81,8 @@
   <data name="About.Architecture" xml:space="preserve"><value>Architecture: {0}</value></data>
   <data name="About.PackageIdentity" xml:space="preserve"><value>Package Identity: {0}</value></data>
   <data name="About.Publisher" xml:space="preserve"><value>Publisher: {0}</value></data>
-  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker.</value></data>
-  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>Balances, history, and settings are stored locally.</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>All credentials (API keys, secrets, tokens) are stored in the Windows Credential Locker.</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>Balances, credits, service health, history, and settings are stored only locally.</value></data>
   <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>The app has no developer cloud servers.</value></data>
   <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>No telemetry and no ads.</value></data>
   <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>Notifications are generated locally.</value></data>
@@ -152,10 +152,10 @@
   <data name="About.CheckUpdates.Content" xml:space="preserve"><value>Check for updates</value></data>
   <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>Copy diagnostics</value></data>
   <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>Open local data folder</value></data>
-  <data name="About.Tagline.Text" xml:space="preserve"><value>Query and record your own API account balances</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>Monitor API balances, credits, credential status, and map/GIS service health locally</value></data>
   <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
   <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
-  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>Local balance history, auto refresh, notification area, Windows balance alerts, and data insights.</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>11 providers (5 AI balance + 6 map/GIS health), multi-account management, separate balance and health metrics; auto refresh, notification area, local alerts, and data insights.</value></data>
   <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>Privacy policy, MIT License, and third-party notices are bundled with the app and viewable offline.</value></data>
   <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>Updates</value></data>
   <data name="About.UpdateDescription.Text" xml:space="preserve"><value>Update checks access GitHub only when you click; after finding a new version you decide whether to download and install—the app never auto-downloads or installs.</value></data>
@@ -251,7 +251,7 @@
   <data name="About.PackageVersionFormat" xml:space="preserve"><value>Package version: {0}</value></data>
   <data name="About.ProviderCountFormat" xml:space="preserve"><value>Provider count: {0}</value></data>
   <data name="About.PublisherFormat" xml:space="preserve"><value>Publisher: {0}</value></data>
-  <data name="About.TaglineText" xml:space="preserve"><value>Query and record your own API account balances</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>Monitor API balances, credits, credential status, and map/GIS service health locally</value></data>
   <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>A new version v{0} is available.</value></data>
   <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>Update check failed: {0}</value></data>
   <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API keys are stored in the Windows Credential Locker and are only used to call the provider official API; plain configuration and balance snapshots are stored only in the local app data directory.</value></data>
@@ -534,4 +534,296 @@
   <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>Unable to reach the Moonshot service. Check network or DNS.</value></data>
   <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>Unable to reach the SiliconFlow service. Check network or DNS.</value></data>
   <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>Unable to reach the xAI Management API. Check network or DNS.</value></data>
+  <data name="Account.ErrorIntervalUnsupported" xml:space="preserve"><value>Refresh interval {0} minutes is not available for this provider type.</value></data>
+  <data name="Card.LatencyFormat" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="Card.ProbeConsumesQuota" xml:space="preserve"><value>This probe may consume 1 API call</value></data>
+  <data name="Dialog.ProbeConsumesQuota" xml:space="preserve"><value>This probe may consume 1 API call</value></data>
+  <data name="Geo.StatusConfigurationMissing" xml:space="preserve"><value>Configuration missing</value></data>
+  <data name="Geo.StatusCredentialInvalid" xml:space="preserve"><value>Invalid credential</value></data>
+  <data name="Geo.StatusHealthy" xml:space="preserve"><value>Healthy</value></data>
+  <data name="Geo.StatusInvalidResponse" xml:space="preserve"><value>Unexpected response format</value></data>
+  <data name="Geo.StatusIpWhitelistDenied" xml:space="preserve"><value>IP whitelist failed</value></data>
+  <data name="Geo.StatusKeyTypeMismatch" xml:space="preserve"><value>Key type mismatch</value></data>
+  <data name="Geo.StatusNetworkUnavailable" xml:space="preserve"><value>Network unavailable</value></data>
+  <data name="Geo.StatusPermissionDenied" xml:space="preserve"><value>Permission denied</value></data>
+  <data name="Geo.StatusProviderError" xml:space="preserve"><value>Provider error</value></data>
+  <data name="Geo.StatusQuotaExceeded" xml:space="preserve"><value>Quota exhausted</value></data>
+  <data name="Geo.StatusRateLimited" xml:space="preserve"><value>Request rate limit exceeded</value></data>
+  <data name="Geo.StatusRefererDomainDenied" xml:space="preserve"><value>Referer/domain restricted</value></data>
+  <data name="Geo.StatusServiceNotEnabled" xml:space="preserve"><value>Service not enabled</value></data>
+  <data name="Geo.StatusSignatureInvalid" xml:space="preserve"><value>Signature verification failed</value></data>
+  <data name="Geo.StatusTimeout" xml:space="preserve"><value>Connection timed out</value></data>
+  <data name="Geo.StatusTlsFailure" xml:space="preserve"><value>TLS failure</value></data>
+  <data name="Geo.StatusUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Home.FilterAiProviders" xml:space="preserve"><value>AI and models</value></data>
+  <data name="Home.FilterGeospatialProviders" xml:space="preserve"><value>Map platforms</value></data>
+  <data name="Home.FilterGisServerProviders" xml:space="preserve"><value>GIS services</value></data>
+  <data name="Home.ServiceSummaryFormat" xml:space="preserve"><value>Balance accounts {0} · Services healthy {1} · Need attention {2} · Query failed {3}</value></data>
+  <data name="Home.StatusNeedsAttention" xml:space="preserve"><value>Needs attention</value></data>
+  <data name="Insights.SuccessRateFormat" xml:space="preserve"><value>Success rate {0}% ({1}/{2} probes)</value></data>
+  <data name="Metric.BooleanNo" xml:space="preserve"><value>No</value></data>
+  <data name="Metric.BooleanYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Metric.CredentialStatusName" xml:space="preserve"><value>Credential status</value></data>
+  <data name="Metric.ExpectedLayerName" xml:space="preserve"><value>Expected layer present</value></data>
+  <data name="Metric.ExpectedServiceName" xml:space="preserve"><value>Expected service present</value></data>
+  <data name="Metric.LatencyName" xml:space="preserve"><value>Response latency</value></data>
+  <data name="Metric.LayerCountName" xml:space="preserve"><value>Layer count</value></data>
+  <data name="Metric.PermissionStatusName" xml:space="preserve"><value>Permission status</value></data>
+  <data name="Metric.QuotaLimitName" xml:space="preserve"><value>Quota limit</value></data>
+  <data name="Metric.QuotaRemainingName" xml:space="preserve"><value>Quota remaining</value></data>
+  <data name="Metric.QuotaStateName" xml:space="preserve"><value>Quota state</value></data>
+  <data name="Metric.QuotaUsedName" xml:space="preserve"><value>Quota used</value></data>
+  <data name="Metric.ServiceAvailabilityName" xml:space="preserve"><value>Service availability</value></data>
+  <data name="Metric.ServiceCountName" xml:space="preserve"><value>Service count</value></data>
+  <data name="Metric.ServiceTypeName" xml:space="preserve"><value>Service type</value></data>
+  <data name="Metric.ServiceVersionName" xml:space="preserve"><value>Service version</value></data>
+  <data name="Notification.ExpectedServiceMissing" xml:space="preserve"><value>The expected service or layer does not exist</value></data>
+  <data name="Notification.HealthCredentialInvalid" xml:space="preserve"><value>Invalid credential</value></data>
+  <data name="Notification.HealthExpectedServiceMissing" xml:space="preserve"><value>Expected service/layer missing</value></data>
+  <data name="Notification.HealthExpectedServiceRecovered" xml:space="preserve"><value>Expected service/layer recovered</value></data>
+  <data name="Notification.HealthPermissionDenied" xml:space="preserve"><value>Permission denied</value></data>
+  <data name="Notification.HealthQuotaExceeded" xml:space="preserve"><value>Quota exhausted</value></data>
+  <data name="Notification.HealthServiceNotEnabled" xml:space="preserve"><value>Service not enabled</value></data>
+  <data name="Notification.HealthServiceRecovered" xml:space="preserve"><value>Service recovered</value></data>
+  <data name="Notification.HealthServiceUnavailable" xml:space="preserve"><value>Service unavailable</value></data>
+  <data name="Notification.ServiceRecovered" xml:space="preserve"><value>The service is healthy again</value></data>
+  <data name="Notification.ServiceUnavailableWithStatus" xml:space="preserve"><value>{0} (HTTP {1})</value></data>
+  <data name="Provider.AmapDescription" xml:space="preserve"><value>AMap Open Platform Web Service health monitoring. Probes the geocoding API (one call consumed); no console scraping.</value></data>
+  <data name="Provider.AmapKeyHint" xml:space="preserve"><value>Web service API Key only; front-end JS/Android/iOS keys are not supported.</value></data>
+  <data name="Provider.AmapKeyInputHint" xml:space="preserve"><value>AMap Web service API Key</value></data>
+  <data name="Provider.AmapProbeDescription" xml:space="preserve"><value>Probe: geocoding /v3/geocode/geo (fixed public address)</value></data>
+  <data name="Provider.AmapSecretHint" xml:space="preserve"><value>Required only when signature verification is enabled.</value></data>
+  <data name="Provider.AmapSecretLabel" xml:space="preserve"><value>Signature secret key (optional)</value></data>
+  <data name="Provider.BaiduMapsDescription" xml:space="preserve"><value>Baidu Maps Open Platform Web API health monitoring. Probes the geocoding API (one call consumed); no console scraping.</value></data>
+  <data name="Provider.BaiduMapsKeyHint" xml:space="preserve"><value>Server-side AK only; browser Referer-type AK is not supported.</value></data>
+  <data name="Provider.BaiduMapsKeyInputHint" xml:space="preserve"><value>Baidu Maps server-side AK</value></data>
+  <data name="Provider.BaiduMapsProbeDescription" xml:space="preserve"><value>Probe: geocoding /geocoding/v3/ (fixed public address)</value></data>
+  <data name="Provider.BaiduMapsSecretHint" xml:space="preserve"><value>Required only when SN signing is enabled; the default probe does not attach SN.</value></data>
+  <data name="Provider.BaiduMapsSecretLabel" xml:space="preserve"><value>SK (SN signing, optional)</value></data>
+  <data name="Provider.Error401Amap" xml:space="preserve"><value>AMap returned 401: invalid key or no access permission.</value></data>
+  <data name="Provider.Error401BaiduMaps" xml:space="preserve"><value>Baidu Maps returned 401: invalid AK or no access permission.</value></data>
+  <data name="Provider.Error401Ogc" xml:space="preserve"><value>The OGC service returned 401: invalid credential.</value></data>
+  <data name="Provider.Error401SuperMap" xml:space="preserve"><value>SuperMap iServer returned 401: invalid credential.</value></data>
+  <data name="Provider.Error401TencentLocation" xml:space="preserve"><value>Tencent Location returned 401: invalid key or no access permission.</value></data>
+  <data name="Provider.Error401Tianditu" xml:space="preserve"><value>Tianditu returned 401: invalid token or no access permission.</value></data>
+  <data name="Provider.Error403Amap" xml:space="preserve"><value>AMap returned 403: no permission to access the probed service.</value></data>
+  <data name="Provider.Error403BaiduMaps" xml:space="preserve"><value>Baidu Maps returned 403: no permission to access the probed service.</value></data>
+  <data name="Provider.Error403Ogc" xml:space="preserve"><value>The OGC service returned 403: insufficient permission.</value></data>
+  <data name="Provider.Error403SuperMap" xml:space="preserve"><value>SuperMap iServer returned 403: insufficient permission.</value></data>
+  <data name="Provider.Error403TencentLocation" xml:space="preserve"><value>Tencent Location returned 403: no permission to access the probed service.</value></data>
+  <data name="Provider.Error403Tianditu" xml:space="preserve"><value>Tianditu returned 403: no permission to access the probed service.</value></data>
+  <data name="Provider.Error404Ogc" xml:space="preserve"><value>The OGC service returned 404 for this path; check the GetCapabilities URL.</value></data>
+  <data name="Provider.Error404SuperMap" xml:space="preserve"><value>SuperMap iServer returned 404 for this path; check the Base URL.</value></data>
+  <data name="Provider.ErrorHttpNotConfirmed" xml:space="preserve"><value>This address uses HTTP (plaintext); explicitly allow HTTP in the account configuration.</value></data>
+  <data name="Provider.ErrorInvalidBaseUrl" xml:space="preserve"><value>The Base URL is invalid.</value></data>
+  <data name="Provider.ErrorInvalidCapabilitiesUrl" xml:space="preserve"><value>The GetCapabilities URL is invalid.</value></data>
+  <data name="Provider.ErrorInvalidXml" xml:space="preserve"><value>The response is not valid XML and was safely rejected.</value></data>
+  <data name="Provider.ErrorMissingBaseUrl" xml:space="preserve"><value>The SuperMap iServer Base URL is missing.</value></data>
+  <data name="Provider.ErrorMissingCapabilitiesUrl" xml:space="preserve"><value>The GetCapabilities URL is missing.</value></data>
+  <data name="Provider.ErrorNetworkAmap" xml:space="preserve"><value>Cannot reach the AMap Open Platform; check your network.</value></data>
+  <data name="Provider.ErrorNetworkBaiduMaps" xml:space="preserve"><value>Cannot reach the Baidu Maps Open Platform; check your network.</value></data>
+  <data name="Provider.ErrorNetworkOgc" xml:space="preserve"><value>Cannot reach the OGC service; check the address and network.</value></data>
+  <data name="Provider.ErrorNetworkSuperMap" xml:space="preserve"><value>Cannot reach SuperMap iServer; check the address and network.</value></data>
+  <data name="Provider.ErrorNetworkTencentLocation" xml:space="preserve"><value>Cannot reach Tencent Location Service; check your network.</value></data>
+  <data name="Provider.ErrorNetworkTianditu" xml:space="preserve"><value>Cannot reach Tianditu; check your network.</value></data>
+  <data name="Provider.ErrorRedirectBlocked" xml:space="preserve"><value>Redirect blocked: probes do not follow cross-host or downgrade redirects.</value></data>
+  <data name="Provider.ErrorSchemeNotAllowed" xml:space="preserve"><value>Only http/https schemes are allowed.</value></data>
+  <data name="Provider.ErrorXmlTooLarge" xml:space="preserve"><value>The XML response is too large and was safely rejected.</value></data>
+  <data name="Provider.OgcAllowHttpHint" xml:space="preserve"><value>HTTPS only by default; enabling allows plaintext HTTP, assess the risk yourself.</value></data>
+  <data name="Provider.OgcAllowHttpLabel" xml:space="preserve"><value>Allow HTTP (plaintext)</value></data>
+  <data name="Provider.OgcAuthModeHint" xml:space="preserve"><value>none / basic / bearer / query-token</value></data>
+  <data name="Provider.OgcAuthModeLabel" xml:space="preserve"><value>Authentication</value></data>
+  <data name="Provider.OgcAuthModePlaceholder" xml:space="preserve"><value>none</value></data>
+  <data name="Provider.OgcBearerHint" xml:space="preserve"><value>Authorization: Bearer &lt;token&gt;</value></data>
+  <data name="Provider.OgcBearerLabel" xml:space="preserve"><value>Bearer token</value></data>
+  <data name="Provider.OgcCapabilitiesUrlHint" xml:space="preserve"><value>For example https://host/geoserver/wms?service=WMS&amp;request=GetCapabilities</value></data>
+  <data name="Provider.OgcCapabilitiesUrlLabel" xml:space="preserve"><value>GetCapabilities URL</value></data>
+  <data name="Provider.OgcCapabilitiesUrlPlaceholder" xml:space="preserve"><value>https://example.com/wms?request=GetCapabilities</value></data>
+  <data name="Provider.OgcDescription" xml:space="preserve"><value>Generic OGC service health monitoring (WMS/WMTS/WFS); by default only GetCapabilities is called. Works with MapGIS Server, GeoServer, SuperMap and more.</value></data>
+  <data name="Provider.OgcExpectedLayerHint" xml:space="preserve"><value>When set, GetCapabilities is checked for this layer/feature type.</value></data>
+  <data name="Provider.OgcExpectedLayerLabel" xml:space="preserve"><value>Expected layer or service name (optional)</value></data>
+  <data name="Provider.OgcKeyHint" xml:space="preserve"><value>Only the capabilities document is fetched; no spatial queries.</value></data>
+  <data name="Provider.OgcKeyInputHint" xml:space="preserve"><value>GetCapabilities probe</value></data>
+  <data name="Provider.OgcPasswordHint" xml:space="preserve"><value>Basic authentication password</value></data>
+  <data name="Provider.OgcPasswordLabel" xml:space="preserve"><value>Password (Basic)</value></data>
+  <data name="Provider.OgcProbeDescription" xml:space="preserve"><value>Probe: GetCapabilities (capabilities document only)</value></data>
+  <data name="Provider.OgcQueryTokenHint" xml:space="preserve"><value>Appended to the GetCapabilities URL as the token=&lt;value&gt; query parameter.</value></data>
+  <data name="Provider.OgcQueryTokenLabel" xml:space="preserve"><value>Query token</value></data>
+  <data name="Provider.OgcServiceTypeHint" xml:space="preserve"><value>wms / wmts / wfs</value></data>
+  <data name="Provider.OgcServiceTypeLabel" xml:space="preserve"><value>Service type</value></data>
+  <data name="Provider.OgcServiceTypePlaceholder" xml:space="preserve"><value>wms</value></data>
+  <data name="Provider.OgcUsernameHint" xml:space="preserve"><value>Basic authentication username</value></data>
+  <data name="Provider.OgcUsernameLabel" xml:space="preserve"><value>Username (Basic)</value></data>
+  <data name="Provider.SuperMapAllowHttpHint" xml:space="preserve"><value>HTTPS only by default. Enabling allows plaintext HTTP; assess the risk yourself.</value></data>
+  <data name="Provider.SuperMapAllowHttpLabel" xml:space="preserve"><value>Allow HTTP (plaintext)</value></data>
+  <data name="Provider.SuperMapBaseUrlHint" xml:space="preserve"><value>For example http://localhost:8090; the probe URL is {baseUrl}/iserver/services.json.</value></data>
+  <data name="Provider.SuperMapBaseUrlLabel" xml:space="preserve"><value>iServer Base URL</value></data>
+  <data name="Provider.SuperMapBaseUrlPlaceholder" xml:space="preserve"><value>http://localhost:8090</value></data>
+  <data name="Provider.SuperMapDescription" xml:space="preserve"><value>SuperMap iServer self-hosted health monitoring: reads the service catalog, optional manager status probe (off by default).</value></data>
+  <data name="Provider.SuperMapExpectedServiceHint" xml:space="preserve"><value>When set, the service catalog is checked for this service.</value></data>
+  <data name="Provider.SuperMapExpectedServiceLabel" xml:space="preserve"><value>Expected service name (optional)</value></data>
+  <data name="Provider.SuperMapManagerStatusHint" xml:space="preserve"><value>Requires a credential with permission; off by default.</value></data>
+  <data name="Provider.SuperMapManagerStatusLabel" xml:space="preserve"><value>Enable manager status probe</value></data>
+  <data name="Provider.SuperMapProbeDescription" xml:space="preserve"><value>Probe: iServer catalog /iserver/services.json</value></data>
+  <data name="Provider.SuperMapTokenHint" xml:space="preserve"><value>iServer token or API key (optional)</value></data>
+  <data name="Provider.SuperMapTokenInputHint" xml:space="preserve"><value>iServer token or API key</value></data>
+  <data name="Provider.SuperMapTokenLabel" xml:space="preserve"><value>Token / API key</value></data>
+  <data name="Provider.TencentLocationDescription" xml:space="preserve"><value>Tencent Location Service WebService API health monitoring. The default probe uses the district list API (one call consumed).</value></data>
+  <data name="Provider.TencentLocationKeyHint" xml:space="preserve"><value>WebService API Key only; mobile SDK keys are not supported.</value></data>
+  <data name="Provider.TencentLocationKeyInputHint" xml:space="preserve"><value>Tencent Location WebService API Key</value></data>
+  <data name="Provider.TencentLocationProbeDescription" xml:space="preserve"><value>Probe: district list /ws/district/v1/list</value></data>
+  <data name="Provider.TencentLocationSecretHint" xml:space="preserve"><value>The signing key is only used by sig-capable endpoints; the default probe (district list) does not attach sig.</value></data>
+  <data name="Provider.TencentLocationSecretLabel" xml:space="preserve"><value>SK signing key (optional)</value></data>
+  <data name="Provider.TiandituDescription" xml:space="preserve"><value>Tianditu place-name search V2.0 health monitoring (service token).</value></data>
+  <data name="Provider.TiandituKeyHint" xml:space="preserve"><value>Tianditu service token (tk)</value></data>
+  <data name="Provider.TiandituKeyInputHint" xml:space="preserve"><value>Tianditu service token (tk)</value></data>
+  <data name="Provider.TiandituProbeDescription" xml:space="preserve"><value>Probe: place search /v2/search (fixed parameters, count=1)</value></data>
+  <data name="Status.ServiceUnhealthyTitle" xml:space="preserve"><value>Service status abnormal</value></data>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>Health probe for “{0}” completed.</value></data>
+  
 </root>

@@ -25,6 +25,10 @@ public sealed class AccountEditorContext
     public IReadOnlyDictionary<string, string> ProviderConfig { get; init; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
 
+    /// <summary>编辑时当前账户保存的凭据槽位存在状态（v0.9.0）。</summary>
+    public IReadOnlyDictionary<string, bool> CredentialSlots { get; init; } =
+        new Dictionary<string, bool>(StringComparer.Ordinal);
+
     /// <summary>当前监控设置（编辑时带入，新增时为默认值）。</summary>
     public required MonitoringSettings InitialMonitoring { get; init; }
 
@@ -53,6 +57,13 @@ public sealed class AccountEditorResult
 
     /// <summary>用户填写的非敏感 Provider 配置字段（如 xAI Team ID）。</summary>
     public IReadOnlyDictionary<string, string> ProviderConfig { get; set; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// 用户填写的凭据槽位值（slot → 值；v0.9.0）。
+    /// 只包含本次输入的非空值；未出现的槽位表示沿用已有凭据。
+    /// </summary>
+    public IReadOnlyDictionary<string, string> CredentialSlots { get; set; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
 
     public MonitoringSettings Monitoring { get; set; } = new();

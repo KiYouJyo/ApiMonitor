@@ -1,5 +1,6 @@
 using ApiMonitor.Models;
 using ApiMonitor.ViewModels;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -22,8 +23,6 @@ public sealed partial class AccountEditorDialog : ContentDialog
 
     public string AccountNamePlaceholderText => Services.L10n.Get("Dialog.AccountNamePlaceholder");
 
-    public string ApiKeyHeaderText => Services.L10n.Get("Dialog.ApiKey.Header");
-
     public string TestConnectionText => Services.L10n.Get("Dialog.TestConnection.Content");
 
     public AccountEditorDialog(AccountEditorViewModel viewModel)
@@ -43,19 +42,42 @@ public sealed partial class AccountEditorDialog : ContentDialog
         }
     }
 
-    private void OnApiKeyPasswordChanged(object sender, RoutedEventArgs e)
+    private void OnCredentialSlotPasswordChanged(object sender, RoutedEventArgs e)
     {
         if (sender is PasswordBox box)
         {
-            ViewModel.SetApiKey(box.Password);
+            if (box.DataContext is CredentialSlotItem item)
+            {
+                ViewModel.SetCredentialSlotValue(item.SlotId, box.Password);
+            }
         }
     }
 
     private void ClearApiKey()
     {
-        if (ApiKeyPasswordBox is not null)
+        foreach (var box in FindDescendants<PasswordBox>(this))
         {
-            ApiKeyPasswordBox.Password = string.Empty;
+            box.Password = string.Empty;
+        }
+    }
+
+    /// <summary>遍历可视树查找指定类型后代（用于清空模板内密码框）。</summary>
+    private static IEnumerable<T> FindDescendants<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        int count = VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var descendant in FindDescendants<T>(child))
+            {
+                yield return descendant;
+            }
         }
     }
 

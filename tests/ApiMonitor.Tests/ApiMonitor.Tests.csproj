@@ -46,11 +46,21 @@
     <Compile Include="../../Providers/MoonshotBalanceProvider.cs" Link="Providers/MoonshotBalanceProvider.cs" />
     <Compile Include="../../Providers/SiliconFlowBalanceProvider.cs" Link="Providers/SiliconFlowBalanceProvider.cs" />
     <Compile Include="../../Providers/XaiBalanceProvider.cs" Link="Providers/XaiBalanceProvider.cs" />
+    <Compile Include="../../Providers/AmapBalanceProvider.cs" Link="Providers/AmapBalanceProvider.cs" />
+    <Compile Include="../../Providers/BaiduMapsBalanceProvider.cs" Link="Providers/BaiduMapsBalanceProvider.cs" />
+    <Compile Include="../../Providers/TencentLocationBalanceProvider.cs" Link="Providers/TencentLocationBalanceProvider.cs" />
+    <Compile Include="../../Providers/TiandituBalanceProvider.cs" Link="Providers/TiandituBalanceProvider.cs" />
+    <Compile Include="../../Providers/SuperMapIServerProvider.cs" Link="Providers/SuperMapIServerProvider.cs" />
+    <Compile Include="../../Providers/OgcServiceProvider.cs" Link="Providers/OgcServiceProvider.cs" />
     <Compile Include="../../Providers/ProviderRegistry.cs" Link="Providers/ProviderRegistry.cs" />
     <Compile Include="../../Services/AppLog.cs" Link="Services/AppLog.cs" />
     <Compile Include="../../Services/IHttpRequestService.cs" Link="Services/IHttpRequestService.cs" />
     <Compile Include="../../Services/HttpRequestService.cs" Link="Services/HttpRequestService.cs" />
     <Compile Include="../../Services/ProviderHttpClient.cs" Link="Services/ProviderHttpClient.cs" />
+    <Compile Include="../../Services/QuerySanitizer.cs" Link="Services/QuerySanitizer.cs" />
+    <Compile Include="../../Services/SelfHostedHttpClient.cs" Link="Services/SelfHostedHttpClient.cs" />
+    <Compile Include="../../Services/SecureXml.cs" Link="Services/SecureXml.cs" />
+    <Compile Include="../../Services/GeospatialMetricFactory.cs" Link="Services/GeospatialMetricFactory.cs" />
     <Compile Include="../../Services/ISecretStore.cs" Link="Services/ISecretStore.cs" />
     <Compile Include="../../Services/CredentialLockerSecretStore.cs" Link="Services/CredentialLockerSecretStore.cs" />
     <Compile Include="../../Services/AppPaths.cs" Link="Services/AppPaths.cs" />
@@ -103,6 +113,7 @@
     <Compile Include="../../Services/IMainWindowController.cs" Link="Services/IMainWindowController.cs" />
     <Compile Include="../../Services/WindowCloseBehaviorController.cs" Link="Services/WindowCloseBehaviorController.cs" />
     <Compile Include="../../Helpers/BalanceFormatter.cs" Link="Helpers/BalanceFormatter.cs" />
+    <Compile Include="../../Helpers/MetricValueProvider.cs" Link="Helpers/MetricValueProvider.cs" />
     <Compile Include="../../Helpers/BalanceMetricText.cs" Link="Helpers/BalanceMetricText.cs" />
     <Compile Include="../../Helpers/MainBalanceMetricSelector.cs" Link="Helpers/MainBalanceMetricSelector.cs" />
     <Compile Include="../../ViewModels/StatusSeverity.cs" Link="ViewModels/StatusSeverity.cs" />
