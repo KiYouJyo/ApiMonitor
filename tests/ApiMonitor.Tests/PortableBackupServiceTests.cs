@@ -361,4 +361,105 @@ public sealed class PortableBackupServiceTests
         Assert.Equal(FloatingWindowDefaults.FixedSize, settings.Width);
         Assert.Equal(FloatingWindowDefaults.FixedSize, settings.Height);
     }
+
+    [Fact]
+    public async Task Export_ContainsTeamIdButNeverApiKey()
+    {
+        using var temp = new TempDirectory();
+        var service = CreateService(temp.Path, out var accounts, out _, out _, out _, out _, out _);
+        await accounts.SaveAsync(
+            new[]
+            {
+                new ApiAccount
+                {
+                    AccountId = "acct-xai",
+                    ProviderId = "xai",
+                    DisplayName = "xAI Team",
+                    HasCredential = true,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                    UpdatedAtUtc = DateTimeOffset.UtcNow,
+                    ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["teamId"] = "65c1e471-205f-4566-9c5a-07198bcdf4ce",
+                    },
+                },
+            },
+            CancellationToken.None);
+
+        string backupPath = Path.Combine(temp.Path, "backup.apimonitor-backup");
+        await service.ExportAsync(backupPath, CancellationToken.None);
+
+        using var archive = ZipFile.OpenRead(backupPath);
+        var entry = archive.GetEntry("accounts.json")!;
+        using var reader = new StreamReader(entry.Open());
+        string json = await reader.ReadToEndAsync();
+
+        // Team ID 是非敏感账户配置，允许进入备份。
+        Assert.Contains("teamId", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("65c1e471-205f-4566-9c5a-07198bcdf4ce", json);
+        // 密钥 / Authorization / Credential Locker 内容绝不允许进入备份。
+        Assert.DoesNotContain("xai-management-key-secret", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("apiKey", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("authorization", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Import_NewXaiAccount_CarriesTeamIdAndMarksNeedingCredential()
+    {
+        using var localTemp = new TempDirectory();
+        using var backupTemp = new TempDirectory();
+
+        var service = new PortableBackupService(
+            localTemp.Path,
+            new JsonAccountStore(localTemp.Path),
+            new JsonBalanceSnapshotStore(localTemp.Path),
+            new JsonNotificationSettingsStore(localTemp.Path),
+            new JsonTraySettingsStore(localTemp.Path),
+            new FloatingWindowSettingsStore(localTemp.Path),
+            new JsonAppearanceSettingsStore(localTemp.Path),
+            new[] { "deepseek", "openrouter", "xai" });
+
+        // 在独立目录创建包含 xAI 账户的备份。
+        string backupPath = Path.Combine(backupTemp.Path, "backup.apimonitor-backup");
+        var exportService = new PortableBackupService(
+            backupTemp.Path,
+            new JsonAccountStore(backupTemp.Path),
+            new JsonBalanceSnapshotStore(backupTemp.Path),
+            new JsonNotificationSettingsStore(backupTemp.Path),
+            new JsonTraySettingsStore(backupTemp.Path),
+            new FloatingWindowSettingsStore(backupTemp.Path),
+            new JsonAppearanceSettingsStore(backupTemp.Path),
+            new[] { "deepseek", "openrouter", "xai" });
+        await exportService.ExportAsync(backupPath, CancellationToken.None);
+
+        // 通过 store 写入 xAI 账户后重新导出（覆盖刚才的空备份）。
+        var exportAccounts = new JsonAccountStore(backupTemp.Path);
+        await exportAccounts.SaveAsync(
+            new[]
+            {
+                new ApiAccount
+                {
+                    AccountId = "acct-xai-new",
+                    ProviderId = "xai",
+                    DisplayName = "xAI 新账户",
+                    HasCredential = false,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                    UpdatedAtUtc = DateTimeOffset.UtcNow,
+                    ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["teamId"] = "team-from-backup",
+                    },
+                },
+            },
+            CancellationToken.None);
+        await exportService.ExportAsync(backupPath, CancellationToken.None);
+
+        await service.ImportAsync(backupPath, BackupMergePreference.KeepLocal, CancellationToken.None);
+
+        var loaded = await new JsonAccountStore(localTemp.Path).LoadAsync(CancellationToken.None);
+        var imported = Assert.Single(loaded.Accounts);
+        Assert.Equal("xai", imported.ProviderId);
+        Assert.Equal("team-from-backup", imported.ProviderConfig["teamId"]);
+        Assert.False(imported.HasCredential);
+    }
 }

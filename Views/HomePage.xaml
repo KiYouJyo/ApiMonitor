@@ -80,6 +80,11 @@
                         VerticalAlignment="Center"
                         TextWrapping="Wrap" />
                 </Grid>
+                <!-- v0.9.0：余额账户与地理/GIS 服务分开汇总 -->
+                <TextBlock
+                    Text="{Binding ServiceSummaryText, Mode=OneWay}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
                 <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="16">
                     <StackPanel Spacing="3">
                         <TextBlock
@@ -161,8 +166,10 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <!-- 余额/指标 -->
-                                    <ItemsControl ItemsSource="{x:Bind BalanceLines, Mode=OneWay}">
+                                    <!-- 余额/指标（AI 账户） -->
+                                    <ItemsControl
+                                        ItemsSource="{x:Bind BalanceLines, Mode=OneWay}"
+                                        Visibility="{x:Bind IsServiceAccount, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="viewModels:BalanceLine">
                                                 <TextBlock
@@ -171,6 +178,47 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+
+                                    <!-- v0.9.0：地理/GIS 服务状态区 -->
+                                    <StackPanel
+                                        Spacing="3"
+                                        Visibility="{x:Bind IsServiceAccount, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock
+                                                Text="{x:Bind ServiceStatusText, Mode=OneWay}"
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind LatencyText, Mode=OneWay}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock
+                                                Text="{x:Bind CredentialStatusText, Mode=OneWay}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="·"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind PermissionStatusText, Mode=OneWay}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="·"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind QuotaStateText, Mode=OneWay}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock
+                                                Text="{x:Bind ProbeDescription, Mode=OneWay}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind ProbeConsumesQuotaText, Mode=OneWay}"
+                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                Visibility="{x:Bind ShowProbeConsumesQuotaText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </StackPanel>
 
                                     <!-- 监测状态 -->
                                     <StackPanel Spacing="3">
@@ -195,8 +243,11 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- 阈值 + 通知 + 暂停状态 -->
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <!-- 阈值 + 通知 + 暂停状态（AI 账户） -->
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="10"
+                                        Visibility="{x:Bind IsServiceAccount, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                         <TextBlock
                                             Text="{x:Bind ThresholdSummaryText, Mode=OneWay}"
                                             Foreground="{ThemeResource SystemFillColorCautionBrush}"
@@ -231,7 +282,10 @@
                                             <Button loc:Loc.Key="Home.SetAsFloatingWindow" Command="{x:Bind SetAsFloatingWindowCommand}" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                            <Button loc:Loc.Key="Home.CopyKey" Command="{x:Bind CopyKeyCommand}" />
+                                            <Button
+                                                loc:Loc.Key="Home.CopyKey"
+                                                Command="{x:Bind CopyKeyCommand}"
+                                                Visibility="{x:Bind HasCopyableCredential, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <Button loc:Loc.Key="Home.History" Command="{x:Bind HistoryCommand}" />
                                             <Button loc:Loc.Key="Home.Delete" Command="{x:Bind DeleteCommand}" />
                                         </StackPanel>

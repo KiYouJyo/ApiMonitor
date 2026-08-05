@@ -16,6 +16,7 @@
 
     <ContentDialog.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
         <converters:StatusSeverityConverter x:Key="StatusSeverityConverter" />
 
         <!--
@@ -400,17 +401,82 @@
                 loc:Loc.Key="Dialog.AccountName"
                 Text="{Binding DisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 PlaceholderText="{x:Bind AccountNamePlaceholderText}" />
-            <PasswordBox
-                Header="API Key"
-                PasswordChanged="OnApiKeyPasswordChanged"
-                PlaceholderText="{Binding ApiKeyInputHint}" />
+            <ItemsControl
+                ItemsSource="{Binding ConfigFieldItems}"
+                Visibility="{Binding ShowConfigFields, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ProviderConfigFieldItem">
+                        <StackPanel Spacing="4" Margin="0,0,0,10">
+                            <TextBlock Text="{x:Bind Label}" FontWeight="SemiBold" />
+                            <TextBox
+                                Text="{x:Bind Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                PlaceholderText="{x:Bind Placeholder}"
+                                Visibility="{x:Bind IsBoolean, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+                            <ToggleSwitch
+                                IsOn="{x:Bind BooleanValue, Mode=TwoWay}"
+                                OnContent="{x:Bind OnContentText}"
+                                OffContent="{x:Bind OffContentText}"
+                                Visibility="{x:Bind IsBoolean, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBlock
+                                Text="{x:Bind Hint}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- v0.9.0：多槽位凭据（Key+SK / Basic 用户名+密码 / Bearer / QueryToken） -->
+            <ItemsControl
+                ItemsSource="{Binding CredentialSlotItems}"
+                Visibility="{Binding ShowCredentialSlots, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:CredentialSlotItem">
+                        <StackPanel
+                            Spacing="4"
+                            Margin="0,0,0,10"
+                            Visibility="{x:Bind IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="{x:Bind Label}" FontWeight="SemiBold" />
+                            <PasswordBox
+                                PasswordChanged="OnCredentialSlotPasswordChanged"
+                                PlaceholderText="{x:Bind Placeholder}"
+                                Visibility="{x:Bind IsSecret, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBox
+                                Text="{x:Bind Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                PlaceholderText="{x:Bind Placeholder}"
+                                Visibility="{x:Bind IsSecret, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+                            <TextBlock
+                                Text="{x:Bind Hint}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <TextBlock
                 loc:Loc.Key="Dialog.CredentialHint"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Visibility="{Binding HasStoredCredential, Converter={StaticResource BoolToVisibilityConverter}}" />
+                TextWrapping="Wrap"
+                Visibility="{Binding ShowKeepCredentialHint, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock
+                loc:Loc.Key="Dialog.NoStoredCredentialHint"
+                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                TextWrapping="Wrap"
+                Visibility="{Binding ShowMissingCredentialHint, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock
+                loc:Loc.Key="Dialog.ProviderChangedRequiresRetest"
+                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                TextWrapping="Wrap"
+                Visibility="{Binding ProviderChangedRequiresRetest, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock
+                loc:Loc.Key="Dialog.ProbeConsumesQuota"
+                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                TextWrapping="Wrap"
+                Visibility="{Binding ShowProbeConsumesQuotaHint, Converter={StaticResource BoolToVisibilityConverter}}" />
 
             <StackPanel Orientation="Horizontal" Spacing="12">
-                <Button Content="测试连接" Command="{Binding TestCommand}" />
+                <Button Content="{x:Bind TestConnectionText}" Command="{Binding TestCommand}" />
                 <ProgressRing Width="20" Height="20" IsActive="{Binding IsTesting}" />
             </StackPanel>
 
@@ -496,7 +562,7 @@
                 SelectedValuePath="Value"
                 SelectedIndex="{Binding RecoveryEnabledIndex, Mode=TwoWay}" />
             <TextBlock
-                Text="余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。"
+                loc:Loc.Key="Dialog.RefreshNote"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 TextWrapping="Wrap" />
 

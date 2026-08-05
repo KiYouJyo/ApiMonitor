@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ApiMonitor.Models;
+using ApiMonitor.Providers;
 using ApiMonitor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +9,17 @@ namespace ApiMonitor.ViewModels;
 
 /// <summary>主界面 Provider 筛选选项（ProviderId 为空字符串表示“全部”）。</summary>
 public sealed record ProviderFilterOption(string ProviderId, string DisplayName);
+
+/// <summary>v0.9.0：分类筛选标记（ProviderId 以 category: 开头表示分类筛选）。</summary>
+public static class ProviderCategoryFilters
+{
+    public const string Ai = "category:ai";
+    public const string Geospatial = "category:geospatial";
+    public const string GisServer = "category:gisserver";
+
+    public static bool IsCategoryFilter(string providerId) =>
+        providerId.StartsWith("category:", StringComparison.OrdinalIgnoreCase);
+}
 
 /// <summary>主界面状态筛选选项。</summary>
 public sealed record StatusFilterOption(AccountStatusFilter Filter, string DisplayName);
@@ -65,6 +77,35 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private int _failedAccountCount;
+
+    // ------------------------------------------------------------------
+    // v0.9.0：余额账户与地理/GIS 服务分开统计，绝不混入“总余额”。
+    // ------------------------------------------------------------------
+
+    /// <summary>AI 余额账户数。</summary>
+    [ObservableProperty]
+    private int _balanceAccountCount;
+
+    /// <summary>服务正常（地理/GIS）账户数。</summary>
+    [ObservableProperty]
+    private int _serviceHealthyCount;
+
+    /// <summary>需要注意（凭据/权限/配额异常）服务账户数。</summary>
+    [ObservableProperty]
+    private int _needsAttentionCount;
+
+    /// <summary>查询失败服务账户数。</summary>
+    [ObservableProperty]
+    private int _serviceFailedCount;
+
+    /// <summary>服务状态汇总行（余额账户与服务状态分开）。</summary>
+    public string ServiceSummaryText =>
+        L10n.Format(
+            "Home.ServiceSummaryFormat",
+            BalanceAccountCount,
+            ServiceHealthyCount,
+            NeedsAttentionCount,
+            ServiceFailedCount);
 
     /// <summary>通知激活定位的目标账户 ID（由视图滚动到对应卡片并高亮）。</summary>
     [ObservableProperty]
@@ -232,6 +273,8 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = string.Empty,
             HasStoredCredential = false,
             CredentialMode = null,
+            ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal),
+            CredentialSlots = new Dictionary<string, bool>(StringComparer.Ordinal),
             InitialMonitoring = new MonitoringSettings(),
             CurrentMetrics = Array.Empty<BalanceMetric>(),
         };
@@ -252,7 +295,9 @@ public sealed partial class MainViewModel : ObservableObject
                 result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token,
-                result.Notification);
+                result.Notification,
+                result.ProviderConfig,
+                result.CredentialSlots);
             await ReloadAccountsAsync(_lifetime.Token);
             // 新账户可能被当前筛选隐藏：自动恢复为可见筛选，体验更直接。
             ResetFiltersToAll();
@@ -286,6 +331,8 @@ public sealed partial class MainViewModel : ObservableObject
             InitialDisplayName = account.DisplayName,
             HasStoredCredential = account.HasCredential,
             CredentialMode = account.CredentialMode,
+            ProviderConfig = account.ProviderConfig,
+            CredentialSlots = account.CredentialSlots,
             InitialMonitoring = CloneMonitoring(account.Monitoring),
             InitialNotification = account.Notification,
             CurrentMetrics = item is { HasSnapshot: true } ? item.LatestMetricsForEditor : Array.Empty<BalanceMetric>(),
@@ -307,7 +354,9 @@ public sealed partial class MainViewModel : ObservableObject
                 result.CredentialMode,
                 result.Monitoring,
                 _lifetime.Token,
-                result.Notification);
+                result.Notification,
+                result.ProviderConfig,
+                result.CredentialSlots);
             await ReloadAccountsAsync(_lifetime.Token);
             ShowStatus(StatusSeverity.Success, L10n.Get("Status.AccountSavedTitle"), L10n.Format("Status.AccountUpdatedMessage", result.DisplayName));
         }
@@ -376,9 +425,24 @@ public sealed partial class MainViewModel : ObservableObject
 
         await ApplyRefreshOutcomeAsync(item, result);
 
-        if (result.IsSuccess)
+        if (result.IsSuccess && IsHealthySnapshot(result.Snapshot))
         {
-            ShowStatus(StatusSeverity.Success, L10n.Get("Status.QuerySuccessTitle"), L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
+            ShowStatus(
+                StatusSeverity.Success,
+                L10n.Get("Status.QuerySuccessTitle"),
+                item.IsServiceAccount
+                    ? L10n.Format("Status.ServiceProbeSuccessMessage", item.DisplayName)
+                    : L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
+        }
+        else if (result.IsSuccess && result.Snapshot is { } unhealthySnapshot)
+        {
+            var status = ServiceStatusOf(unhealthySnapshot);
+            ShowStatus(
+                StatusSeverity.Warning,
+                L10n.Get("Status.ServiceUnhealthyTitle"),
+                status is { } s
+                    ? GeospatialMetricFactory.StatusText(s)
+                    : L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
         }
         else
         {
@@ -520,6 +584,9 @@ public sealed partial class MainViewModel : ObservableObject
         ProviderFilterOptions = new[]
             {
                 new ProviderFilterOption(string.Empty, L10n.Get("Home.FilterAllProviders")),
+                new ProviderFilterOption(ProviderCategoryFilters.Ai, L10n.Get("Home.FilterAiProviders")),
+                new ProviderFilterOption(ProviderCategoryFilters.Geospatial, L10n.Get("Home.FilterGeospatialProviders")),
+                new ProviderFilterOption(ProviderCategoryFilters.GisServer, L10n.Get("Home.FilterGisServerProviders")),
             }
             .Concat(_accountManager.Providers.Select(p => new ProviderFilterOption(p.ProviderId, p.DisplayName)))
             .ToList();
@@ -532,10 +599,24 @@ public sealed partial class MainViewModel : ObservableObject
             string providerDisplayName =
                 _accountManager.Providers.FirstOrDefault(p => p.ProviderId == account.ProviderId)?.DisplayName
                 ?? account.ProviderId;
+            var providerInfo = _accountManager.Providers.FirstOrDefault(p =>
+                string.Equals(p.ProviderId, account.ProviderId, StringComparison.OrdinalIgnoreCase))
+                ?? new ProviderInfo(
+                    account.ProviderId,
+                    account.ProviderId,
+                    account.ProviderId,
+                    SupportsAccountBalance: false,
+                    SupportsKeyQuota: false,
+                    SupportedMetricKinds: Array.Empty<BalanceMetricKind>(),
+                    CredentialOptions: Array.Empty<ProviderCredentialOption>(),
+                    ApiKeyInputHint: string.Empty,
+                    HelpUrl: string.Empty,
+                    SupportsTestConnection: false);
 
             var item = new AccountListItemViewModel(
                 account,
                 providerDisplayName,
+                providerInfo,
                 record,
                 () => RefreshAccountAsync(account.AccountId),
                 () => EditAccountAsync(account.AccountId),
@@ -570,6 +651,7 @@ public sealed partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(SupportedProvidersText));
         OnPropertyChanged(nameof(HasAccounts));
         OnPropertyChanged(nameof(AccountSummaryText));
+        OnPropertyChanged(nameof(ServiceSummaryText));
         RefreshSummary();
         ApplyFilters();
     }
@@ -649,7 +731,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var item in Accounts)
         {
             if (!string.IsNullOrEmpty(SelectedProviderFilter)
-                && !string.Equals(item.Account.ProviderId, SelectedProviderFilter, StringComparison.OrdinalIgnoreCase))
+                && !MatchesProviderFilter(item))
             {
                 continue;
             }
@@ -673,12 +755,49 @@ public sealed partial class MainViewModel : ObservableObject
             _ => true,
         };
 
+    private bool MatchesProviderFilter(AccountListItemViewModel item)
+    {
+        string filter = SelectedProviderFilter;
+        if (string.IsNullOrEmpty(filter))
+        {
+            return true;
+        }
+
+        if (ProviderCategoryFilters.IsCategoryFilter(filter))
+        {
+            return filter switch
+            {
+                ProviderCategoryFilters.Ai => item.Category == ProviderCategory.ArtificialIntelligence,
+                ProviderCategoryFilters.Geospatial => item.Category == ProviderCategory.Geospatial,
+                ProviderCategoryFilters.GisServer => item.Category == ProviderCategory.GisServer,
+                _ => false,
+            };
+        }
+
+        return string.Equals(
+            item.Account.ProviderId,
+            filter,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     private void RefreshSummary()
     {
         TotalAccountCount = Accounts.Count;
-        LowBalanceAccountCount = Accounts.Count(a => a.StatusKind == AccountStatusKind.Low);
+        // 余额汇总只统计 AI 账户（地理/GIS 绝不进入资金余额汇总）。
+        LowBalanceAccountCount = Accounts.Count(a =>
+            a.Category == ProviderCategory.ArtificialIntelligence
+            && a.StatusKind == AccountStatusKind.Low);
         FailedAccountCount = Accounts.Count(a => a.StatusKind == AccountStatusKind.Failed);
+        BalanceAccountCount = Accounts.Count(a =>
+            a.Category == ProviderCategory.ArtificialIntelligence);
+        ServiceHealthyCount = Accounts.Count(a =>
+            a.IsServiceAccount && a.ServiceStatusKind == AccountStatusKind.Normal);
+        NeedsAttentionCount = Accounts.Count(a =>
+            a.IsServiceAccount && a.ServiceStatusKind == AccountStatusKind.Low);
+        ServiceFailedCount = Accounts.Count(a =>
+            a.IsServiceAccount && a.ServiceStatusKind == AccountStatusKind.Failed);
         OnPropertyChanged(nameof(AccountSummaryText));
+        OnPropertyChanged(nameof(ServiceSummaryText));
     }
 
     private async Task HandleRefreshCompletedAsync(AccountRefreshCompletedEventArgs e)
@@ -696,7 +815,22 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (e.Result.IsSuccess)
             {
-                ShowStatus(StatusSeverity.Success, L10n.Get("Status.AutoRefreshDoneTitle"), L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
+                ShowStatus(
+                    StatusSeverity.Success,
+                    L10n.Get("Status.AutoRefreshDoneTitle"),
+                    item.IsServiceAccount
+                        ? L10n.Format("Status.ServiceProbeSuccessMessage", item.DisplayName)
+                        : L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
+            }
+            else if (e.Result.IsSuccess && e.Result.Snapshot is { } unhealthySnapshot)
+            {
+                var status = ServiceStatusOf(unhealthySnapshot);
+                ShowStatus(
+                    StatusSeverity.Warning,
+                    L10n.Get("Status.ServiceUnhealthyTitle"),
+                    status is { } s
+                        ? GeospatialMetricFactory.StatusText(s)
+                        : L10n.Format("Status.QuerySuccessMessage", item.DisplayName));
             }
             else
             {
@@ -760,4 +894,19 @@ public sealed partial class MainViewModel : ObservableObject
                 })
                 .ToList(),
         };
+
+    private static bool IsHealthySnapshot(BalanceSnapshot? snapshot)
+    {
+        var status = snapshot is null ? null : ServiceStatusOf(snapshot);
+        return status is null or GeospatialStatus.Healthy;
+    }
+
+    private static GeospatialStatus? ServiceStatusOf(BalanceSnapshot snapshot)
+    {
+        var metric = snapshot.Metrics.FirstOrDefault(m =>
+            m.DetailedKind == MetricKind.ServiceAvailability);
+        return metric?.StatusValue is { } value
+            ? GeospatialMetricFactory.Parse(value)
+            : null;
+    }
 }

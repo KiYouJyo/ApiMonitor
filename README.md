@@ -5,16 +5,18 @@
 ![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that lets you check and keep a local record of your own API account balances. It supports **DeepSeek** balance queries and **OpenRouter** key quota / Credits queries, with multi-account management and optional Windows notification-center low-balance alerts.
+**ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that locally monitors your own API balances, credits, credential status, and map/GIS service health. It supports **11 providers** — five AI balance providers (**DeepSeek**, **OpenRouter**, **Moonshot / Kimi**, **SiliconFlow**, **xAI**) and six map/GIS health providers (map platforms **AMap**, **Baidu Maps**, **Tencent Location**, **Tianditu**, and self-hosted GIS services **SuperMap iServer** and generic **OGC** WMS/WMTS/WFS) — with balances, credits, and service health tracked separately, multi-account management, and optional Windows notification-center alerts.
 
-- Current version: **v0.7.0** (DisplayVersion `0.7.0`, PackageVersion `0.7.0.12`)
+- Current version: **v0.9.0** (DisplayVersion `0.9.0`, PackageVersion `0.9.0.0`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
-- Distribution: MSIX sideload (self-signed developer certificate) and future Microsoft Store
+- Distribution: MSIX sideload (self-signed developer certificate); Microsoft Store listing in preparation (Store-signed build)
 - License: [MIT](LICENSE)
 - Languages: 简体中文 · English · 日本語 (switchable in Settings → Appearance and language)
 
 ## Upgrading
 
+- **v0.9.0** upgrades **in place** over v0.8.0: accounts, AccountIds, Credential Locker entries (including the new multi-slot credentials), latest balances/history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. All five existing AI providers and their metric IDs are unchanged. The accounts/history JSON schema stays at version 3 (new fields are optional).
+- **v0.8.0** upgraded **in place** over v0.7.0 (historical).
 - **v0.7.0** upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch. The installer never enables notifications or sign-in startup automatically.
 - **v0.6.0** upgraded **in place** over v0.5.0 (historical).
 - **v0.5.0** upgrades **in place** over v0.4.0 (historical).
@@ -23,10 +25,20 @@
 ## Features
 
 - Multiple accounts per provider (e.g., several DeepSeek accounts, several OpenRouter keys)
-- **DeepSeek** and **OpenRouter** providers, selected dynamically from the provider registry (not hardcoded in the UI)
+- **DeepSeek**, **OpenRouter**, **Moonshot / Kimi**, **SiliconFlow** and **xAI** providers, selected dynamically from the provider registry (not hardcoded in the UI)
 - **OpenRouter two credential modes**:
   - **普通 API Key**: key quota remaining / limit, and total / daily / weekly / monthly usage
   - **Management Key**: account Credits (remaining = total − usage, never clamped to zero)
+- **Moonshot / Kimi** (v0.8.0): queries `GET https://api.moonshot.cn/v1/users/me/balance` with a regular API key and shows the available balance (CNY, official `available_balance` = cash + voucher), cash balance and voucher balance. Missing fields are `null` (never `0`); the available balance is the primary metric and cash/voucher are never added again.
+- **SiliconFlow** (v0.8.0): queries `GET https://api.siliconflow.cn/v1/user/info` with a regular API key. It reads only the balance fields (`totalBalance` primary, plus `balance` / `chargeBalance` / optional `grantedBalance`) and ignores user profile data. The full response is never logged; when the official structure changes, the app returns "官方响应结构暂不支持" instead of showing a wrong zero.
+- **xAI** (v0.8.0): uses the **Management API**, not the inference API — `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance` with a **Management Key** and the **Team ID**. A regular model API key cannot query balances. The documented "Representation of USD Cents" ledger value is converted to the remaining prepaid credits in USD; negative (overdrawn) values are preserved and never clamped or passed through `Math.Abs`.
+- **AMap / Baidu Maps / Tencent Location / Tianditu** (v0.9.0): health probes against official Web Service APIs with fixed public inputs — AMap geocoding (`/v3/geocode/geo`), Baidu geocoding (`/geocoding/v3/`), Tencent district list (`/ws/district/v1/list`), Tianditu place search V2.0 (`/v2/search`). Each probe consumes one API call (shown in the UI). Status codes are mapped from the official error tables; unknown codes are surfaced as a safe provider error with the numeric code instead of a guessed meaning. None of these platforms expose an exact remaining-quota API, so `quota.remaining/used/limit/reset_at` stay `null` and are never displayed as `0`.
+- **SuperMap iServer** (v0.9.0): self-hosted health monitoring via the service catalog (`{baseUrl}/iserver/services.json`), optional expected-service check and an opt-in manager status probe (`/iserver/manager/serverstatus.json`, off by default). HTTP requires explicit user confirmation; an empty catalog is not treated as offline.
+- **Generic OGC service** (v0.9.0): WMS 1.1.1/1.3.0, WMTS 1.0.0, WFS 1.0.0/2.0.0 GetCapabilities health probes with secure XML parsing (DTD/external entities/entity expansion disabled, size and depth limits, no XSLT). Works with MapGIS Server, GeoServer, SuperMap and other OGC servers; only GetCapabilities is used, never GetMap/GetFeature.
+- Unified geospatial metric model (v0.9.0): every map/GIS account exposes `service.availability`, `service.latency.ms`, `credential.status`, `permission.status` and `quota.state` (plus `services.count` / `expected-service.present` for SuperMap and `layers.count` / `expected-layer.present` / `service.type` / `service.version` for OGC). Service accounts never enter the monetary balance summary, and no fake ¥/Credits/percentage is shown.
+- Quota protection (v0.9.0): new map accounts default to auto-refresh **off**; when enabled, the default interval is 6 hours with a 1-hour minimum; self-hosted GIS services keep the 5-minute minimum. 429/QPS/quota-exceeded/401/403/key-invalid responses are never auto-retried.
+- Service health notifications (v0.9.0): CredentialInvalid, PermissionDenied, ServiceNotEnabled, QuotaExceeded, ServiceUnavailable, ServiceRecovered, ExpectedServiceMissing, ExpectedServiceRecovered. New map/GIS accounts default to notifications **off**; transient errors notify only after two consecutive occurrences; recovery notifies after one success; manual test failures never notify. Notifications never contain keys, tokens, full URLs, intranet paths or catalog contents.
+- Provider capability metadata (v0.8.0): each provider declares its default official Base URL, required non-sensitive config fields (e.g., xAI Team ID), primary metric, currency, multi-currency / breakdown support and credential-validation support. Custom endpoints are **not** allowed for official providers.
 - Multi-account summary (total / low-balance / failed), provider filter, and status filter (all / normal / low / unknown / failed)
 - Refresh one account or all accounts (reuses per-account concurrency locks; one failure never affects others)
 - Per-account history, thresholds, automatic refresh, and notification settings
@@ -42,7 +54,7 @@
 - The application icon set was replaced end to end: the EXE/window (title-bar) icon, taskbar/Start menu package logos, splash screen, notification-area (tray) icon and store listing asset all use the new `ApiMonitor.ico` / `TrayIcon.ico` and package logo assets.
 - **Data Insights** page (v0.6.0): account / metric / time-range selection, a lightweight local trend chart (WinUI-native, no chart framework), current value, range change, first/latest/min/max values, a collapsible history table, and CSV export
 - **Consumption estimates** (v0.6.0): estimated daily consumption (median of valid intervals) and estimated days left, computed only from local history; clearly labeled "估算值" with a disclaimer, and explicit reasons when estimation is not possible (not enough data, no consumption observed, recent top-ups, unsupported metric, unknown current value)
-- **Portable backup** (v0.6.0, updated in v0.7.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
+- **Portable backup** (v0.6.0, updated in v0.7.0/v0.8.0): export/import `.apimonitor-backup` (ZIP+JSON) from Settings → Data management — accounts (non-sensitive metadata, including the xAI Team ID), provider settings, balance history, thresholds, auto-refresh/notification/tray/floating-window/appearance settings. v0.8.0/v0.7.0 backups use `floating-window-settings.json`; v0.6.0 backups with the old `compact-window-settings.json` are still accepted on import. **Never contains API keys, Management Keys or credentials.** Import is a safe merge: existing accounts keep their local credentials, new accounts are flagged as needing a re-entered key, history is deduplicated by stable ID, and failures roll back.
 - **Themes** (v0.6.0): follow system / light / dark, applied immediately to the main and floating windows and persisted.
 - **Unified app shell** (v0.6.0): the title bar, navigation pane and page backgrounds share one consistent theme surface across light, dark and high-contrast.
 - **Trilingual UI** (v0.6.0): 简体中文 / English / 日本語. Switching the language saves the preference, asks to restart, and restarts via `AppInstance.Restart`; it never partially localizes the window.
@@ -52,7 +64,9 @@
 ## Security and privacy design
 
 - API keys are stored in the **Windows Credential Locker** under the ApiMonitor resource, never in JSON, logs, or diagnostics.
-- Keys are only sent to the matching provider's official endpoint (DeepSeek balance API, OpenRouter key/credits APIs). OpenRouter Management Keys are only used for the Credits endpoint and are never sent elsewhere.
+- Keys are only sent to the matching provider's official HTTPS host (DeepSeek `api.deepseek.com`, OpenRouter `openrouter.ai`, Moonshot `api.moonshot.cn`, SiliconFlow `api.siliconflow.cn` / `api.siliconflow.com`, xAI Management API `management-api.x.ai`). A shared credential host whitelist validates every request before the key is attached; non-HTTPS or non-whitelisted destinations are refused. OpenRouter Management Keys are only used for the Credits endpoint and are never sent elsewhere. xAI Management Keys are only sent to `management-api.x.ai` and never to the inference endpoint.
+- Balance queries use GET-only, side-effect-free official endpoints; ApiMonitor never sends model inference requests, so querying a balance never consumes tokens or generates charges.
+- Timeout / 429 / 5xx responses are retried a limited number of times with cancellation support (401/403/404/config errors are never retried).
 - Account metadata, balance snapshots, history, settings, and notification state are stored only in the local app data directory.
 - Notifications are generated locally by the running ApiMonitor process; notification arguments contain only non-sensitive identifiers (`action`, `accountId`, `providerId`, `metricId`) and never API keys, history text, Authorization headers, credential resources, or local file paths.
 - **No cloud push, no WNS remote push, no telemetry, no developer servers.** Notifications stop when you choose "退出 ApiMonitor".
@@ -60,6 +74,8 @@
 - Update checks only run when you click "检查更新"; they send no account/balance/device data and never download or install anything automatically.
 - Automatic refresh only runs while the app is running; hiding the window to the tray keeps monitoring, and exiting fully stops it.
 - Sign-in startup is user-enabled (off by default) and only resides in the tray on sign-in.
+- Geospatial security (v0.9.0): the four map providers are locked to their official HTTPS hosts (`restapi.amap.com`, `api.map.baidu.com`, `apis.map.qq.com`, `api.tianditu.gov.cn`) with no custom Base URL; redirects are never followed, so credentials cannot be forwarded to another origin. Self-hosted GIS accepts only `http`/`https` (HTTP needs explicit confirmation) and blocks file/ftp/data/custom schemes; credentials never follow cross-host, cross-port or HTTPS→HTTP redirects. Sensitive query parameters (`key`, `ak`, `tk`, `sig`, `sn`, `token`, …) are stripped from logs, and exceptions never contain full request URIs. No vendor console is ever scraped, no LAN scanning or port probing is performed, and service addresses are never uploaded anywhere.
+- Multi-slot credentials (v0.9.0): Key+SK (AMap/Baidu/Tencent), Basic username+password, Bearer token and query token are stored as independent Windows Credential Locker entries under the unchanged `ApiMonitor` resource; account JSON only records presence flags, old single-key entries remain readable, and backups never contain any credential value.
 
 ## System requirements
 
@@ -71,7 +87,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.7.0.12_x64_Test.zip`.
+1. Download `ApiMonitor_0.9.0.0_x64_Test.zip`.
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.
@@ -108,7 +124,7 @@ dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 
 The project uses the single-project MSIX tooling. The complete ApiMonitor identity (`ApiMonitor` / `CN=ApiMonitorDev`) is used from v0.3.0 onward; Package Family and the Credential Locker resource stay unchanged.
 
-Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek, OpenRouter, or Microsoft.
+Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI, or Microsoft.
 
 ## Project structure
 
@@ -120,7 +136,7 @@ Views/                    Main page, account editor dialog, history dialog
 Views/FloatingBalanceWindow  Lightweight always-on-top floating balance window
 ViewModels/               MVVM view models
 Models/                   Domain models (including generic BalanceMetric)
-Providers/                Balance providers (DeepSeek, OpenRouter) and registry
+Providers/                Balance and health providers (5 AI + AMap, Baidu Maps, Tencent Location, Tianditu, SuperMap iServer, OGC) and registry
 Services/                 Storage, secrets, refresh, history, thresholds, notifications, clipboard, window management
 tests/ApiMonitor.Tests/   xUnit test suite
 tests/installer/          Installer tooling tests
@@ -135,9 +151,15 @@ tests/installer/          Installer tooling tests
 - Language changes require an application restart.
 - Legacy stored metric display labels may retain their original text.
 - Update checks are manual only; the app never auto-downloads or auto-installs updates.
-- No Microsoft Store listing yet (planned for v1.0).
-- Exactly two providers (DeepSeek and OpenRouter); no third-party DLL provider loading.
+- The Microsoft Store listing is in preparation for v0.9.0 but is not yet published; the Store build will be signed and update-distributed by Microsoft.
+- The five official providers (DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI); no third-party DLL provider loading.
+- Map platforms (AMap, Baidu, Tencent, Tianditu) do not expose exact remaining quotas through public APIs; those values are always unknown (`null`) and are never invented. One active probe consumes one API call; new map accounts default to auto-refresh off.
+- Tianditu does not officially document token-invalid/permission/quota-limit status codes; unrecognized status codes are shown as a safe provider error with the numeric code rather than a guessed meaning.
+- MapGIS Server has no officially proven public catalog/health interface, so it is monitored through the generic OGC provider (WMS/WMTS/WFS GetCapabilities) instead of a proprietary `mapgis-server` provider.
+- SuperMap manager-status probing is off by default and only enabled with an authorized credential.
+- SiliconFlow's balance API does not return a currency field; CNY is assumed from the platform's pricing convention. If the official structure changes, the app returns "响应结构暂不支持" instead of guessing.
 - The GitHub sideload release is signed with the self-signed `CN=ApiMonitorDev` certificate.
+- This project is not affiliated with or endorsed by AMap, Baidu, Tencent, Tianditu, SuperMap, MapGIS (Zondy Cyber) or any of the AI providers.
 
 ## Roadmap
 

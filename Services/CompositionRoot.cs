@@ -170,9 +170,33 @@ public sealed class CompositionRoot
         var time = TimeProvider.System;
 
         var http = new HttpRequestService(TimeSpan.FromSeconds(15));
+        // v0.9.0：地理/GIS 探测禁用自动重定向（凭据绝不跟随跨 Origin 转发）。
+        var geospatialHttp = new HttpRequestService(TimeSpan.FromSeconds(15), allowAutoRedirect: false);
         var deepSeek = new DeepSeekBalanceProvider(http, Log);
         var openRouter = new OpenRouterBalanceProvider(http, Log);
-        var registry = new ProviderRegistry(new IApiBalanceProvider[] { deepSeek, openRouter });
+        var moonshot = new MoonshotBalanceProvider(http, Log);
+        var siliconFlow = new SiliconFlowBalanceProvider(http, Log);
+        var xai = new XaiBalanceProvider(http, Log);
+        var amap = new AmapBalanceProvider(geospatialHttp, Log);
+        var baiduMaps = new BaiduMapsBalanceProvider(geospatialHttp, Log);
+        var tencentLocation = new TencentLocationBalanceProvider(geospatialHttp, Log);
+        var tianditu = new TiandituBalanceProvider(geospatialHttp, Log);
+        var superMap = new SuperMapIServerProvider(geospatialHttp, Log);
+        var ogc = new OgcServiceProvider(geospatialHttp, Log);
+        var registry = new ProviderRegistry(new IApiBalanceProvider[]
+        {
+            deepSeek,
+            openRouter,
+            moonshot,
+            siliconFlow,
+            xai,
+            amap,
+            baiduMaps,
+            tencentLocation,
+            tianditu,
+            superMap,
+            ogc,
+        });
 
         var secretStore = new CredentialLockerSecretStore(Log);
         var accountStore = new JsonAccountStore(dataDirectory);

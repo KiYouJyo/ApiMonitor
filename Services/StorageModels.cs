@@ -30,6 +30,20 @@ public sealed class AccountFileEntry
     /// <summary>v0.5.0：Provider 专属的非敏感设置（如 OpenRouter 凭据模式）。</summary>
     public string? CredentialMode { get; set; }
 
+    /// <summary>
+    /// v0.8.0：Provider 专属的非敏感配置字段（如 xAI Team ID）。
+    /// 可空：v0.7.0 及更早文件加载时自然得到 null，无需升级 schemaVersion。
+    /// 密钥绝不保存在这里。
+    /// </summary>
+    public Dictionary<string, string>? ProviderConfig { get; set; }
+
+    /// <summary>
+    /// v0.9.0：多字段凭据存在状态（slot → 是否存在）。
+    /// 可空：v0.8.0 及更早文件加载时自然得到 null。
+    /// 只保存存在标志，绝不保存凭据值。
+    /// </summary>
+    public Dictionary<string, bool>? CredentialSlots { get; set; }
+
     /// <summary>v0.5.0：每账户通知设置（null 表示继承全局设置）。</summary>
     public AccountNotificationFileEntry? Notification { get; set; }
 }
@@ -154,6 +168,24 @@ public sealed class BalanceMetricFileEntry
     public bool IsUnlimited { get; set; }
 
     public List<BalanceMetricAdditionalFileEntry> AdditionalDisplayValues { get; set; } = new();
+
+    /// <summary>v0.9.0：指标值类型（旧文件缺省为 Decimal）。</summary>
+    public string ValueKind { get; set; } = nameof(MetricValueKind.Decimal);
+
+    /// <summary>v0.9.0：指标详细类型（旧 AI 指标为 null）。</summary>
+    public string? DetailedKind { get; set; }
+
+    /// <summary>v0.9.0：状态值（ValueKind=Status）。</summary>
+    public string? StatusValue { get; set; }
+
+    /// <summary>v0.9.0：布尔值（ValueKind=Boolean）。</summary>
+    public bool? BooleanValue { get; set; }
+
+    /// <summary>v0.9.0：整数/计数/延迟值（ValueKind=Integer）。</summary>
+    public long? IntegerValue { get; set; }
+
+    /// <summary>v0.9.0：时间戳值（ValueKind=Timestamp）。</summary>
+    public DateTimeOffset? TimestampValue { get; set; }
 }
 
 public sealed class BalanceMetricAdditionalFileEntry
@@ -353,6 +385,12 @@ internal static class StorageMapper
             UpdatedAtUtc = entry.UpdatedAtUtc,
             Monitoring = monitoring,
             CredentialMode = entry.CredentialMode,
+            ProviderConfig = entry.ProviderConfig is { } config
+                ? new Dictionary<string, string>(config, StringComparer.Ordinal)
+                : new Dictionary<string, string>(StringComparer.Ordinal),
+            CredentialSlots = entry.CredentialSlots is { } slots
+                ? new Dictionary<string, bool>(slots, StringComparer.Ordinal)
+                : new Dictionary<string, bool>(StringComparer.Ordinal),
             Notification = notification,
         };
     }
@@ -367,6 +405,12 @@ internal static class StorageMapper
             CreatedAtUtc = account.CreatedAtUtc,
             UpdatedAtUtc = account.UpdatedAtUtc,
             CredentialMode = account.CredentialMode,
+            ProviderConfig = account.ProviderConfig is { Count: > 0 }
+                ? new Dictionary<string, string>(account.ProviderConfig, StringComparer.Ordinal)
+                : null,
+            CredentialSlots = account.CredentialSlots is { Count: > 0 }
+                ? new Dictionary<string, bool>(account.CredentialSlots, StringComparer.Ordinal)
+                : null,
             Notification = account.Notification is { } n
                 ? new AccountNotificationFileEntry
                 {
@@ -506,6 +550,17 @@ internal static class StorageMapper
             ToppedUpAmount = entry.ToppedUpAmount,
             IsThresholdSupported = entry.IsThresholdSupported,
             IsUnlimited = entry.IsUnlimited,
+            ValueKind = Enum.TryParse<MetricValueKind>(entry.ValueKind, ignoreCase: true, out var valueKind)
+                ? valueKind
+                : MetricValueKind.Decimal,
+            DetailedKind = !string.IsNullOrWhiteSpace(entry.DetailedKind)
+                && Enum.TryParse<MetricKind>(entry.DetailedKind, ignoreCase: true, out var detailedKind)
+                ? detailedKind
+                : null,
+            StatusValue = entry.StatusValue,
+            BooleanValue = entry.BooleanValue,
+            IntegerValue = entry.IntegerValue,
+            TimestampValue = entry.TimestampValue,
             AdditionalDisplayValues = (entry.AdditionalDisplayValues ?? new List<BalanceMetricAdditionalFileEntry>())
                 .Where(a => !string.IsNullOrWhiteSpace(a.Name))
                 .Select(a => new BalanceMetricAdditionalValue
@@ -531,6 +586,12 @@ internal static class StorageMapper
             ToppedUpAmount = metric.ToppedUpAmount,
             IsThresholdSupported = metric.IsThresholdSupported,
             IsUnlimited = metric.IsUnlimited,
+            ValueKind = metric.ValueKind.ToString(),
+            DetailedKind = metric.DetailedKind?.ToString(),
+            StatusValue = metric.StatusValue,
+            BooleanValue = metric.BooleanValue,
+            IntegerValue = metric.IntegerValue,
+            TimestampValue = metric.TimestampValue,
             AdditionalDisplayValues = metric.AdditionalDisplayValues
                 .Select(a => new BalanceMetricAdditionalFileEntry
                 {

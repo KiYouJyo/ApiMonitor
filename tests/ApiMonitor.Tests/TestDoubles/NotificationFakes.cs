@@ -113,6 +113,28 @@ public sealed class FakeAppNotificationService : IAppNotificationService
         LastAccountDisplayName = accountDisplayName;
     }
 
+    public int HealthNotificationsShown { get; private set; }
+
+    public List<HealthNotificationType> LastHealthTypes { get; private set; } = new();
+
+    public string? LastHealthMessage { get; private set; }
+
+    public void ShowHealthNotification(
+        string accountId,
+        string providerId,
+        string providerDisplayName,
+        string accountDisplayName,
+        HealthNotificationType type,
+        string message,
+        string tag)
+    {
+        HealthNotificationsShown++;
+        LastHealthTypes.Add(type);
+        LastHealthMessage = message;
+        LastTag = tag;
+        LastAccountDisplayName = accountDisplayName;
+    }
+
     public void ShowTestNotification() => TestNotificationsShown++;
 
     public void RemoveAccountNotifications(string accountId) => RemovedAccountIds.Add(accountId);

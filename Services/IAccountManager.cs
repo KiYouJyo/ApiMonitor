@@ -42,7 +42,9 @@ public interface IAccountManager
         string? credentialMode,
         string? apiKey,
         string? accountId,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null);
 
     Task<ApiAccount> SaveAccountAsync(
         string? accountId,
@@ -52,7 +54,9 @@ public interface IAccountManager
         string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken,
-        AccountNotificationSettings? notification = null);
+        AccountNotificationSettings? notification = null,
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null);
 
     Task DeleteAccountAsync(string accountId, CancellationToken cancellationToken);
 

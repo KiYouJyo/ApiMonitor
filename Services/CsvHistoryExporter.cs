@@ -46,6 +46,12 @@ public sealed class CsvHistoryExporter : ICsvHistoryExporter
         "GrantedAmount",
         "ToppedUpAmount",
         "QuerySource",
+        "ValueKind",
+        "DetailedKind",
+        "IntegerValue",
+        "StatusValue",
+        "BooleanValue",
+        "TimestampValue",
     };
 
     public Task<string> ExportAsync(
@@ -93,6 +99,18 @@ public sealed class CsvHistoryExporter : ICsvHistoryExporter
                 sb.Append(FormatDecimal(metric.ToppedUpAmount));
                 sb.Append(',');
                 sb.Append(Escape(entry.Source.ToString()));
+                sb.Append(',');
+                sb.Append(Escape(metric.ValueKind.ToString()));
+                sb.Append(',');
+                sb.Append(Escape(metric.DetailedKind?.ToString() ?? string.Empty));
+                sb.Append(',');
+                sb.Append(metric.IntegerValue?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty);
+                sb.Append(',');
+                sb.Append(Escape(metric.StatusValue ?? string.Empty));
+                sb.Append(',');
+                sb.Append(metric.BooleanValue is { } b ? (b ? "true" : "false") : string.Empty);
+                sb.Append(',');
+                sb.Append(metric.TimestampValue?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) ?? string.Empty);
                 sb.AppendLine();
             }
         }

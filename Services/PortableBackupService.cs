@@ -383,6 +383,9 @@ public sealed class PortableBackupService : IPortableBackupService
             CredentialMode = preference == BackupMergePreference.PreferImport
                 ? incomingAccount.CredentialMode
                 : existing.CredentialMode,
+            ProviderConfig = preference == BackupMergePreference.PreferImport
+                ? incomingAccount.ProviderConfig
+                : existing.ProviderConfig,
             Notification = preference == BackupMergePreference.PreferImport
                 ? incomingAccount.Notification
                 : existing.Notification,
@@ -410,6 +413,7 @@ public sealed class PortableBackupService : IPortableBackupService
                 Thresholds = account.Monitoring.Thresholds,
             },
             CredentialMode = account.CredentialMode,
+            ProviderConfig = account.ProviderConfig,
             Notification = new AccountNotificationSettings
             {
                 // 无凭据的账户默认关闭系统通知。

@@ -117,4 +117,69 @@ public sealed class JsonAccountStoreTests
         Assert.NotNull(loaded.RecoveryMessage);
         Assert.Contains("版本", loaded.RecoveryMessage);
     }
+
+    [Fact]
+    public async Task ProviderConfig_RoundTripsAndTeamIdIsStored()
+    {
+        using var temp = new TempDirectory();
+        var store = new JsonAccountStore(temp.Path);
+        var account = new ApiAccount
+        {
+            AccountId = "acct-xai",
+            ProviderId = "xai",
+            DisplayName = "xAI Team",
+            HasCredential = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            ProviderConfig = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["teamId"] = "65c1e471-205f-4566-9c5a-07198bcdf4ce",
+            },
+        };
+
+        await store.SaveAsync(new[] { account }, CancellationToken.None);
+        var loaded = await store.LoadAsync(CancellationToken.None);
+
+        var reloaded = Assert.Single(loaded.Accounts);
+        Assert.Equal("65c1e471-205f-4566-9c5a-07198bcdf4ce", reloaded.ProviderConfig["teamId"]);
+
+        // Team ID 属于非敏感账户配置，允许写入 accounts.json；密钥不得出现。
+        string json = await File.ReadAllTextAsync(Path.Combine(temp.Path, "accounts.json"));
+        Assert.Contains("teamId", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("xai-management-key-secret", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task V070FileWithoutProviderConfig_LoadsWithEmptyConfig()
+    {
+        using var temp = new TempDirectory();
+        string path = Path.Combine(temp.Path, "accounts.json");
+        const string v070Json = """
+            {
+              "schemaVersion": 3,
+              "accounts": [
+                {
+                  "accountId": "acct-old",
+                  "providerId": "deepseek",
+                  "displayName": "旧账户",
+                  "hasCredential": true,
+                  "createdAtUtc": "2026-08-01T00:00:00Z",
+                  "updatedAtUtc": "2026-08-01T00:00:00Z",
+                  "credentialMode": null
+                }
+              ]
+            }
+            """;
+        await File.WriteAllTextAsync(path, v070Json);
+        var store = new JsonAccountStore(temp.Path);
+
+        var loaded = await store.LoadAsync(CancellationToken.None);
+
+        var account = Assert.Single(loaded.Accounts);
+        Assert.Equal("acct-old", account.AccountId);
+        Assert.Equal("deepseek", account.ProviderId);
+        Assert.NotNull(account.ProviderConfig);
+        Assert.Empty(account.ProviderConfig);
+        Assert.True(account.HasCredential);
+    }
 }

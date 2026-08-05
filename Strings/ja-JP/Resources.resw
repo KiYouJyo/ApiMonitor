@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== ナビゲーション ===================== -->
 
@@ -81,8 +81,8 @@
   <data name="About.Architecture" xml:space="preserve"><value>アーキテクチャ：{0}</value></data>
   <data name="About.PackageIdentity" xml:space="preserve"><value>パッケージ ID：{0}</value></data>
   <data name="About.Publisher" xml:space="preserve"><value>発行元：{0}</value></data>
-  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API キーは Windows Credential Locker に保存されます。</value></data>
-  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>残高・履歴・設定はローカルに保存されます。</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>すべての資格情報（API キー、シークレット、トークン）は Windows Credential Locker に保存されます。</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>残高・クレジット・サービス健全性・履歴・設定はローカルのみに保存されます。</value></data>
   <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>開発者向けクラウドサーバーはありません。</value></data>
   <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>テレメトリも広告もありません。</value></data>
   <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>通知はローカルで生成されます。</value></data>
@@ -152,10 +152,10 @@
   <data name="About.CheckUpdates.Content" xml:space="preserve"><value>更新を確認</value></data>
   <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>診断情報をコピー</value></data>
   <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>ローカルデータフォルダーを開く</value></data>
-  <data name="About.Tagline.Text" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>API 残高・クレジット・認証情報・地図/GIS サービスの健全性をローカルで監視</value></data>
   <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
   <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
-  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>ローカルの残高履歴、自動更新、通知領域、Windows の残高アラート、データ分析。</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>11 の Provider（AI 残高 5 + 地図/GIS 健全性 6）、複数アカウント管理、残高と健全性指標を分離。自動更新、通知領域、ローカル通知、データ分析に対応。</value></data>
   <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>プライバシーポリシー、MIT License、サードパーティ製の声明はアプリに同梱され、オフラインで閲覧できます。</value></data>
   <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>更新</value></data>
   <data name="About.UpdateDescription.Text" xml:space="preserve"><value>更新の確認はクリック時のみ GitHub にアクセスします。新しいバージョンが見つかっても、ダウンロード・インストールはユーザーが判断します。</value></data>
@@ -251,7 +251,7 @@
   <data name="About.PackageVersionFormat" xml:space="preserve"><value>パッケージバージョン：{0}</value></data>
   <data name="About.ProviderCountFormat" xml:space="preserve"><value>現在の Provider 数：{0}</value></data>
   <data name="About.PublisherFormat" xml:space="preserve"><value>発行元：{0}</value></data>
-  <data name="About.TaglineText" xml:space="preserve"><value>自分自身の API アカウント残高を照会・記録します</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>API 残高・クレジット・認証情報・地図/GIS サービスの健全性をローカルで監視</value></data>
   <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>新しいバージョン v{0} があります。</value></data>
   <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>更新の確認に失敗しました：{0}</value></data>
   <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API キーは Windows の資格情報ロッカー（Credential Locker）に保存され、対応する Provider の公式 API への要求にのみ使用されます。通常の設定と残高スナップショットはローカルのアプリデータのみに保存されます。</value></data>
@@ -497,4 +497,333 @@
   <data name="Floating.StatusLow" xml:space="preserve"><value>残高不足</value></data>
   <data name="Floating.StatusFailed" xml:space="preserve"><value>失敗</value></data>
   <data name="Floating.StatusUnknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Dialog.NoStoredCredentialHint" xml:space="preserve"><value>このアカウントにはキーがまだ保存されていません。保存前に API キーを入力してください。</value></data>
+  <data name="Dialog.ProviderChangedRequiresRetest" xml:space="preserve"><value>Provider を変更しました：以前の資格情報は引き継がれません。新しい Provider のキーを入力して接続テストを行ってください。</value></data>
+  <data name="Dialog.ValidationConfigRequired" xml:space="preserve"><value>この Provider の必須設定項目を入力してください。</value></data>
+  <data name="Dialog.ApiKey.Header" xml:space="preserve"><value>API Key</value></data>
+  <data name="Dialog.TestConnection.Content" xml:space="preserve"><value>接続テスト</value></data>
+  <data name="Dialog.RefreshNote" xml:space="preserve"><value>残高リマインダーは ApiMonitor の実行中にローカルで生成されます。ApiMonitor を終了すると照会や新しいリマインダーは継続されません。</value></data>
+  <data name="Provider.MoonshotDescription" xml:space="preserve"><value>Moonshot / Kimi アカウントの利用可能残高（人民元）を照会します。公式の残高 API のみを呼び出し、モデル呼び出しは発生しません。</value></data>
+  <data name="Provider.MoonshotKeyHint" xml:space="preserve"><value>Moonshot プラットフォームの API キー（sk-…）。公式の残高 API の呼び出しにのみ使用します。</value></data>
+  <data name="Provider.MoonshotKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.MoonshotAvailableMetricName" xml:space="preserve"><value>利用可能残高</value></data>
+  <data name="Provider.MoonshotCashMetricName" xml:space="preserve"><value>現金残高</value></data>
+  <data name="Provider.MoonshotVoucherMetricName" xml:space="preserve"><value>バウチャー残高</value></data>
+  <data name="Provider.SiliconFlowDescription" xml:space="preserve"><value>SiliconFlow アカウントの総残高（人民元）を照会します。残高フィールドのみを読み取り、ユーザープロフィールは保存しません。</value></data>
+  <data name="Provider.SiliconFlowKeyHint" xml:space="preserve"><value>SiliconFlow プラットフォームの API キー（sk-…）。公式の残高 API の呼び出しにのみ使用します。</value></data>
+  <data name="Provider.SiliconFlowKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.SiliconFlowTotalMetricName" xml:space="preserve"><value>総残高</value></data>
+  <data name="Provider.SiliconFlowChargeMetricName" xml:space="preserve"><value>チャージ残高</value></data>
+  <data name="Provider.SiliconFlowGrantedMetricName" xml:space="preserve"><value>付与残高</value></data>
+  <data name="Provider.SiliconFlowBalanceMetricName" xml:space="preserve"><value>利用可能残高</value></data>
+  <data name="Provider.XaiDescription" xml:space="preserve"><value>xAI Management Key を使用してチームのプリペイド Credits（米ドル）を照会します。通常のモデル API キーは残高照会に使用できません。</value></data>
+  <data name="Provider.XaiKeyHint" xml:space="preserve"><value>請求情報の読み取り権限を持つ Management Key が必要です。通常の xAI モデル API キーでは残高を照会できません。キーは Windows Credential Locker にのみ保存されます。</value></data>
+  <data name="Provider.XaiKeyInputHint" xml:space="preserve"><value>xai-…（Management Key）</value></data>
+  <data name="Provider.XaiTeamIdLabel" xml:space="preserve"><value>Team ID</value></data>
+  <data name="Provider.XaiTeamIdHint" xml:space="preserve"><value>xAI チームの Team ID（秘密情報ではなく、アカウントデータに保存されます）。xAI Console のチーム設定で確認できます。</value></data>
+  <data name="Provider.XaiTeamIdPlaceholder" xml:space="preserve"><value>例: 65c1e471-205f-4566-9c5a-07198bcdf4ce</value></data>
+  <data name="Provider.XaiPrepaidMetricName" xml:space="preserve"><value>プリペイド Credits</value></data>
+  <data name="Provider.ErrorMissingTeamId" xml:space="preserve"><value>xAI Team ID がありません。アカウント設定で入力してください。</value></data>
+  <data name="Provider.ErrorMissingBalanceFields" xml:space="preserve"><value>API レスポンスに残高フィールドがありません。</value></data>
+  <data name="Provider.ErrorUnsupportedFormat" xml:space="preserve"><value>公式のレスポンス形式には現在対応していません。アプリを更新するか、後でもう一度お試しください。</value></data>
+  <data name="Provider.ErrorUnsupportedBalanceFormat" xml:space="preserve"><value>残高形式がサポートされていません（公式の金額セマンティクスを確認できません）。残高は表示されません。</value></data>
+  <data name="Provider.Error404" xml:space="preserve"><value>エンドポイントまたはアカウントが見つかりません（404）。</value></data>
+  <data name="Provider.Error401Xai" xml:space="preserve"><value>Management Key が無効または期限切れです（401）。残高照会には xAI Management Key が必要で、通常のモデル API キーは使用できません。</value></data>
+  <data name="Provider.Error403Xai" xml:space="preserve"><value>権限がありません（403）：Management Key に請求情報の読み取り権限があるか確認してください。</value></data>
+  <data name="Provider.Error404Team" xml:space="preserve"><value>チームまたはエンドポイントが見つかりません（404）：Team ID を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>Moonshot サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>SiliconFlow サービスに接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>xAI Management API に接続できません。ネットワークまたは DNS を確認してください。</value></data>
+  <data name="Account.ErrorIntervalUnsupported" xml:space="preserve"><value>この種別のプロバイダーでは {0} 分の更新間隔は利用できません。</value></data>
+  <data name="Card.LatencyFormat" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="Card.ProbeConsumesQuota" xml:space="preserve"><value>このプローブは API 呼び出しを 1 回消費する可能性があります</value></data>
+  <data name="Dialog.ProbeConsumesQuota" xml:space="preserve"><value>このプローブは API 呼び出しを 1 回消費する可能性があります</value></data>
+  <data name="Geo.StatusConfigurationMissing" xml:space="preserve"><value>設定不足</value></data>
+  <data name="Geo.StatusCredentialInvalid" xml:space="preserve"><value>資格情報が無効</value></data>
+  <data name="Geo.StatusHealthy" xml:space="preserve"><value>正常</value></data>
+  <data name="Geo.StatusInvalidResponse" xml:space="preserve"><value>応答形式が異常</value></data>
+  <data name="Geo.StatusIpWhitelistDenied" xml:space="preserve"><value>IP ホワイトリスト不通過</value></data>
+  <data name="Geo.StatusKeyTypeMismatch" xml:space="preserve"><value>キータイプ不一致</value></data>
+  <data name="Geo.StatusNetworkUnavailable" xml:space="preserve"><value>ネットワーク利用不可</value></data>
+  <data name="Geo.StatusPermissionDenied" xml:space="preserve"><value>権限不足</value></data>
+  <data name="Geo.StatusProviderError" xml:space="preserve"><value>プロバイダーエラー</value></data>
+  <data name="Geo.StatusQuotaExceeded" xml:space="preserve"><value>クォータ枯渇</value></data>
+  <data name="Geo.StatusRateLimited" xml:space="preserve"><value>リクエスト頻度超過</value></data>
+  <data name="Geo.StatusRefererDomainDenied" xml:space="preserve"><value>Referer/ドメイン制限</value></data>
+  <data name="Geo.StatusServiceNotEnabled" xml:space="preserve"><value>サービス未有効</value></data>
+  <data name="Geo.StatusSignatureInvalid" xml:space="preserve"><value>署名検証失敗</value></data>
+  <data name="Geo.StatusTimeout" xml:space="preserve"><value>接続タイムアウト</value></data>
+  <data name="Geo.StatusTlsFailure" xml:space="preserve"><value>TLS 失敗</value></data>
+  <data name="Geo.StatusUnknown" xml:space="preserve"><value>不明</value></data>
+  <data name="Home.FilterAiProviders" xml:space="preserve"><value>AI とモデル</value></data>
+  <data name="Home.FilterGeospatialProviders" xml:space="preserve"><value>地図プラットフォーム</value></data>
+  <data name="Home.FilterGisServerProviders" xml:space="preserve"><value>GIS サービス</value></data>
+  <data name="Home.ServiceSummaryFormat" xml:space="preserve"><value>残高アカウント {0} · サービス正常 {1} · 要注意 {2} · クエリ失敗 {3}</value></data>
+  <data name="Home.StatusNeedsAttention" xml:space="preserve"><value>要注意</value></data>
+  <data name="Insights.SuccessRateFormat" xml:space="preserve"><value>成功率 {0}%（{1}/{2} 回のプローブ）</value></data>
+  <data name="Metric.BooleanNo" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Metric.BooleanYes" xml:space="preserve"><value>はい</value></data>
+  <data name="Metric.CredentialStatusName" xml:space="preserve"><value>資格情報状態</value></data>
+  <data name="Metric.ExpectedLayerName" xml:space="preserve"><value>期待レイヤー存在</value></data>
+  <data name="Metric.ExpectedServiceName" xml:space="preserve"><value>期待サービス存在</value></data>
+  <data name="Metric.LatencyName" xml:space="preserve"><value>応答遅延</value></data>
+  <data name="Metric.LayerCountName" xml:space="preserve"><value>レイヤー数</value></data>
+  <data name="Metric.PermissionStatusName" xml:space="preserve"><value>権限状態</value></data>
+  <data name="Metric.QuotaLimitName" xml:space="preserve"><value>クォータ上限</value></data>
+  <data name="Metric.QuotaRemainingName" xml:space="preserve"><value>残りクォータ</value></data>
+  <data name="Metric.QuotaStateName" xml:space="preserve"><value>クォータ状態</value></data>
+  <data name="Metric.QuotaUsedName" xml:space="preserve"><value>使用済みクォータ</value></data>
+  <data name="Metric.ServiceAvailabilityName" xml:space="preserve"><value>サービス可用性</value></data>
+  <data name="Metric.ServiceCountName" xml:space="preserve"><value>サービス数</value></data>
+  <data name="Metric.ServiceTypeName" xml:space="preserve"><value>サービス種別</value></data>
+  <data name="Metric.ServiceVersionName" xml:space="preserve"><value>サービスバージョン</value></data>
+  <data name="Notification.ExpectedServiceMissing" xml:space="preserve"><value>期待したサービスまたはレイヤーが存在しません</value></data>
+  <data name="Notification.HealthCredentialInvalid" xml:space="preserve"><value>資格情報が無効</value></data>
+  <data name="Notification.HealthExpectedServiceMissing" xml:space="preserve"><value>期待サービス/レイヤーがありません</value></data>
+  <data name="Notification.HealthExpectedServiceRecovered" xml:space="preserve"><value>期待サービス/レイヤーが復旧しました</value></data>
+  <data name="Notification.HealthPermissionDenied" xml:space="preserve"><value>権限不足</value></data>
+  <data name="Notification.HealthQuotaExceeded" xml:space="preserve"><value>クォータ枯渇</value></data>
+  <data name="Notification.HealthServiceNotEnabled" xml:space="preserve"><value>サービス未有効</value></data>
+  <data name="Notification.HealthServiceRecovered" xml:space="preserve"><value>サービス復旧</value></data>
+  <data name="Notification.HealthServiceUnavailable" xml:space="preserve"><value>サービス利用不可</value></data>
+  <data name="Notification.ServiceRecovered" xml:space="preserve"><value>サービスは正常に戻りました</value></data>
+  <data name="Notification.ServiceUnavailableWithStatus" xml:space="preserve"><value>{0}（HTTP {1}）</value></data>
+  <data name="Provider.AmapDescription" xml:space="preserve"><value>高德オープンプラットフォーム Web サービス API の健全性監視。ジオコーディング API をプローブ（1 回分の呼び出しを消費）。コンソールは取得しません。</value></data>
+  <data name="Provider.AmapKeyHint" xml:space="preserve"><value>Web サービス API キーのみ対応。フロントエンド JS/Android/iOS キーは非対応。</value></data>
+  <data name="Provider.AmapKeyInputHint" xml:space="preserve"><value>高德 Web サービス API キー</value></data>
+  <data name="Provider.AmapProbeDescription" xml:space="preserve"><value>プローブ: ジオコーディング /v3/geocode/geo（固定の公開住所）</value></data>
+  <data name="Provider.AmapSecretHint" xml:space="preserve"><value>署名検証を有効にしている場合のみ入力。</value></data>
+  <data name="Provider.AmapSecretLabel" xml:space="preserve"><value>署名秘密鍵（任意）</value></data>
+  <data name="Provider.BaiduMapsDescription" xml:space="preserve"><value>百度地図オープンプラットフォーム Web API の健全性監視。ジオコーディング API をプローブ（1 回分の呼び出しを消費）。コンソールは取得しません。</value></data>
+  <data name="Provider.BaiduMapsKeyHint" xml:space="preserve"><value>サーバーサイド AK のみ対応。ブラウザー Referer 型 AK は非対応。</value></data>
+  <data name="Provider.BaiduMapsKeyInputHint" xml:space="preserve"><value>百度地図サーバーサイド AK</value></data>
+  <data name="Provider.BaiduMapsProbeDescription" xml:space="preserve"><value>プローブ: ジオコーディング /geocoding/v3/（固定の公開住所）</value></data>
+  <data name="Provider.BaiduMapsSecretHint" xml:space="preserve"><value>SN 署名を有効にしている場合のみ入力。既定プローブは SN を付加しません。</value></data>
+  <data name="Provider.BaiduMapsSecretLabel" xml:space="preserve"><value>SK（SN 署名、任意）</value></data>
+  <data name="Provider.Error401Amap" xml:space="preserve"><value>高德が 401 を返しました。キーが無効かアクセス権がありません。</value></data>
+  <data name="Provider.Error401BaiduMaps" xml:space="preserve"><value>百度地図が 401 を返しました。AK が無効かアクセス権がありません。</value></data>
+  <data name="Provider.Error401Ogc" xml:space="preserve"><value>OGC サービスが 401 を返しました。資格情報が無効です。</value></data>
+  <data name="Provider.Error401SuperMap" xml:space="preserve"><value>SuperMap iServer が 401 を返しました。資格情報が無効です。</value></data>
+  <data name="Provider.Error401TencentLocation" xml:space="preserve"><value>テンセント位置情報が 401 を返しました。キーが無効かアクセス権がありません。</value></data>
+  <data name="Provider.Error401Tianditu" xml:space="preserve"><value>天地図が 401 を返しました。トークンが無効かアクセス権がありません。</value></data>
+  <data name="Provider.Error403Amap" xml:space="preserve"><value>高德が 403 を返しました。プローブ対象サービスへのアクセス権がありません。</value></data>
+  <data name="Provider.Error403BaiduMaps" xml:space="preserve"><value>百度地図が 403 を返しました。プローブ対象サービスへのアクセス権がありません。</value></data>
+  <data name="Provider.Error403Ogc" xml:space="preserve"><value>OGC サービスが 403 を返しました。権限が不足しています。</value></data>
+  <data name="Provider.Error403SuperMap" xml:space="preserve"><value>SuperMap iServer が 403 を返しました。権限が不足しています。</value></data>
+  <data name="Provider.Error403TencentLocation" xml:space="preserve"><value>テンセント位置情報が 403 を返しました。プローブ対象サービスへのアクセス権がありません。</value></data>
+  <data name="Provider.Error403Tianditu" xml:space="preserve"><value>天地図が 403 を返しました。プローブ対象サービスへのアクセス権がありません。</value></data>
+  <data name="Provider.Error404Ogc" xml:space="preserve"><value>OGC サービスがこのパスに 404 を返しました。GetCapabilities URL を確認してください。</value></data>
+  <data name="Provider.Error404SuperMap" xml:space="preserve"><value>SuperMap iServer がこのパスに 404 を返しました。ベース URL を確認してください。</value></data>
+  <data name="Provider.ErrorHttpNotConfirmed" xml:space="preserve"><value>このアドレスは HTTP（平文）です。アカウント設定で HTTP を明示的に許可してください。</value></data>
+  <data name="Provider.ErrorInvalidBaseUrl" xml:space="preserve"><value>ベース URL が無効です。</value></data>
+  <data name="Provider.ErrorInvalidCapabilitiesUrl" xml:space="preserve"><value>GetCapabilities URL が無効です。</value></data>
+  <data name="Provider.ErrorInvalidXml" xml:space="preserve"><value>応答が有効な XML ではないため安全に拒否しました。</value></data>
+  <data name="Provider.ErrorMissingBaseUrl" xml:space="preserve"><value>SuperMap iServer のベース URL がありません。</value></data>
+  <data name="Provider.ErrorMissingCapabilitiesUrl" xml:space="preserve"><value>GetCapabilities URL がありません。</value></data>
+  <data name="Provider.ErrorNetworkAmap" xml:space="preserve"><value>高德オープンプラットフォームに接続できません。ネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorNetworkBaiduMaps" xml:space="preserve"><value>百度地図オープンプラットフォームに接続できません。ネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorNetworkOgc" xml:space="preserve"><value>OGC サービスに接続できません。アドレスとネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorNetworkSuperMap" xml:space="preserve"><value>SuperMap iServer に接続できません。アドレスとネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorNetworkTencentLocation" xml:space="preserve"><value>テンセント位置情報サービスに接続できません。ネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorNetworkTianditu" xml:space="preserve"><value>天地図に接続できません。ネットワークを確認してください。</value></data>
+  <data name="Provider.ErrorRedirectBlocked" xml:space="preserve"><value>リダイレクトをブロックしました。プローブはクロスホスト/降格リダイレクトに従いません。</value></data>
+  <data name="Provider.ErrorSchemeNotAllowed" xml:space="preserve"><value>http/https のみ許可されています。</value></data>
+  <data name="Provider.ErrorXmlTooLarge" xml:space="preserve"><value>XML 応答が大きすぎるため安全に拒否しました。</value></data>
+  <data name="Provider.OgcAllowHttpHint" xml:space="preserve"><value>既定は HTTPS のみ。許可すると平文 HTTP になります。リスクを評価してください。</value></data>
+  <data name="Provider.OgcAllowHttpLabel" xml:space="preserve"><value>HTTP（平文）を許可</value></data>
+  <data name="Provider.OgcAuthModeHint" xml:space="preserve"><value>none / basic / bearer / query-token</value></data>
+  <data name="Provider.OgcAuthModeLabel" xml:space="preserve"><value>認証方式</value></data>
+  <data name="Provider.OgcAuthModePlaceholder" xml:space="preserve"><value>none</value></data>
+  <data name="Provider.OgcBearerHint" xml:space="preserve"><value>Authorization: Bearer &lt;token&gt;</value></data>
+  <data name="Provider.OgcBearerLabel" xml:space="preserve"><value>Bearer トークン</value></data>
+  <data name="Provider.OgcCapabilitiesUrlHint" xml:space="preserve"><value>例: https://host/geoserver/wms?service=WMS&amp;request=GetCapabilities</value></data>
+  <data name="Provider.OgcCapabilitiesUrlLabel" xml:space="preserve"><value>GetCapabilities URL</value></data>
+  <data name="Provider.OgcCapabilitiesUrlPlaceholder" xml:space="preserve"><value>https://example.com/wms?request=GetCapabilities</value></data>
+  <data name="Provider.OgcDescription" xml:space="preserve"><value>汎用 OGC サービス健全性監視（WMS/WMTS/WFS）。既定では GetCapabilities のみ呼び出します。MapGIS Server、GeoServer、SuperMap などに対応。</value></data>
+  <data name="Provider.OgcExpectedLayerHint" xml:space="preserve"><value>設定すると GetCapabilities にそのレイヤー/フィーチャータイプがあるか確認します。</value></data>
+  <data name="Provider.OgcExpectedLayerLabel" xml:space="preserve"><value>期待レイヤー/サービス名（任意）</value></data>
+  <data name="Provider.OgcKeyHint" xml:space="preserve"><value>能力文書のみ取得し、空間クエリは行いません。</value></data>
+  <data name="Provider.OgcKeyInputHint" xml:space="preserve"><value>GetCapabilities プローブ</value></data>
+  <data name="Provider.OgcPasswordHint" xml:space="preserve"><value>Basic 認証のパスワード</value></data>
+  <data name="Provider.OgcPasswordLabel" xml:space="preserve"><value>パスワード（Basic）</value></data>
+  <data name="Provider.OgcProbeDescription" xml:space="preserve"><value>プローブ: GetCapabilities（能力文書のみ）</value></data>
+  <data name="Provider.OgcQueryTokenHint" xml:space="preserve"><value>GetCapabilities URL に token=&lt;値&gt; クエリ パラメーターとして付加します。</value></data>
+  <data name="Provider.OgcQueryTokenLabel" xml:space="preserve"><value>クエリ トークン</value></data>
+  <data name="Provider.OgcServiceTypeHint" xml:space="preserve"><value>wms / wmts / wfs</value></data>
+  <data name="Provider.OgcServiceTypeLabel" xml:space="preserve"><value>サービス種別</value></data>
+  <data name="Provider.OgcServiceTypePlaceholder" xml:space="preserve"><value>wms</value></data>
+  <data name="Provider.OgcUsernameHint" xml:space="preserve"><value>Basic 認証のユーザー名</value></data>
+  <data name="Provider.OgcUsernameLabel" xml:space="preserve"><value>ユーザー名（Basic）</value></data>
+  <data name="Provider.SuperMapAllowHttpHint" xml:space="preserve"><value>既定は HTTPS のみ。許可すると平文 HTTP になります。リスクを自分で評価してください。</value></data>
+  <data name="Provider.SuperMapAllowHttpLabel" xml:space="preserve"><value>HTTP（平文）を許可</value></data>
+  <data name="Provider.SuperMapBaseUrlHint" xml:space="preserve"><value>例: http://localhost:8090。プローブ URL は {baseUrl}/iserver/services.json です。</value></data>
+  <data name="Provider.SuperMapBaseUrlLabel" xml:space="preserve"><value>iServer ベース URL</value></data>
+  <data name="Provider.SuperMapBaseUrlPlaceholder" xml:space="preserve"><value>http://localhost:8090</value></data>
+  <data name="Provider.SuperMapDescription" xml:space="preserve"><value>SuperMap iServer セルフホスト健全性監視：サービス カタログを読み取り、任意で管理状態プローブ（既定オフ）。</value></data>
+  <data name="Provider.SuperMapExpectedServiceHint" xml:space="preserve"><value>設定するとサービス カタログにそのサービスがあるか確認します。</value></data>
+  <data name="Provider.SuperMapExpectedServiceLabel" xml:space="preserve"><value>期待サービス名（任意）</value></data>
+  <data name="Provider.SuperMapManagerStatusHint" xml:space="preserve"><value>権限のある資格情報が必要です。既定はオフ。</value></data>
+  <data name="Provider.SuperMapManagerStatusLabel" xml:space="preserve"><value>管理状態プローブを有効化</value></data>
+  <data name="Provider.SuperMapProbeDescription" xml:space="preserve"><value>プローブ: iServer カタログ /iserver/services.json</value></data>
+  <data name="Provider.SuperMapTokenHint" xml:space="preserve"><value>iServer トークンまたは API キー（任意）</value></data>
+  <data name="Provider.SuperMapTokenInputHint" xml:space="preserve"><value>iServer トークンまたは API キー</value></data>
+  <data name="Provider.SuperMapTokenLabel" xml:space="preserve"><value>トークン / API キー</value></data>
+  <data name="Provider.TencentLocationDescription" xml:space="preserve"><value>テンセント位置情報 WebService API の健全性監視。既定プローブは行政区画一覧 API（1 回分の呼び出しを消費）。</value></data>
+  <data name="Provider.TencentLocationKeyHint" xml:space="preserve"><value>WebService API キーのみ対応。モバイル SDK キーは非対応。</value></data>
+  <data name="Provider.TencentLocationKeyInputHint" xml:space="preserve"><value>テンセント位置情報 WebService API キー</value></data>
+  <data name="Provider.TencentLocationProbeDescription" xml:space="preserve"><value>プローブ: 行政区画一覧 /ws/district/v1/list</value></data>
+  <data name="Provider.TencentLocationSecretHint" xml:space="preserve"><value>署名キーは sig 対応エンドポイントのみで使用。既定プローブ（行政区画一覧）は sig を付加しません。</value></data>
+  <data name="Provider.TencentLocationSecretLabel" xml:space="preserve"><value>SK 署名キー（任意）</value></data>
+  <data name="Provider.TiandituDescription" xml:space="preserve"><value>天地図地名検索 V2.0 の健全性監視（サービス トークン）。</value></data>
+  <data name="Provider.TiandituKeyHint" xml:space="preserve"><value>天地図サービス トークン（tk）</value></data>
+  <data name="Provider.TiandituKeyInputHint" xml:space="preserve"><value>天地図サービス トークン（tk）</value></data>
+  <data name="Provider.TiandituProbeDescription" xml:space="preserve"><value>プローブ: 地名検索 /v2/search（固定パラメーター、count=1）</value></data>
+  <data name="Status.ServiceUnhealthyTitle" xml:space="preserve"><value>サービス状態が異常です</value></data>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>「{0}」のサービスプローブが完了しました。</value></data>
+  
 </root>

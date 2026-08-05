@@ -41,6 +41,19 @@ public interface IAppNotificationService
         IReadOnlyList<RecoveryNotificationItem> items,
         string tag);
 
+    /// <summary>
+    /// v0.9.0：服务健康通知（凭据/权限/配额/服务可用性/恢复）。
+    /// message 只允许安全类别文本（来自评估器，不含密钥、Token、完整 URL）。
+    /// </summary>
+    void ShowHealthNotification(
+        string accountId,
+        string providerId,
+        string providerDisplayName,
+        string accountDisplayName,
+        HealthNotificationType type,
+        string message,
+        string tag);
+
     void ShowTestNotification();
 
     void RemoveAccountNotifications(string accountId);

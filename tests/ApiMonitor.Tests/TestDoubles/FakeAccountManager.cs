@@ -145,7 +145,9 @@ public sealed class FakeAccountManager : IAccountManager
         string? credentialMode,
         string? apiKey,
         string? accountId,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null) =>
         Task.FromResult(RefreshResult);
 
     public Task<ApiAccount> SaveAccountAsync(
@@ -156,7 +158,9 @@ public sealed class FakeAccountManager : IAccountManager
         string? credentialMode,
         MonitoringSettings monitoring,
         CancellationToken cancellationToken,
-        AccountNotificationSettings? notification = null)
+        AccountNotificationSettings? notification = null,
+        IReadOnlyDictionary<string, string>? providerConfig = null,
+        IReadOnlyDictionary<string, string>? credentialSlots = null)
     {
         if (SaveException is not null)
         {
@@ -175,6 +179,9 @@ public sealed class FakeAccountManager : IAccountManager
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             CredentialMode = credentialMode,
+            ProviderConfig = providerConfig is { Count: > 0 }
+                ? new Dictionary<string, string>(providerConfig, StringComparer.Ordinal)
+                : new Dictionary<string, string>(StringComparer.Ordinal),
             Monitoring = monitoring,
         };
         Accounts.RemoveAll(a => a.AccountId == id);

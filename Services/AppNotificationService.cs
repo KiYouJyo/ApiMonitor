@@ -171,6 +171,46 @@ public sealed class AppNotificationService : IAppNotificationService
         ShowSafely(builder.BuildNotification());
     }
 
+    public void ShowHealthNotification(
+        string accountId,
+        string providerId,
+        string providerDisplayName,
+        string accountDisplayName,
+        HealthNotificationType type,
+        string message,
+        string tag)
+    {
+        string titleKey = type switch
+        {
+            HealthNotificationType.CredentialInvalid => "Notification.HealthCredentialInvalid",
+            HealthNotificationType.PermissionDenied => "Notification.HealthPermissionDenied",
+            HealthNotificationType.ServiceNotEnabled => "Notification.HealthServiceNotEnabled",
+            HealthNotificationType.QuotaExceeded => "Notification.HealthQuotaExceeded",
+            HealthNotificationType.ServiceUnavailable => "Notification.HealthServiceUnavailable",
+            HealthNotificationType.ServiceRecovered => "Notification.HealthServiceRecovered",
+            HealthNotificationType.ExpectedServiceMissing => "Notification.HealthExpectedServiceMissing",
+            HealthNotificationType.ExpectedServiceRecovered => "Notification.HealthExpectedServiceRecovered",
+            _ => "Notification.HealthServiceUnavailable",
+        };
+
+        var builder = new AppNotificationBuilder()
+            .AddArgument("action", NotificationActions.OpenAccount)
+            .AddArgument("accountId", accountId)
+            .AddArgument("providerId", providerId)
+            .AddText(T(titleKey, "ApiMonitor：服务状态"))
+            .AddText($"{providerDisplayName} · {accountDisplayName}")
+            .AddText(message)
+            .AddButton(new AppNotificationButton(T("Notification.OpenAccount", "打开账户"))
+                .AddArgument("action", NotificationActions.OpenAccount)
+                .AddArgument("accountId", accountId)
+                .AddArgument("providerId", providerId))
+            .SetTag(tag)
+            .SetGroup(NotificationTags.Group)
+            .SetScenario(AppNotificationScenario.Default);
+
+        ShowSafely(builder.BuildNotification());
+    }
+
     public void ShowTestNotification()
     {
         var notification = new AppNotificationBuilder()

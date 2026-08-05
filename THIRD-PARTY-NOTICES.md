@@ -15,3 +15,14 @@ ApiMonitor uses the following major third-party components. Licenses are referen
 | Microsoft.NET.Test.Sdk | Test host | https://github.com/microsoft/vstest · MIT |
 
 Runtime components distributed with the MSIX (e.g., Windows App SDK runtime dependencies) are governed by their own Microsoft licenses.
+
+## Connected third-party services
+
+ApiMonitor connects over the network to third-party API services it does not
+control: DeepSeek, OpenRouter, Moonshot / Kimi, SiliconFlow, xAI, AMap (高德),
+Baidu Maps (百度地图), Tencent Location (腾讯位置服务), Tianditu (天地图), and any
+self-hosted SuperMap iServer / OGC (WMS/WMTS/WFS) address configured by the
+user. Those services are governed by their own terms of service and privacy
+policies. ApiMonitor is not affiliated with, sponsored by, or endorsed by any of
+them; credentials are sent only to the official endpoints or the
+user-configured self-hosted addresses listed in [PRIVACY.md](PRIVACY.md).

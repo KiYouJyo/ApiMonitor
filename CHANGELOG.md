@@ -1,6 +1,72 @@
 # Changelog
 
-## [Unreleased]
+## [0.9.0] - 2026-08-05
+
+### Added
+
+- 新增 6 个 Provider：`amap`（高德 Web 服务）、`baidu-maps`（百度地图 Web API）、`tencent-location`（腾讯位置服务 WebService）、`tianditu`（天地图地名搜索 V2.0）、`supermap-iserver`（SuperMap iServer 服务目录）、`ogc-service`（通用 OGC WMS/WMTS/WFS）
+- 通用指标模型扩展：`ProviderCategory` / `ProviderCapability` / `MetricKind` / `MetricValueKind` / `GeospatialStatus`；服务状态、延迟、计数与资金余额分开统计，地理/GIS 账户绝不进入余额汇总，未知配额保持 null
+- 多槽位凭据：Key+SK、Basic 用户名+密码、Bearer Token、Query Token 独立存入 Credential Locker（`ApiMonitor` 资源不变）；账户 JSON 只保存存在标志，旧单密钥条目保持可读
+- 服务健康通知：CredentialInvalid / PermissionDenied / ServiceNotEnabled / QuotaExceeded / ServiceUnavailable / ServiceRecovered / ExpectedServiceMissing / ExpectedServiceRecovered；瞬时错误连续两次后通知，恢复一次即通知，手动测试不通知
+- 地理/GIS 历史与洞察：探测时间、状态、延迟、错误类别、服务/图层计数；延迟趋势、成功率、状态历史、计数变化；CSV 安全导出
+- 配额保护：新地图账户默认关闭自动刷新，启用后默认 6 小时、最短 1 小时；429/配额/401/403/Key 无效不重试
+- 安全 XML 解析（OGC）：禁用 DTD/外部实体/实体扩展，限制大小与深度，非 XML 安全失败
+
+### Changed
+
+- 首页新增分类筛选（全部 / AI 与模型 / 地图开放平台 / GIS 服务）与服务状态汇总（余额账户 / 服务正常 / 需要注意 / 查询失败）
+- 地图/GIS 卡片显示服务状态、凭据状态、权限状态、配额状态、延迟、探测服务与“本次探测可能消耗 1 次 API 调用”
+- 悬浮窗支持地理/GIS 账户（状态 + 延迟 + 错误，不再显示 ¥0/0 Credits）
+
+### Security
+
+- 地图 Provider 锁定官方 HTTPS 主机且不允许自定义 Base URL；不跟随重定向，凭据不跨 Origin 转发
+- 自托管 GIS 仅允许 http/https（HTTP 需显式确认），拒绝 file/ftp/data/自定义协议；凭据不跨主机/端口/降级转发
+- 日志剥离 `key/ak/tk/sig/sn/token` 等敏感查询参数；异常不含完整请求 URI；不抓取厂商控制台、不扫描局域网
+- 备份与 CSV 仍不含任何凭据值；新增凭据槽位值也绝不进入备份
+
+### Compatibility
+
+- 在 v0.8.0 之上原地升级（同时兼容 v0.7.0 安装）：账户、AccountId、Credential Locker 条目（含新增多槽位凭据）、最新余额/历史、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留
+- accounts/history JSON schema 保持 v3：新增字段全部可空（`credentialSlots`、指标值类型等），v0.8.0 / v0.7.0 文件无需迁移
+- 既有 5 个 AI Provider 的 Provider ID 与 Metric ID 完全不变；地图/GIS 服务账户绝不进入资金余额汇总
+- 安装器同版本保护与原地升级判断继续生效；GitHub 侧载版与 Microsoft Store 版分别构建、分别发布
+- v0.8.0 未作为独立正式版本发布，其新增功能（Moonshot / SiliconFlow / xAI）随本版本一并交付
+
+### Known limitations
+
+- 高德、百度、腾讯、天地图不提供公开精确剩余配额接口，`quota.remaining/used/limit/reset_at` 保持 null，绝不伪造
+- 天地图官方未公开 Token 无效/权限不足/调用超限的状态码；无法识别的状态码显示为带数值的安全 ProviderError，不做语义猜测
+- 一次主动探测消耗一次 API 调用额度；新地图账户默认关闭自动刷新，启用后默认 6 小时、最短 1 小时
+- MapGIS Server 通过通用 OGC Provider（WMS/WMTS/WFS GetCapabilities）监测，不提供未经验证的专有 `mapgis-server` Provider
+- 自动刷新与通知只在 ApiMonitor 进程运行时执行；完全退出后不再查询、不再提醒
+- Microsoft Store 版尚处于准备阶段（等待 Store 产品关联），GitHub 侧载版使用自签名 `CN=ApiMonitorDev` 开发证书
+
+## [0.8.0] - 2026-08-05
+
+### Added
+
+- Moonshot / Kimi 余额 Provider（`moonshot`）：GET `https://api.moonshot.cn/v1/users/me/balance`，主指标可用余额（CNY，官方 `available_balance` = 现金 + 代金券），次级现金 / 代金券余额；缺失字段为 null
+- SiliconFlow 余额 Provider（`siliconflow`）：GET `https://api.siliconflow.cn/v1/user/info`，主指标 `totalBalance`，次级 `balance` / `chargeBalance` / 可选 `grantedBalance`；忽略用户资料、完整响应不落日志、结构变化返回“响应结构暂不支持”
+- xAI 余额 Provider（`xai`）：Management API `GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`，需要 Management Key 与 Team ID（非敏感账户配置）；按官方“USD Cents + 账务方向”文档换算预付费 Credits，负值保留、不钳制、不 `Math.Abs`
+- Provider 能力元数据：默认官方 Base URL、必填非敏感配置字段、主指标、币种、多币种 / 分项 / 凭据验证支持；官方 Provider 不允许自定义端点
+- 凭据请求统一 HTTPS 主机白名单 + 超时 / 429 / 5xx 有限重试（可取消；401 / 403 / 404 不重试）
+- 账户编辑器动态非敏感配置字段（xAI Team ID）；编辑中切换 Provider 清空密钥并要求重新测试，旧凭据不跨 Provider 沿用
+
+### Changed
+
+- Provider 注册表从 2 个扩展到 5 个（DeepSeek / OpenRouter / Moonshot / SiliconFlow / xAI）
+- 账户数据 schema 保持 v3：新增可空 `providerConfig`（Team ID 等非敏感字段），v0.7.0 文件无需迁移
+- 便携备份包含非敏感 Provider 配置（如 Team ID），仍绝不包含任何密钥
+
+### Fixed
+
+- 无
+
+### Security
+
+- 所有凭据请求发送前校验 HTTPS 与官方主机白名单；OpenRouter / xAI 的 Management Key 只发往对应官方主机
+- 错误信息、诊断、备份与日志均不含 API Key、Management Key、Authorization、完整响应正文或用户资料
 
 ## [0.7.0] - 2026-08-04
 

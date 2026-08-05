@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== 导航 ===================== -->
 
@@ -81,8 +81,8 @@
   <data name="About.Architecture" xml:space="preserve"><value>架构：{0}</value></data>
   <data name="About.PackageIdentity" xml:space="preserve"><value>Package Identity：{0}</value></data>
   <data name="About.Publisher" xml:space="preserve"><value>发布者：{0}</value></data>
-  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>API Key 保存在 Windows Credential Locker。</value></data>
-  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>余额、历史和设置保存在本机。</value></data>
+  <data name="About.PrivacyItemCredentialLocker" xml:space="preserve"><value>所有凭据（API Key、SK、Token 等）保存在 Windows Credential Locker。</value></data>
+  <data name="About.PrivacyItemLocalData" xml:space="preserve"><value>余额、Credits、服务健康、历史与设置仅保存在本机。</value></data>
   <data name="About.PrivacyItemNoCloud" xml:space="preserve"><value>应用没有开发者云端服务器。</value></data>
   <data name="About.PrivacyItemNoTelemetry" xml:space="preserve"><value>没有遥测和广告。</value></data>
   <data name="About.PrivacyItemLocalNotifications" xml:space="preserve"><value>通知由本机生成。</value></data>
@@ -152,10 +152,10 @@
   <data name="About.CheckUpdates.Content" xml:space="preserve"><value>检查更新</value></data>
   <data name="About.CopyDiagnostics.Content" xml:space="preserve"><value>复制诊断信息</value></data>
   <data name="About.OpenDataFolder.Content" xml:space="preserve"><value>打开本地数据文件夹</value></data>
-  <data name="About.Tagline.Text" xml:space="preserve"><value>查询并记录你自己的 API 账户余额</value></data>
+  <data name="About.Tagline.Text" xml:space="preserve"><value>本地监测 API 余额、Credits、凭据状态与地图/GIS 服务健康</value></data>
   <data name="About.License.Text" xml:space="preserve"><value>MIT License</value></data>
   <data name="About.Copyright.Text" xml:space="preserve"><value>Copyright (c) 2026 KiYouJyo</value></data>
-  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>本地余额历史、自动刷新、通知区域、Windows 余额提醒、数据洞察。</value></data>
+  <data name="About.CapabilitiesSummary.Text" xml:space="preserve"><value>支持 11 个 Provider（5 个 AI 余额 + 6 个地图/GIS 健康），多账户管理，余额、Credits 与服务健康分开统计；自动刷新、通知区域、本地提醒与数据洞察。</value></data>
   <data name="About.LocalDocsDescription.Text" xml:space="preserve"><value>隐私政策、MIT License 与第三方声明随应用打包，可离线查看。</value></data>
   <data name="About.UpdateSectionTitle.Text" xml:space="preserve"><value>更新</value></data>
   <data name="About.UpdateDescription.Text" xml:space="preserve"><value>检查更新只在点击时访问 GitHub；发现新版本后由你决定是否下载安装，应用不会自动下载或安装。</value></data>
@@ -251,7 +251,7 @@
   <data name="About.PackageVersionFormat" xml:space="preserve"><value>包版本：{0}</value></data>
   <data name="About.ProviderCountFormat" xml:space="preserve"><value>当前 Provider 数量：{0}</value></data>
   <data name="About.PublisherFormat" xml:space="preserve"><value>发布者：{0}</value></data>
-  <data name="About.TaglineText" xml:space="preserve"><value>查询并记录你自己的 API 账户余额</value></data>
+  <data name="About.TaglineText" xml:space="preserve"><value>本地监测 API 余额、Credits、凭据状态与地图/GIS 服务健康</value></data>
   <data name="About.UpdateAvailableFormat" xml:space="preserve"><value>发现新版本 v{0}。</value></data>
   <data name="About.UpdateCheckFailedFormat" xml:space="preserve"><value>检查更新失败：{0}</value></data>
   <data name="Home.PrivacyMessageText" xml:space="preserve"><value>API Key 保存在 Windows 安全凭据存储（Credential Locker）中，只用于请求对应 Provider 的官方接口；普通配置和余额快照仅保存在本机应用数据目录。</value></data>
@@ -497,4 +497,333 @@
   <data name="Floating.StatusLow" xml:space="preserve"><value>低余额</value></data>
   <data name="Floating.StatusFailed" xml:space="preserve"><value>失败</value></data>
   <data name="Floating.StatusUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Dialog.NoStoredCredentialHint" xml:space="preserve"><value>该账户尚未录入密钥：请输入 API Key 后再保存。</value></data>
+  <data name="Dialog.ProviderChangedRequiresRetest" xml:space="preserve"><value>已切换 Provider：旧凭据不会沿用，请重新输入新 Provider 的密钥并测试连接。</value></data>
+  <data name="Dialog.ValidationConfigRequired" xml:space="preserve"><value>请填写该 Provider 的必填配置项。</value></data>
+  <data name="Dialog.ApiKey.Header" xml:space="preserve"><value>API Key</value></data>
+  <data name="Dialog.TestConnection.Content" xml:space="preserve"><value>测试连接</value></data>
+  <data name="Dialog.RefreshNote" xml:space="preserve"><value>余额提醒由本机 ApiMonitor 在运行期间生成。退出 ApiMonitor 后不会继续查询或发送新提醒。</value></data>
+  <data name="Provider.MoonshotDescription" xml:space="preserve"><value>查询 Moonshot / Kimi 平台的可用余额（人民币元），仅调用官方余额接口，不产生模型调用费用。</value></data>
+  <data name="Provider.MoonshotKeyHint" xml:space="preserve"><value>Moonshot 平台 API Key（sk-…），仅用于请求官方余额接口。</value></data>
+  <data name="Provider.MoonshotKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.MoonshotAvailableMetricName" xml:space="preserve"><value>可用余额</value></data>
+  <data name="Provider.MoonshotCashMetricName" xml:space="preserve"><value>现金余额</value></data>
+  <data name="Provider.MoonshotVoucherMetricName" xml:space="preserve"><value>代金券余额</value></data>
+  <data name="Provider.SiliconFlowDescription" xml:space="preserve"><value>查询 SiliconFlow（硅基流动）账户总余额（人民币元），仅读取余额字段，不保存用户资料。</value></data>
+  <data name="Provider.SiliconFlowKeyHint" xml:space="preserve"><value>SiliconFlow 平台 API Key（sk-…），仅用于请求官方余额接口。</value></data>
+  <data name="Provider.SiliconFlowKeyInputHint" xml:space="preserve"><value>sk-…</value></data>
+  <data name="Provider.SiliconFlowTotalMetricName" xml:space="preserve"><value>总余额</value></data>
+  <data name="Provider.SiliconFlowChargeMetricName" xml:space="preserve"><value>充值余额</value></data>
+  <data name="Provider.SiliconFlowGrantedMetricName" xml:space="preserve"><value>赠送余额</value></data>
+  <data name="Provider.SiliconFlowBalanceMetricName" xml:space="preserve"><value>可用余额</value></data>
+  <data name="Provider.XaiDescription" xml:space="preserve"><value>使用 xAI Management Key 查询团队预付费 Credits（美元）。普通模型 API Key 不能用于余额查询。</value></data>
+  <data name="Provider.XaiKeyHint" xml:space="preserve"><value>必须使用具有账单读取权限的 Management Key；普通 xAI 模型 API Key 无法查询余额。密钥只保存在 Windows Credential Locker。</value></data>
+  <data name="Provider.XaiKeyInputHint" xml:space="preserve"><value>xai-…（Management Key）</value></data>
+  <data name="Provider.XaiTeamIdLabel" xml:space="preserve"><value>Team ID</value></data>
+  <data name="Provider.XaiTeamIdHint" xml:space="preserve"><value>xAI 团队的 Team ID（非密钥，保存在账户数据中）。可在 xAI Console 的团队设置中查看。</value></data>
+  <data name="Provider.XaiTeamIdPlaceholder" xml:space="preserve"><value>例如 65c1e471-205f-4566-9c5a-07198bcdf4ce</value></data>
+  <data name="Provider.XaiPrepaidMetricName" xml:space="preserve"><value>预付费 Credits</value></data>
+  <data name="Provider.ErrorMissingTeamId" xml:space="preserve"><value>缺少 xAI Team ID，请在账户设置中填写。</value></data>
+  <data name="Provider.ErrorMissingBalanceFields" xml:space="preserve"><value>接口响应缺少余额字段。</value></data>
+  <data name="Provider.ErrorUnsupportedFormat" xml:space="preserve"><value>官方响应结构暂不支持，请更新应用或稍后重试。</value></data>
+  <data name="Provider.ErrorUnsupportedBalanceFormat" xml:space="preserve"><value>余额格式不支持（无法确认官方金额语义），未显示余额。</value></data>
+  <data name="Provider.Error404" xml:space="preserve"><value>接口或账户不存在（404）。</value></data>
+  <data name="Provider.Error401Xai" xml:space="preserve"><value>Management Key 无效或已过期（401）。余额查询必须使用 xAI Management Key，普通模型 API Key 无效。</value></data>
+  <data name="Provider.Error403Xai" xml:space="preserve"><value>权限不足（403）：请确认 Management Key 具有账单读取权限。</value></data>
+  <data name="Provider.Error404Team" xml:space="preserve"><value>Team 或接口不存在（404）：请检查 Team ID。</value></data>
+  <data name="Provider.ErrorNetworkMoonshot" xml:space="preserve"><value>无法连接 Moonshot 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorNetworkSiliconFlow" xml:space="preserve"><value>无法连接 SiliconFlow 服务，请检查网络或 DNS。</value></data>
+  <data name="Provider.ErrorNetworkXai" xml:space="preserve"><value>无法连接 xAI Management API，请检查网络或 DNS。</value></data>
+  <data name="Account.ErrorIntervalUnsupported" xml:space="preserve"><value>刷新间隔 {0} 分钟对该类型 Provider 不可用。</value></data>
+  <data name="Card.LatencyFormat" xml:space="preserve"><value>{0} ms</value></data>
+  <data name="Card.ProbeConsumesQuota" xml:space="preserve"><value>本次探测可能消耗 1 次 API 调用</value></data>
+  <data name="Dialog.ProbeConsumesQuota" xml:space="preserve"><value>本次探测可能消耗 1 次 API 调用</value></data>
+  <data name="Geo.StatusConfigurationMissing" xml:space="preserve"><value>配置缺失</value></data>
+  <data name="Geo.StatusCredentialInvalid" xml:space="preserve"><value>凭据无效</value></data>
+  <data name="Geo.StatusHealthy" xml:space="preserve"><value>正常</value></data>
+  <data name="Geo.StatusInvalidResponse" xml:space="preserve"><value>响应格式异常</value></data>
+  <data name="Geo.StatusIpWhitelistDenied" xml:space="preserve"><value>IP 白名单未通过</value></data>
+  <data name="Geo.StatusKeyTypeMismatch" xml:space="preserve"><value>Key 类型错误</value></data>
+  <data name="Geo.StatusNetworkUnavailable" xml:space="preserve"><value>网络不可用</value></data>
+  <data name="Geo.StatusPermissionDenied" xml:space="preserve"><value>权限不足</value></data>
+  <data name="Geo.StatusProviderError" xml:space="preserve"><value>服务商错误</value></data>
+  <data name="Geo.StatusQuotaExceeded" xml:space="preserve"><value>配额已耗尽</value></data>
+  <data name="Geo.StatusRateLimited" xml:space="preserve"><value>请求频率超限</value></data>
+  <data name="Geo.StatusRefererDomainDenied" xml:space="preserve"><value>Referer/域名受限</value></data>
+  <data name="Geo.StatusServiceNotEnabled" xml:space="preserve"><value>服务未启用</value></data>
+  <data name="Geo.StatusSignatureInvalid" xml:space="preserve"><value>签名校验失败</value></data>
+  <data name="Geo.StatusTimeout" xml:space="preserve"><value>连接超时</value></data>
+  <data name="Geo.StatusTlsFailure" xml:space="preserve"><value>TLS 失败</value></data>
+  <data name="Geo.StatusUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Home.FilterAiProviders" xml:space="preserve"><value>AI 与模型</value></data>
+  <data name="Home.FilterGeospatialProviders" xml:space="preserve"><value>地图开放平台</value></data>
+  <data name="Home.FilterGisServerProviders" xml:space="preserve"><value>GIS 服务</value></data>
+  <data name="Home.ServiceSummaryFormat" xml:space="preserve"><value>余额账户 {0} · 服务正常 {1} · 需要注意 {2} · 查询失败 {3}</value></data>
+  <data name="Home.StatusNeedsAttention" xml:space="preserve"><value>需要注意</value></data>
+  <data name="Insights.SuccessRateFormat" xml:space="preserve"><value>成功率 {0}%（{1}/{2} 次探测）</value></data>
+  <data name="Metric.BooleanNo" xml:space="preserve"><value>否</value></data>
+  <data name="Metric.BooleanYes" xml:space="preserve"><value>是</value></data>
+  <data name="Metric.CredentialStatusName" xml:space="preserve"><value>凭据状态</value></data>
+  <data name="Metric.ExpectedLayerName" xml:space="preserve"><value>预期图层存在</value></data>
+  <data name="Metric.ExpectedServiceName" xml:space="preserve"><value>预期服务存在</value></data>
+  <data name="Metric.LatencyName" xml:space="preserve"><value>响应延迟</value></data>
+  <data name="Metric.LayerCountName" xml:space="preserve"><value>图层数量</value></data>
+  <data name="Metric.PermissionStatusName" xml:space="preserve"><value>权限状态</value></data>
+  <data name="Metric.QuotaLimitName" xml:space="preserve"><value>配额上限</value></data>
+  <data name="Metric.QuotaRemainingName" xml:space="preserve"><value>剩余配额</value></data>
+  <data name="Metric.QuotaStateName" xml:space="preserve"><value>配额状态</value></data>
+  <data name="Metric.QuotaUsedName" xml:space="preserve"><value>已用配额</value></data>
+  <data name="Metric.ServiceAvailabilityName" xml:space="preserve"><value>服务可用性</value></data>
+  <data name="Metric.ServiceCountName" xml:space="preserve"><value>服务数量</value></data>
+  <data name="Metric.ServiceTypeName" xml:space="preserve"><value>服务类型</value></data>
+  <data name="Metric.ServiceVersionName" xml:space="preserve"><value>服务版本</value></data>
+  <data name="Notification.ExpectedServiceMissing" xml:space="preserve"><value>预期服务或图层不存在</value></data>
+  <data name="Notification.HealthCredentialInvalid" xml:space="preserve"><value>凭据无效</value></data>
+  <data name="Notification.HealthExpectedServiceMissing" xml:space="preserve"><value>预期服务/图层缺失</value></data>
+  <data name="Notification.HealthExpectedServiceRecovered" xml:space="preserve"><value>预期服务/图层已恢复</value></data>
+  <data name="Notification.HealthPermissionDenied" xml:space="preserve"><value>权限不足</value></data>
+  <data name="Notification.HealthQuotaExceeded" xml:space="preserve"><value>配额已耗尽</value></data>
+  <data name="Notification.HealthServiceNotEnabled" xml:space="preserve"><value>服务未启用</value></data>
+  <data name="Notification.HealthServiceRecovered" xml:space="preserve"><value>服务已恢复</value></data>
+  <data name="Notification.HealthServiceUnavailable" xml:space="preserve"><value>服务不可用</value></data>
+  <data name="Notification.ServiceRecovered" xml:space="preserve"><value>服务已恢复正常</value></data>
+  <data name="Notification.ServiceUnavailableWithStatus" xml:space="preserve"><value>{0}（HTTP {1}）</value></data>
+  <data name="Provider.AmapDescription" xml:space="preserve"><value>高德开放平台 Web 服务 API 健康监测。探测地理编码接口（消耗一次调用额度），不抓取控制台。</value></data>
+  <data name="Provider.AmapKeyHint" xml:space="preserve"><value>仅支持 Web 服务 API Key；前端 JS/Android/iOS Key 不支持。</value></data>
+  <data name="Provider.AmapKeyInputHint" xml:space="preserve"><value>高德 Web 服务 API Key</value></data>
+  <data name="Provider.AmapProbeDescription" xml:space="preserve"><value>探测：地理编码 /v3/geocode/geo（固定公开地址）</value></data>
+  <data name="Provider.AmapSecretHint" xml:space="preserve"><value>启用数字签名时填写；未启用可留空。</value></data>
+  <data name="Provider.AmapSecretLabel" xml:space="preserve"><value>数字签名密钥（可选）</value></data>
+  <data name="Provider.BaiduMapsDescription" xml:space="preserve"><value>百度地图开放平台 Web API 健康监测。探测地理编码接口（消耗一次调用额度），不抓取控制台。</value></data>
+  <data name="Provider.BaiduMapsKeyHint" xml:space="preserve"><value>仅支持服务端 AK；浏览器端 Referer 型 AK 不支持。</value></data>
+  <data name="Provider.BaiduMapsKeyInputHint" xml:space="preserve"><value>百度地图服务端 AK</value></data>
+  <data name="Provider.BaiduMapsProbeDescription" xml:space="preserve"><value>探测：地理编码 /geocoding/v3/（固定公开地址）</value></data>
+  <data name="Provider.BaiduMapsSecretHint" xml:space="preserve"><value>启用 SN 校验时填写；默认探测不附加 SN。</value></data>
+  <data name="Provider.BaiduMapsSecretLabel" xml:space="preserve"><value>SK（SN 校验，可选）</value></data>
+  <data name="Provider.Error401Amap" xml:space="preserve"><value>高德返回 401：Key 无效或无访问权限。</value></data>
+  <data name="Provider.Error401BaiduMaps" xml:space="preserve"><value>百度地图返回 401：AK 无效或无访问权限。</value></data>
+  <data name="Provider.Error401Ogc" xml:space="preserve"><value>OGC 服务返回 401：凭据无效。</value></data>
+  <data name="Provider.Error401SuperMap" xml:space="preserve"><value>SuperMap iServer 返回 401：凭据无效。</value></data>
+  <data name="Provider.Error401TencentLocation" xml:space="preserve"><value>腾讯位置服务返回 401：Key 无效或无访问权限。</value></data>
+  <data name="Provider.Error401Tianditu" xml:space="preserve"><value>天地图返回 401：Token 无效或无访问权限。</value></data>
+  <data name="Provider.Error403Amap" xml:space="preserve"><value>高德返回 403：无权限访问探测服务。</value></data>
+  <data name="Provider.Error403BaiduMaps" xml:space="preserve"><value>百度地图返回 403：无权限访问探测服务。</value></data>
+  <data name="Provider.Error403Ogc" xml:space="preserve"><value>OGC 服务返回 403：权限不足。</value></data>
+  <data name="Provider.Error403SuperMap" xml:space="preserve"><value>SuperMap iServer 返回 403：权限不足。</value></data>
+  <data name="Provider.Error403TencentLocation" xml:space="preserve"><value>腾讯位置服务返回 403：无权限访问探测服务。</value></data>
+  <data name="Provider.Error403Tianditu" xml:space="preserve"><value>天地图返回 403：无权限访问探测服务。</value></data>
+  <data name="Provider.Error404Ogc" xml:space="preserve"><value>OGC 服务未找到该路径（404），请检查 GetCapabilities URL。</value></data>
+  <data name="Provider.Error404SuperMap" xml:space="preserve"><value>SuperMap iServer 未找到该路径（404），请检查 Base URL。</value></data>
+  <data name="Provider.ErrorHttpNotConfirmed" xml:space="preserve"><value>该地址使用 HTTP（明文）；请在账户配置中显式允许 HTTP。</value></data>
+  <data name="Provider.ErrorInvalidBaseUrl" xml:space="preserve"><value>Base URL 无效。</value></data>
+  <data name="Provider.ErrorInvalidCapabilitiesUrl" xml:space="preserve"><value>GetCapabilities URL 无效。</value></data>
+  <data name="Provider.ErrorInvalidXml" xml:space="preserve"><value>响应不是有效 XML，已安全拒绝。</value></data>
+  <data name="Provider.ErrorMissingBaseUrl" xml:space="preserve"><value>缺少 SuperMap iServer Base URL。</value></data>
+  <data name="Provider.ErrorMissingCapabilitiesUrl" xml:space="preserve"><value>缺少 GetCapabilities URL。</value></data>
+  <data name="Provider.ErrorNetworkAmap" xml:space="preserve"><value>无法连接高德开放平台，请检查网络。</value></data>
+  <data name="Provider.ErrorNetworkBaiduMaps" xml:space="preserve"><value>无法连接百度地图开放平台，请检查网络。</value></data>
+  <data name="Provider.ErrorNetworkOgc" xml:space="preserve"><value>无法连接 OGC 服务，请检查地址与网络。</value></data>
+  <data name="Provider.ErrorNetworkSuperMap" xml:space="preserve"><value>无法连接 SuperMap iServer，请检查地址与网络。</value></data>
+  <data name="Provider.ErrorNetworkTencentLocation" xml:space="preserve"><value>无法连接腾讯位置服务，请检查网络。</value></data>
+  <data name="Provider.ErrorNetworkTianditu" xml:space="preserve"><value>无法连接天地图，请检查网络。</value></data>
+  <data name="Provider.ErrorRedirectBlocked" xml:space="preserve"><value>已阻止重定向：探测不跟随跨主机/降级重定向。</value></data>
+  <data name="Provider.ErrorSchemeNotAllowed" xml:space="preserve"><value>只允许 http/https 协议。</value></data>
+  <data name="Provider.ErrorXmlTooLarge" xml:space="preserve"><value>XML 响应过大，已安全拒绝。</value></data>
+  <data name="Provider.OgcAllowHttpHint" xml:space="preserve"><value>默认仅 HTTPS；开启后允许明文 HTTP，请自行评估风险。</value></data>
+  <data name="Provider.OgcAllowHttpLabel" xml:space="preserve"><value>允许 HTTP（明文）</value></data>
+  <data name="Provider.OgcAuthModeHint" xml:space="preserve"><value>none / basic / bearer / query-token</value></data>
+  <data name="Provider.OgcAuthModeLabel" xml:space="preserve"><value>认证方式</value></data>
+  <data name="Provider.OgcAuthModePlaceholder" xml:space="preserve"><value>none</value></data>
+  <data name="Provider.OgcBearerHint" xml:space="preserve"><value>Authorization: Bearer &lt;token&gt;</value></data>
+  <data name="Provider.OgcBearerLabel" xml:space="preserve"><value>Bearer Token</value></data>
+  <data name="Provider.OgcCapabilitiesUrlHint" xml:space="preserve"><value>例如 https://host/geoserver/wms?service=WMS&amp;request=GetCapabilities</value></data>
+  <data name="Provider.OgcCapabilitiesUrlLabel" xml:space="preserve"><value>GetCapabilities URL</value></data>
+  <data name="Provider.OgcCapabilitiesUrlPlaceholder" xml:space="preserve"><value>https://example.com/wms?request=GetCapabilities</value></data>
+  <data name="Provider.OgcDescription" xml:space="preserve"><value>通用 OGC 服务健康监测（WMS/WMTS/WFS），默认只调用 GetCapabilities。可用于 MapGIS Server、GeoServer、SuperMap 等。</value></data>
+  <data name="Provider.OgcExpectedLayerHint" xml:space="preserve"><value>填写后检查 GetCapabilities 中是否存在该图层/要素类型。</value></data>
+  <data name="Provider.OgcExpectedLayerLabel" xml:space="preserve"><value>预期图层或服务名称（可选）</value></data>
+  <data name="Provider.OgcKeyHint" xml:space="preserve"><value>仅获取服务能力文档，不做空间查询。</value></data>
+  <data name="Provider.OgcKeyInputHint" xml:space="preserve"><value>GetCapabilities 探测</value></data>
+  <data name="Provider.OgcPasswordHint" xml:space="preserve"><value>Basic 认证密码</value></data>
+  <data name="Provider.OgcPasswordLabel" xml:space="preserve"><value>密码（Basic）</value></data>
+  <data name="Provider.OgcProbeDescription" xml:space="preserve"><value>探测：GetCapabilities（仅能力文档）</value></data>
+  <data name="Provider.OgcQueryTokenHint" xml:space="preserve"><value>以 token=&lt;值&gt; 查询参数附加到 GetCapabilities URL。</value></data>
+  <data name="Provider.OgcQueryTokenLabel" xml:space="preserve"><value>Query Token</value></data>
+  <data name="Provider.OgcServiceTypeHint" xml:space="preserve"><value>wms / wmts / wfs</value></data>
+  <data name="Provider.OgcServiceTypeLabel" xml:space="preserve"><value>服务类型</value></data>
+  <data name="Provider.OgcServiceTypePlaceholder" xml:space="preserve"><value>wms</value></data>
+  <data name="Provider.OgcUsernameHint" xml:space="preserve"><value>Basic 认证用户名</value></data>
+  <data name="Provider.OgcUsernameLabel" xml:space="preserve"><value>用户名（Basic）</value></data>
+  <data name="Provider.SuperMapAllowHttpHint" xml:space="preserve"><value>默认仅 HTTPS。开启后允许明文 HTTP，请自行评估内网风险。</value></data>
+  <data name="Provider.SuperMapAllowHttpLabel" xml:space="preserve"><value>允许 HTTP（明文）</value></data>
+  <data name="Provider.SuperMapBaseUrlHint" xml:space="preserve"><value>例如 http://localhost:8090；探测地址为 {baseUrl}/iserver/services.json。</value></data>
+  <data name="Provider.SuperMapBaseUrlLabel" xml:space="preserve"><value>iServer Base URL</value></data>
+  <data name="Provider.SuperMapBaseUrlPlaceholder" xml:space="preserve"><value>http://localhost:8090</value></data>
+  <data name="Provider.SuperMapDescription" xml:space="preserve"><value>SuperMap iServer 自托管服务健康监测：读取服务目录，可选管理状态探测（默认关闭）。</value></data>
+  <data name="Provider.SuperMapExpectedServiceHint" xml:space="preserve"><value>填写后在服务目录中检查该服务是否存在。</value></data>
+  <data name="Provider.SuperMapExpectedServiceLabel" xml:space="preserve"><value>预期服务名称（可选）</value></data>
+  <data name="Provider.SuperMapManagerStatusHint" xml:space="preserve"><value>需具备有权限的凭据；默认关闭。</value></data>
+  <data name="Provider.SuperMapManagerStatusLabel" xml:space="preserve"><value>启用管理状态探测</value></data>
+  <data name="Provider.SuperMapProbeDescription" xml:space="preserve"><value>探测：iServer 服务目录 /iserver/services.json</value></data>
+  <data name="Provider.SuperMapTokenHint" xml:space="preserve"><value>iServer Token 或 API Key（可选）</value></data>
+  <data name="Provider.SuperMapTokenInputHint" xml:space="preserve"><value>iServer Token 或 API Key</value></data>
+  <data name="Provider.SuperMapTokenLabel" xml:space="preserve"><value>Token / API Key</value></data>
+  <data name="Provider.TencentLocationDescription" xml:space="preserve"><value>腾讯位置服务 WebService API 健康监测。默认探测行政区划列表接口（消耗一次调用额度）。</value></data>
+  <data name="Provider.TencentLocationKeyHint" xml:space="preserve"><value>仅支持 WebService API Key；移动 SDK Key 不支持。</value></data>
+  <data name="Provider.TencentLocationKeyInputHint" xml:space="preserve"><value>腾讯位置服务 WebService API Key</value></data>
+  <data name="Provider.TencentLocationProbeDescription" xml:space="preserve"><value>探测：行政区划列表 /ws/district/v1/list</value></data>
+  <data name="Provider.TencentLocationSecretHint" xml:space="preserve"><value>签名密钥仅用于支持 sig 的接口；默认探测（行政区划列表）不附加 sig。</value></data>
+  <data name="Provider.TencentLocationSecretLabel" xml:space="preserve"><value>SK 签名密钥（可选）</value></data>
+  <data name="Provider.TiandituDescription" xml:space="preserve"><value>天地图地名搜索 V2.0 健康监测（服务 Token）。</value></data>
+  <data name="Provider.TiandituKeyHint" xml:space="preserve"><value>天地图服务 Token（tk）</value></data>
+  <data name="Provider.TiandituKeyInputHint" xml:space="preserve"><value>天地图服务 Token（tk）</value></data>
+  <data name="Provider.TiandituProbeDescription" xml:space="preserve"><value>探测：地名搜索 /v2/search（固定参数，count=1）</value></data>
+  <data name="Status.ServiceUnhealthyTitle" xml:space="preserve"><value>服务状态异常</value></data>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>账户“{0}”的服务探测已完成。</value></data>
+  
 </root>

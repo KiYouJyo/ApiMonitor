@@ -1,4 +1,5 @@
 using ApiMonitor.Models;
+using ApiMonitor.Providers;
 using ApiMonitor.ViewModels;
 using Xunit;
 
@@ -58,6 +59,20 @@ public sealed class AccountListItemViewModelTests
         new(
             account ?? Account(),
             "DeepSeek",
+            new ProviderInfo(
+                "deepseek",
+                "DeepSeek",
+                "Test provider",
+                SupportsAccountBalance: true,
+                SupportsKeyQuota: false,
+                SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
+                CredentialOptions: new[]
+                {
+                    new ProviderCredentialOption("api-key", "API Key", "Key", IsDefault: true),
+                },
+                ApiKeyInputHint: "sk-…",
+                HelpUrl: "https://example.test/",
+                SupportsTestConnection: true),
             record,
             () => Task.CompletedTask,
             () => Task.CompletedTask,
@@ -408,6 +423,20 @@ public sealed class AccountListItemViewModelTests
         var item = new AccountListItemViewModel(
             account,
             "DeepSeek",
+            new ProviderInfo(
+                "deepseek",
+                "DeepSeek",
+                "Test provider",
+                SupportsAccountBalance: true,
+                SupportsKeyQuota: false,
+                SupportedMetricKinds: new[] { BalanceMetricKind.MonetaryBalance },
+                CredentialOptions: new[]
+                {
+                    new ProviderCredentialOption("api-key", "API Key", "Key", IsDefault: true),
+                },
+                ApiKeyInputHint: "sk-…",
+                HelpUrl: "https://example.test/",
+                SupportsTestConnection: true),
             null,
             () =>
             {
