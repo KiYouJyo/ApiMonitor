@@ -31,9 +31,9 @@
 
     <!-- 包版本由渠道决定：Store 正式版固定 1.0.0.0；侧载候选使用递增修订号。 -->
     <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'MicrosoftStore'">1.0.0.0</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'GitHubSideload'">1.0.0.1</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'Development'">1.0.0.1</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(ApiMonitorPackageVersion)' == ''">1.0.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'GitHubSideload'">1.0.0.2</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'Development'">1.0.0.2</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(ApiMonitorPackageVersion)' == ''">1.0.0.2</ApiMonitorPackageVersion>
 
     <!-- 程序集四段版本（MSIX 升级判断）。 -->
     <Version>$(ApiMonitorPackageVersion)</Version>

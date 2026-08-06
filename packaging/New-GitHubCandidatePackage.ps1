@@ -39,6 +39,9 @@ if (-not (Test-Path -LiteralPath $MsBuildPath -PathType Leaf)) {
 
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $buildDir = Join-Path $output 'build'
+if (Test-Path -LiteralPath $buildDir) {
+    Remove-Item -LiteralPath $buildDir -Recurse -Force
+}
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 
 & dotnet restore (Join-Path $repoRoot 'ApiMonitor.slnx') "-p:Configuration=$Configuration" "-p:Platform=$Platform"
@@ -56,7 +59,7 @@ $msix = @(Get-ChildItem -LiteralPath $buildDir -Recurse -Filter '*.msix' -File |
     Where-Object {
         $_.FullName -notmatch '(?i)\\Dependencies\\' -and
         $_.FullName -notmatch '(?i)Add-AppDevPackage' -and
-        $_.Name -match '^ApiMonitor_.*_x64\.msix$'
+        $_.Name -match ('^ApiMonitor_{0}_x64\.msix$' -f [regex]::Escape($PackageVersion))
     })
 if ($msix.Count -ne 1) {
     throw "Expected exactly one .msix; found $($msix.Count)."

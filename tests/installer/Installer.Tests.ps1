@@ -200,11 +200,11 @@ try {
     $certExpired = New-TestCert -Subject 'CN=ApiMonitorDev' -WithCodeSigningEku -NotBefore (Get-Date).AddDays(-800) -NotAfter (Get-Date).AddDays(-400)
     Assert-True ($certA.Thumbprint -ne $certB.Thumbprint) '两个测试证书的 Thumbprint 不同'
 
-    $msixName = 'ApiMonitor_0.9.0.0_x64.msix'
+    $msixName = 'ApiMonitor_1.0.0.2_x64.msix'
     $goodManifest = @'
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
-  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="0.9.0.0" ProcessorArchitecture="x64" />
+  <Identity Name="ApiMonitor" Publisher="CN=ApiMonitorDev" Version="1.0.0.2" ProcessorArchitecture="x64" />
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="12.0.0.0" />
   </Dependencies>
@@ -269,7 +269,7 @@ try {
     Write-TestSection 'Manifest：版本与 Identity'
     $info = Get-MsixManifestInfo $msixPath
     Assert-Equal 'ApiMonitor' $info.Name 'Identity Name = ApiMonitor'
-    Assert-Equal '0.9.0.0' $info.Version '包版本 = 0.9.0.0'
+    Assert-Equal '1.0.0.2' $info.Version '包版本 = 1.0.0.2'
     Assert-Equal 'CN=ApiMonitorDev' $info.Publisher 'Publisher = CN=ApiMonitorDev'
     Assert-True (Assert-ManifestIdentity $info).Ok 'Assert-ManifestIdentity 通过'
 
@@ -342,12 +342,12 @@ try {
             Status            = 'Ok'
         }
     }
-    Assert-Equal 'Install' (Resolve-PackageAction $null '0.9.0.0' 'CN=ApiMonitorDev') '未安装 -> Install'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '0.9.0.0' 'CN=ApiMonitorDev') '低版本允许原地升级'
-    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.6.0.1') '0.9.0.0' 'CN=ApiMonitorDev') 'v0.6.0.1 允许原地升级到 0.9.0.0'
-    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '0.9.0.0') '0.9.0.0' 'CN=ApiMonitorDev') '相同版本不重复安装'
-    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '0.9.0.1') '0.9.0.0' 'CN=ApiMonitorDev') '更高版本拒绝降级'
-    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '0.9.0.0' 'CN=SomeoneElse') '0.9.0.0' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
+    Assert-Equal 'Install' (Resolve-PackageAction $null '1.0.0.2' 'CN=ApiMonitorDev') '未安装 -> Install'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.4.0.0') '1.0.0.2' 'CN=ApiMonitorDev') '低版本允许原地升级'
+    Assert-Equal 'Upgrade' (Resolve-PackageAction (New-InstalledPkg '0.6.0.1') '1.0.0.2' 'CN=ApiMonitorDev') 'v0.6.0.1 允许原地升级到 1.0.0.2'
+    Assert-Equal 'SameVersion' (Resolve-PackageAction (New-InstalledPkg '1.0.0.2') '1.0.0.2' 'CN=ApiMonitorDev') '相同版本不重复安装'
+    Assert-Equal 'HigherVersionInstalled' (Resolve-PackageAction (New-InstalledPkg '1.0.0.3') '1.0.0.2' 'CN=ApiMonitorDev') '更高版本拒绝降级'
+    Assert-Equal 'Conflict' (Resolve-PackageAction (New-InstalledPkg '1.0.0.2' 'CN=SomeoneElse') '1.0.0.2' 'CN=ApiMonitorDev') '同名不同 Publisher 判定为冲突'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.1.0') -eq 0) '版本比较：相等'
     Assert-True ((Compare-PackageVersion '2.3.1.0' '2.3.0.0') -gt 0) '版本比较：更高'
     Assert-True ((Compare-PackageVersion '2.3.0.0' '2.3.1.0') -lt 0) '版本比较：更低'
@@ -637,7 +637,7 @@ try {
         param($MainPath, [string[]]$DependencyPaths)
         $script:AddAppxCalls++
         $script:InstalledPackages = @($script:InstalledPackages | Where-Object { $_.Name -ne 'ApiMonitor' })
-        $script:InstalledPackages += New-InstalledPkg '0.9.0.0'
+        $script:InstalledPackages += New-InstalledPkg '1.0.0.2'
         $true
     }
     $flowOps['RemoveAppxPackageForUser'] = {
@@ -649,7 +649,7 @@ try {
 
     $script:InstalledPackages = @(
         [pscustomobject]@{ Name = 'Microsoft.WindowsAppRuntime.2'; Version = '2.3.1.0'; PackageFullName = 'Microsoft.WindowsAppRuntime.2_2.3.1.0_x64__8wekyb3d8bbwe'; Publisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US' },
-        (New-InstalledPkg '0.9.0.0')
+        (New-InstalledPkg '1.0.0.2')
     )
     $script:AddAppxCalls = 0
     $script:RemoveCalls = @()
@@ -700,7 +700,7 @@ try {
     $script:RemoveCalls = @()
     $beforeUpgradeHash = (Get-FileHash -LiteralPath (Join-Path $fakeLocalState 'accounts.json') -Algorithm SHA256).Hash
     $upgradeCode = Invoke-Install $flowOps
-    Assert-Equal 0 $upgradeCode 'v0.6.0.1 -> v0.9.0.0 原地升级成功'
+    Assert-Equal 0 $upgradeCode 'v0.6.0.1 -> v1.0.0.2 原地升级成功'
     Assert-Equal 0 $script:RemoveCalls.Count '原地升级不会调用卸载'
     Assert-Equal 1 $script:AddAppxCalls '原地升级只调用一次 Add-AppxPackage'
     Assert-True (Test-Path -LiteralPath (Join-Path $fakeLocalState 'accounts.json')) '原地升级保留 LocalState'
