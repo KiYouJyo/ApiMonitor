@@ -7,14 +7,15 @@
 
 **ApiMonitor** is a lightweight Windows desktop app built with WinUI 3 that locally monitors your own API balances, credits, credential status, and map/GIS service health. It supports **11 providers** — five AI balance providers (**DeepSeek**, **OpenRouter**, **Moonshot / Kimi**, **SiliconFlow**, **xAI**) and six map/GIS health providers (map platforms **AMap**, **Baidu Maps**, **Tencent Location**, **Tianditu**, and self-hosted GIS services **SuperMap iServer** and generic **OGC** WMS/WMTS/WFS) — with balances, credits, and service health tracked separately, multi-account management, and optional Windows notification-center alerts.
 
-- Current version: **v0.9.0** (DisplayVersion `0.9.0`, PackageVersion `0.9.0.0`)
+- Current version: **v1.0.0** (DisplayVersion `1.0.0`, GitHub sideload candidate PackageVersion `1.0.0.1`, Microsoft Store PackageVersion `1.0.0.0`)
 - Runtime: .NET 10 / Windows App SDK 2.x, x64
-- Distribution: MSIX sideload (self-signed developer certificate); Microsoft Store listing in preparation (Store-signed build)
+- Distribution: MSIX sideload (self-signed developer certificate) and a Microsoft Store first-release candidate (official identity `JoKiy.ApiMonitor`, awaiting manual acceptance)
 - License: [MIT](LICENSE)
 - Languages: 简体中文 · English · 日本語 (switchable in Settings → Appearance and language)
 
 ## Upgrading
 
+- **v1.0.0 GitHub sideload** upgrades **in place** over v0.9.0: accounts, AccountIds, Credential Locker entries, latest balances/history, thresholds, and all settings are preserved. The **Microsoft Store build is a fresh install** (`JoKiy.ApiMonitor_4wdwgytaw3v2m`): it never reads or migrates old sideload data, shows the first-run guide, and starts with an empty account list by design.
 - **v0.9.0** upgrades **in place** over v0.8.0: accounts, AccountIds, Credential Locker entries (including the new multi-slot credentials), latest balances/history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. All five existing AI providers and their metric IDs are unchanged. The accounts/history JSON schema stays at version 3 (new fields are optional).
 - **v0.8.0** upgraded **in place** over v0.7.0 (historical).
 - **v0.7.0** upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. Old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch. The installer never enables notifications or sign-in startup automatically.
@@ -87,7 +88,7 @@
 
 The recommended way is the **full test package** (`Test.zip`) from the Release assets. After extracting it, installation is fully automatic:
 
-1. Download `ApiMonitor_0.9.0.0_x64_Test.zip`.
+1. Download `ApiMonitor_1.0.0.1_x64_Test.zip` (GitHub sideload candidate; the Store build installs from Microsoft Store).
 2. Extract the archive (any folder works, including paths with spaces or Chinese characters).
 3. Double-click **`Install.cmd`**.
 4. Confirm the **one UAC prompt** with **Yes**.
@@ -124,6 +125,31 @@ dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 
 The project uses the single-project MSIX tooling. The complete ApiMonitor identity (`ApiMonitor` / `CN=ApiMonitorDev`) is used from v0.3.0 onward; Package Family and the Credential Locker resource stay unchanged.
 
+The distribution channel is chosen **at build time** with the
+`DistributionChannel` MSBuild property (`Development` / `GitHubSideload` /
+`MicrosoftStore`); it is never guessed at runtime from certificates,
+`Install.cmd`, network state, or build configuration:
+
+```powershell
+# Debug x64 (Development channel, default)
+dotnet build ApiMonitor.csproj -c Debug -p:Platform=x64
+
+# GitHub sideload Release x64 (signed 1.0.0.1 candidate)
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=GitHubSideload
+
+# Microsoft Store Release x64 (compile check; packaging via New-StorePackage.ps1)
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=MicrosoftStore
+```
+
+Microsoft Store packaging is fully scripted and manual-only:
+`packaging/New-StorePackage.ps1` builds the unsigned `.msixupload` (official
+identity, `1.0.0.0`) in an isolated worktree, validates it, and optionally
+creates a dev-signed local-acceptance MSIX. GitHub sideload candidates are
+built with `packaging/New-GitHubCandidatePackage.ps1`. Store output goes to
+`packaging/output/v1.0.0/store/` and GitHub output to
+`packaging/output/v1.0.0/github/` — the two are never mixed. See
+[docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md).
+
 Third-party components remain subject to their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). This project is not affiliated with DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI, or Microsoft.
 
 ## Project structure
@@ -140,7 +166,8 @@ Providers/                Balance and health providers (5 AI + AMap, Baidu Maps,
 Services/                 Storage, secrets, refresh, history, thresholds, notifications, clipboard, window management
 tests/ApiMonitor.Tests/   xUnit test suite
 tests/installer/          Installer tooling tests
-.github/workflows/ci.yml  CI workflow
+.github/workflows/ci.yml  CI workflow (tests + Debug/Release builds, unsigned)
+.github/workflows/store-package.yml  Manual-only Store candidate workflow
 ```
 
 ## Current limitations
@@ -151,7 +178,8 @@ tests/installer/          Installer tooling tests
 - Language changes require an application restart.
 - Legacy stored metric display labels may retain their original text.
 - Update checks are manual only; the app never auto-downloads or auto-installs updates.
-- The Microsoft Store listing is in preparation for v0.9.0 but is not yet published; the Store build will be signed and update-distributed by Microsoft.
+- The Microsoft Store first release (v1.0.0) is prepared but not yet published: the official-identity candidate, WACK report, and trilingual listing are ready locally, and manual acceptance must complete before any Partner Center submission.
+- The Store build updates through Microsoft Store only; it never downloads GitHub sideload packages. The Store build is a fresh install and does not migrate old sideload data.
 - The five official providers (DeepSeek, OpenRouter, Moonshot, SiliconFlow, xAI); no third-party DLL provider loading.
 - Map platforms (AMap, Baidu, Tencent, Tianditu) do not expose exact remaining quotas through public APIs; those values are always unknown (`null`) and are never invented. One active probe consumes one API call; new map accounts default to auto-refresh off.
 - Tianditu does not officially document token-invalid/permission/quota-limit status codes; unrecognized status codes are shown as a safe provider error with the numeric code rather than a guessed meaning.
@@ -163,7 +191,7 @@ tests/installer/          Installer tooling tests
 
 ## Roadmap
 
-- Microsoft Store release (v1.0)
+- Publish v1.0.0 to Microsoft Store after manual acceptance
 - Additional balance providers
 - Localization improvements
 

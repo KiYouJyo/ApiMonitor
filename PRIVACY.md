@@ -1,11 +1,12 @@
 # ApiMonitor 隐私说明 / Privacy Policy
 
-最后更新：2026-08-05 · 对应：v0.9.0（正式 Release）
+最后更新：2026-08-06 · 对应：v1.0.0（Microsoft Store 首个正式候选）
 
 ApiMonitor 是一款本地运行的 Windows 桌面应用，用于监测你自己的 API 账户余额、Credits、凭据状态与地图/GIS 服务健康，支持 **11 个 Provider**：AI 余额 Provider（**DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow**、**xAI**）与地图/GIS 健康 Provider（**高德开放平台**、**百度地图开放平台**、**腾讯位置服务**、**天地图**、**SuperMap iServer**、通用 **OGC** 服务）。
 
 ## 版本说明
 
+- **v1.0.0（Microsoft Store 正式候选）**：建立 Development / GitHub 侧载 / Microsoft Store 三渠道模型，渠道在构建时确定；Store 版使用 Partner Center 官方身份（`JoKiy.ApiMonitor`），首次启动显示引导，按全新安装处理，**不迁移**旧侧载账户、历史、设置或凭据；关于页新增“应用运行状况”（21 项只读非敏感检查）与分发渠道/包身份信息；更新检查按渠道分离（Store 版使用 StoreContext，不打开 GitHub 下载页）。隐私行为与 GitHub 侧载版一致。
 - **v0.9.0（正式 Release）**：新增 6 个地图/GIS 健康 Provider（高德、百度地图、腾讯位置服务、天地图、SuperMap iServer、通用 OGC）；余额、Credits 与服务健康指标分开处理，地图 Provider 不进入资金余额汇总；多槽位凭据（Key+SK、Basic、Bearer Token、Query Token）仍只保存在 Windows Credential Locker；健康探测使用固定公开输入，每次可能消耗一次调用额度，新地图账户默认关闭自动刷新；OGC 默认只调用 GetCapabilities；自托管 GIS 只访问用户配置的地址；在 v0.8.0 之上原地升级，保留全部账户、凭据、历史与设置，数据 schema 保持 v3。
 - **v0.8.0（未独立发布，功能并入 v0.9.0）**：新增 Moonshot / Kimi、SiliconFlow、xAI 三个余额 Provider；余额查询只调用官方 GET 接口，不发送模型推理请求；新增凭据请求 HTTPS 主机白名单与有限重试；账户编辑器支持动态非敏感配置字段（xAI Team ID），编辑中切换 Provider 不会沿用旧凭据；在 v0.7.0 之上原地升级，保留全部账户、凭据、历史与设置，数据 schema 保持 v3。
 - **v0.7.0（正式 Release）**：主页顶部布局精简（移除副标题与“打开紧凑窗口”按钮）、悬浮余额窗替代紧凑窗口（固定尺寸、黑白单层小方块，只展示一个选定账户的核心额度数字，支持 Windows 原生流畅拖动并记住账户与位置，全部本地展示）、应用/标题栏/任务栏/开始菜单/托盘图标整体替换；在 v0.6.0 之上原地升级，保留全部账户、凭据、历史与设置；旧紧凑窗口设置自动迁移为悬浮窗设置。
@@ -78,8 +79,10 @@ ApiMonitor 是一款本地运行的 Windows 桌面应用，用于监测你自己
 
 ## 手动更新检查（v0.6.0）
 
-- 只在用户点击“检查更新”时访问 GitHub REST（`repos/KiYouJyo/ApiMonitor/releases/latest`），请求仅包含版本号（User-Agent）；**不上传账户、余额、历史或设备数据**。
-- 发现新版本后由用户决定是否下载安装；应用不自动下载、不自动安装。
+- 更新检查按分发渠道分离（v1.0.0）：
+  - **GitHub 侧载版**：只在用户点击“检查更新”时访问 GitHub REST（`repos/KiYouJyo/ApiMonitor/releases/latest`），请求仅包含版本号（User-Agent）；**不上传账户、余额、历史或设备数据**；发现新版本后由用户决定是否下载安装，应用不自动下载、不自动安装。
+  - **Microsoft Store 版**：只在用户点击“检查更新”时通过 `StoreContext` 查询 Store 更新；可用更新由用户在 Store 官方流程中决定下载/安装；**绝不打开 GitHub 下载页**，不推荐或下载自签名 GitHub 包。
+  - **开发构建**：显示“当前为开发构建”，不检查正式更新。
 
 ## 通知中心提醒（v0.5.0）
 
@@ -102,11 +105,13 @@ ApiMonitor 是一款本地运行的 Windows 桌面应用，用于监测你自己
 - 当前版本无系统后台服务、无 UWP BackgroundTask、无云端推送。
 - 应用日志仅记录错误类型与普通信息，不包含 API Key、Authorization 请求头或完整请求内容。
 
-## Microsoft Store（准备中）
+## Microsoft Store（v1.0.0 候选）
 
-- 计划中的 Microsoft Store 版本与 GitHub 侧载版本在隐私行为上完全一致：无遥测、无广告、无云同步、无开发者服务器；凭据只保存在 Windows Credential Locker。
-- Microsoft Store 版本将由 Store 完成签名与更新分发；在正式上架前，本应用仅通过 GitHub Releases 侧载分发。
-- 本项目与任何被支持的 API 厂商均无官方隶属或合作关系。
+- Microsoft Store 版本与 GitHub 侧载版本在隐私行为上完全一致：无遥测、无广告、无云同步、无开发者服务器；凭据只保存在 Windows Credential Locker，只发送给对应 Provider 官方接口。
+- Store 版按**全新安装**处理：不读取旧侧载包的 LocalState，不枚举旧包 Credential Locker，不迁移账户、余额历史、阈值或设置；首次启动显示引导并保持空账户状态。
+- Store 版由 Microsoft Store 完成签名与更新分发；本机人工验收用的“Store 身份测试包”使用与正式 Publisher 同名的本地测试证书签名，仅用于本机验收，绝不上传或分发。
+- 在正式上架前，本应用仅通过 GitHub Releases 侧载分发；Store 候选包不会上传 Partner Center，也不会提交审核。
+- 本项目与任何被支持的 API 厂商及 Microsoft 均无官方隶属或合作关系。
 
 ## 联系我们
 

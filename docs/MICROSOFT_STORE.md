@@ -1,103 +1,68 @@
-# Microsoft Store Preparation (ApiMonitor v0.9.0)
+# Microsoft Store Preparation (ApiMonitor v1.0.0)
 
-This document is a drafting aid only. It does not modify the Microsoft
-Partner Center, and nothing here is auto-submitted. Current Store status:
-**Blocked: Store association required** — see
-[`STORE_ASSOCIATION_REQUIRED.md`](../STORE_ASSOCIATION_REQUIRED.md).
+This document is a drafting aid only. It does not modify Microsoft Partner
+Center, and nothing here is auto-submitted. Current Store status:
+**candidate prepared — manual acceptance pending**.
 
-Until the reserved ApiMonitor product is associated in Visual Studio
-(Publish → Associate App with the Store…), the Store package
-(`ApiMonitor_0.9.0.0_x64.msixupload`) cannot be generated. The GitHub
-sideload identity (`CN=ApiMonitorDev`) must never be used as a Store
-Publisher, and the GitHub Release is independent of the Store submission.
+## Verified Store identity (Partner Center, 2026-08-06)
 
-## Product name
+| Field | Value |
+| --- | --- |
+| Reserved app name | ApiMonitor |
+| Product ID | `9N6KR2XFMKQ2` |
+| Package / Identity / Name | `JoKiy.ApiMonitor` |
+| Package / Identity / Publisher | `CN=C4E4B33A-7B77-4121-897C-7D720A5471F8` |
+| Publisher display name | Jo Kiyō |
+| Package Family Name | `JoKiy.ApiMonitor_4wdwgytaw3v2m` |
+| First published submission | None (never published) |
+| Pending submission | Placeholder draft only — **not modified by this round** |
 
-- EN: ApiMonitor
-- 中文：ApiMonitor
-- 日本語: ApiMonitor
+The values above come directly from `msstore apps get 9N6KR2XFMKQ2` /
+`msstore submission get 9N6KR2XFMKQ2` and are stored in
+[`Package.Store.appxmanifest`](../Package.Store.appxmanifest) and
+[`Services/DistributionChannel.cs`](../Services/DistributionChannel.cs).
+The GitHub sideload identity (`ApiMonitor` / `CN=ApiMonitorDev`) is kept
+separate and is never used as a Store Publisher.
 
-## Short description
+## v1.0.0 Store candidate (local build, not uploaded)
 
-- EN: Monitor API balances, credits, credentials, map services, and GIS endpoints locally on Windows.
-- 中文：在本地统一监测 API 账户余额、Credits、凭据状态、地图服务和 GIS 接口可用性。
-- 日本語：API残高、クレジット、認証情報、地図サービス、GISエンドポイントをWindows上でローカル監視。
+Build: `packaging/New-StorePackage.ps1 -SourceCommit <HEAD> -PackageVersion 1.0.0.0`
 
-## Positioning
+Result (see `packaging/output/v1.0.0/store/store-package-build.json` locally):
 
-ApiMonitor is a local Windows tool for **API balance, credits, credential
-status, and service health monitoring**. It is not limited to being an
-"API account balance viewer".
+- `ApiMonitor_1.0.0.0_x64.msixupload` — unsigned (Store re-signs), x64,
+  trilingual (zh-CN / en-US / ja-JP), `runFullTrust` capability only
+- Identity validation: **Passed** (Name / Publisher / Version / languages /
+  capabilities; no sideload tools, no `.cer`/`.pfx`/keys/logs/LocalState)
+- Local acceptance MSIX (dev-signed, Store identity) for on-device manual
+  acceptance only — never a Store upload artifact
 
-## Full description topics (see `../store-listing/v0.9.0/` for the finished copy)
+## Submission boundaries (must stay manual)
 
-- Multi-provider, multi-account: 5 AI balance providers (DeepSeek, OpenRouter,
-  Moonshot / Kimi, SiliconFlow, xAI) and 6 map/GIS health providers (AMap,
-  Baidu Maps, Tencent Location, Tianditu, SuperMap iServer, generic OGC
-  WMS/WMTS/WFS)
-- Balances and credits; map credential, permission, and service status
-- SuperMap iServer and WMS/WMTS/WFS support self-hosted addresses; OGC calls
-  GetCapabilities by default
-- Latency and local history trends; local notifications; tray and floating
-  window; CSV export; local backup; trilingual UI (简体中文 / English / 日本語)
-  and light/dark/system themes
-- All credentials stay in the Windows Credential Locker; no telemetry, no
-  cloud sync, no developer servers; free and open source (MIT)
-- Active map probes may consume one API call; when an exact remaining quota
-  cannot be queried, it stays unknown (never faked)
+- Uploading packages, creating/updating formal submissions, submitting for
+  certification, publishing, pricing/market changes, and making the product
+  page public are **not** performed by any script or workflow in this round.
+- The existing placeholder draft is left untouched.
+- `store-package.yml` is manual-only (`workflow_dispatch`), requires
+  `STORE_1000_FROZEN` confirmation, contains no secrets, and never calls
+  Partner Center.
+- WACK report, listing copy, and screenshots are prepared locally under
+  `artifacts/wack/v1.0.0/` and `docs/store/`.
+
+## Checklist before a future submission (manual)
+
+- [ ] v1.0.0 candidate accepted by the user (fresh Store-identity install,
+      onboarding, accounts, notifications/tray/floating window, trilingual UI)
+- [ ] WACK full validation passes with no unresolved failures
+- [ ] Listing copy per language finalized (`docs/store/zh-CN|en-US|ja-JP`)
+- [ ] Screenshots captured from the real UI with test data (no real keys)
+- [ ] Privacy policy and support URLs reachable anonymously (GitHub pages)
+- [ ] The frozen commit is tagged `v1.0.0` and its Store package is the only
+      `1.0.0.0` package ever generated (no binary churn under one version)
 
 ## Must NOT claim
 
-- Support for every API
-- Exact remaining quota for all map platforms
-- Official vendor certification
-- Monitoring after the app has fully exited
-- Protection from all charges
-- That the Microsoft Store version is already live (it is in preparation)
-
-## System requirements
-
-- Windows 10 1809 (build 17763) or later; x64; Windows App Runtime 2.3.1 or
-  later (see the actual manifest `MinVersion`/`MaxVersionTested` in
-  `Package.appxmanifest`)
-
-## Privacy statement
-
-- See `PRIVACY.md`. Keys, secrets, and tokens stay in the Windows Credential
-  Locker; balances, credits, service health, history, and settings stay local;
-  portable backups never contain credentials; update checks only run on click
-  and send no account/balance/device data; no telemetry, no ads.
-
-## URLs
-
-- Support: https://github.com/KiYouJyo/ApiMonitor/issues
-- Privacy policy: https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md
-- Project homepage / source: https://github.com/KiYouJyo/ApiMonitor
-- Issue tracker: https://github.com/KiYouJyo/ApiMonitor/issues
-- License: https://github.com/KiYouJyo/ApiMonitor/blob/main/LICENSE
-
-## v0.9.0 update notes
-
-- 6 new map/GIS health providers (AMap, Baidu Maps, Tencent Location,
-  Tianditu, SuperMap iServer, generic OGC); balances/credits and service
-  health tracked separately; map providers never enter the balance summary
-- Multi-slot credentials (Key+SK, Basic, Bearer, query token) in Credential
-  Locker; service health notifications; quota protection (new map accounts
-  default to auto-refresh off)
-- In-place upgrade from v0.7.0 / v0.8.0 preserving accounts, credentials,
-  history and settings (schema stays v3)
-
-## v0.8.0 update notes (not released separately)
-
-- Moonshot / Kimi, SiliconFlow and xAI balance providers; provider capability
-  metadata; HTTPS host whitelist; non-sensitive config fields (xAI Team ID)
-
-## Recommended keywords (max 7)
-
-`API balance`, `DeepSeek`, `OpenRouter`, `GIS`, `map service`, `余额监控`, `API 監視`
-
-## Store prep artifacts
-
-- Listing copy (trilingual): `../store-listing/v0.9.0/`
-- Submission checklist: `../StoreSubmissionChecklist.md`
-- Store package + report: `../packaging/store/v0.9.0/`
+- ApiMonitor is official DeepSeek / OpenRouter software
+- Balance data is processed by developer servers
+- Monitoring continues after the app has fully exited
+- The Store build preserves old GitHub sideload data

@@ -6,6 +6,24 @@
 
 Since v0.3.1, `Install.cmd` performs all certificate steps automatically. The public certificate (`ApiMonitorDev.cer`) is imported only into **Local Machine > Trusted People** (never Trusted Root), and only after the script verifies the SHA-256 checksums, the full signer thumbprint, the Subject (`CN=ApiMonitorDev`), the Code Signing EKU, and the package Identity. You still see one normal UAC prompt because machine-level certificate trust requires administrator consent. Only install certificates you trust and only from the official repository.
 
+### Upgrading v0.9.0 to v1.0.0 (GitHub sideload)
+
+v1.0.0 GitHub sideload upgrades **in place** over v0.9.0: accounts, AccountIds,
+Credential Locker entries, latest balances/history, thresholds, and all
+settings are preserved. Just run `Install.cmd` from the v1.0.0 `Test.zip`.
+Do **not** uninstall and reinstall for a normal upgrade.
+
+### Microsoft Store build (v1.0.0) is a fresh install — no migration
+
+The Microsoft Store build uses a new official identity
+(`JoKiy.ApiMonitor_4wdwgytaw3v2m`). By design it is a **fresh install**: it
+does not read the old sideload package's LocalState, does not enumerate its
+Credential Locker entries, and does not migrate accounts, balance history,
+thresholds, or settings. The first launch shows the first-run guide and starts
+with an empty account list. Switching from the GitHub sideload build to the
+Store build therefore requires re-adding accounts; uninstalling the old
+sideload package first is only needed if you want to remove its local data.
+
 ### Upgrading v0.6.0 to v0.7.0
 
 v0.7.0 upgrades **in place** over v0.6.0: accounts, AccountIds, Credential Locker API keys, latest balances, history, thresholds, auto-refresh / notification / tray / floating-window / sign-in startup / appearance (theme and language) settings are all preserved. The old `compact-window-settings.json` is migrated once and idempotently to `floating-window-settings.json` on first launch (the old file is kept untouched). The compact window itself is replaced by the lightweight floating balance window. Just run `Install.cmd` from the v0.7.0 `Test.zip` again. Do **not** uninstall and reinstall for a normal upgrade — that would destroy LocalState and remove Credential Locker entries.
@@ -43,9 +61,12 @@ v0.6.0 upgraded **in place** over v0.5.0: accounts, AccountIds, Credential Locke
 
 A v0.6.0 portable backup (`.apimonitor-backup`) never contains API keys or Management Keys. During import, existing accounts keep their local credentials; **new accounts are marked as needing a re-entered key** — edit the imported account and save its API key (or Management Key) in the app, then test the connection. If a needed key is missing, queries for that account fail with a clear “需要重新输入凭据” prompt.
 
-### Candidate package revisions (0.6.0.1, 0.7.0.0, 0.8.0.0, …)
+### Candidate package revisions (0.6.0.1, 0.7.0.0, 0.8.0.0, 1.0.0.1, …)
 
-- The user-visible version stays **v0.6.0** / **v0.7.0** / **v0.8.0** / **v0.9.0**; only the MSIX four-part version advances for each acceptance candidate.
+- The user-visible version stays **v0.6.0** / **v0.7.0** / **v0.8.0** /
+  **v0.9.0** / **v1.0.0**; only the MSIX four-part version advances for each
+  GitHub acceptance candidate (`1.0.0.1`, `1.0.0.2`, …). The Microsoft Store
+  package version is fixed at `1.0.0.0` and is never reused for different bits.
 - **The installer refuses a same-version install by default**: “已安装相同版本。请生成更高修订号的候选包，不要通过卸载重装替换。” It never auto-uninstalls, never removes LocalState, never resets the package, and never touches Credential Locker.
 - If a destructive reinstall is truly required, use the explicit `-ForceDestructiveReinstall` parameter: the installer validates a LocalState backup first, warns about the credential risk, and only then uninstalls and reinstalls. This is not part of the formal release flow.
 

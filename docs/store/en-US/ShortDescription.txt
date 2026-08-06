@@ -1,0 +1,1 @@
+﻿Monitor API balances, credits, credential status, and map/GIS service health locally on Windows.

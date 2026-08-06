@@ -6,14 +6,15 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- 当前版本：**v0.9.0**（DisplayVersion `0.9.0` / PackageVersion `0.9.0.0`）
+- 当前版本：**v1.0.0**（DisplayVersion `1.0.0`；GitHub 侧载候选 PackageVersion `1.0.0.1`；Microsoft Store PackageVersion `1.0.0.0`）
 - 运行时：.NET 10 / Windows App SDK 2.x，x64
-- 分发：MSIX 侧载（自签名开发证书）；Microsoft Store 上架准备中（Store 版将由 Microsoft Store 完成签名与更新分发）
+- 分发：MSIX 侧载（自签名开发证书）与 Microsoft Store 首个正式候选（官方身份 `JoKiy.ApiMonitor`，等待人工验收）
 - 许可证：[MIT](LICENSE)
 - 语言：简体中文 · English · 日本語（设置 → 外观与语言 中切换）
 
 ## 升级说明
 
+- **v1.0.0 GitHub 侧载版**在 v0.9.0 之上**原地升级**：账户、AccountId、Credential Locker 条目、最新余额/历史、阈值与全部设置保留。**Microsoft Store 版按全新安装处理**（`JoKiy.ApiMonitor_4wdwgytaw3v2m`）：不读取、不迁移旧侧载数据，首次启动显示引导并以空账户开始。
 - **v0.9.0** 在 v0.8.0 之上**原地升级**：账户、AccountId、Credential Locker 条目（含新增多槽位凭据）、最新余额/历史、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留；五个既有 AI Provider 与其 Metric ID 完全不变；accounts/history JSON schema 保持 v3（新增字段均可选）。
 - **v0.8.0** 在 v0.7.0 之上**原地升级**（历史版本）。
 - **v0.7.0** 在 v0.6.0 之上**原地升级**：账户、AccountId、Credential Locker API Key、最新余额、历史记录、阈值、自动刷新 / 通知 / 托盘 / 悬浮窗 / 登录启动 / 外观（主题与语言）设置全部保留。旧 `compact-window-settings.json` 在首次启动时一次性、幂等迁移为 `floating-window-settings.json`。安装程序**不会**自动开启系统提醒，也**不会**自动开启登录启动。
@@ -85,7 +86,7 @@
 
 推荐使用 Release 资产中的**完整测试包**（`Test.zip`），解压后即可全自动安装：
 
-1. 下载 `ApiMonitor_0.9.0.0_x64_Test.zip`。
+1. 下载 `ApiMonitor_1.0.0.1_x64_Test.zip`（GitHub 侧载候选；Store 版从 Microsoft Store 安装）。
 2. 解压到任意目录（路径可包含空格和中文）。
 3. 双击 **`Install.cmd`**。
 4. 在出现的**一次 UAC 提示**（用户帐户控制）中选择“是”。
@@ -122,6 +123,21 @@ dotnet build ApiMonitor.slnx -c Release -p:Platform=x64
 
 项目使用单项目 MSIX 工具链。自 v0.3.0 起使用完整 ApiMonitor 身份（`ApiMonitor` / `CN=ApiMonitorDev`）；Package Family 与 Credential Locker 资源保持不变。
 
+分发渠道在**构建时**通过 `DistributionChannel` MSBuild 属性确定（`Development` / `GitHubSideload` / `MicrosoftStore`），绝不根据证书、`Install.cmd`、网络状态或 Debug/Release 在运行时猜测：
+
+```powershell
+# Debug x64（Development 渠道，默认）
+dotnet build ApiMonitor.csproj -c Debug -p:Platform=x64
+
+# GitHub 侧载 Release x64（签名 1.0.0.1 候选）
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=GitHubSideload
+
+# Microsoft Store Release x64（编译检查；打包见 New-StorePackage.ps1）
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=MicrosoftStore
+```
+
+Store 打包全部脚本化且仅手动执行：`packaging/New-StorePackage.ps1` 在隔离 worktree 中构建未签名的 `.msixupload`（官方身份，`1.0.0.0`）并验证，可选生成本地验收用的开发签名 MSIX。GitHub 候选使用 `packaging/New-GitHubCandidatePackage.ps1`。Store 输出在 `packaging/output/v1.0.0/store/`，GitHub 输出在 `packaging/output/v1.0.0/github/`，二者绝不混用。详见 [docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md)。
+
 第三方组件仍受其各自许可证约束，参见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。本项目与 DeepSeek、OpenRouter、Moonshot、SiliconFlow、xAI、Microsoft 均无隶属关系。
 
 ## 项目结构
@@ -138,7 +154,8 @@ Providers/                 余额/健康 Provider（5 个 AI + 高德、百度�
 Services/                  存储、密钥、刷新、历史、阈值、通知、剪贴板、窗口管理服务
 tests/ApiMonitor.Tests/    xUnit 测试套件
 tests/installer/           安装工具测试
-.github/workflows/ci.yml   CI 工作流
+.github/workflows/ci.yml   CI 工作流（测试 + Debug/Release 构建，不签名）
+.github/workflows/store-package.yml   仅手动触发的 Store 候选工作流
 ```
 
 ## 当前限制
@@ -149,7 +166,8 @@ tests/installer/           安装工具测试
 - 语言切换需要重启应用。
 - 旧指标的历史显示标签可能保留原有文本。
 - 更新检查仅手动触发，应用不会自动下载或安装更新。
-- Microsoft Store 上架正在准备中，尚未上架；Store 版将由 Store 完成签名与更新分发。
+- Microsoft Store 首个正式版（v1.0.0）已准备但尚未上架：官方身份候选、WACK 报告与三语商店资料已就绪，需先完成人工验收，再进行 Partner Center 递交。
+- Store 版只通过 Microsoft Store 更新，绝不下载 GitHub 侧载包；Store 版为全新安装，不迁移旧侧载数据。
 - 官方支持 DeepSeek、OpenRouter、Moonshot、SiliconFlow 与 xAI 五个 Provider，不支持第三方 DLL Provider 动态加载。
 - 高德、百度、腾讯、天地图没有公开的精确剩余配额查询接口，相关值一律未知（null），绝不编造；一次主动探测消耗一次 API 调用；新地图账户默认关闭自动刷新。
 - 天地图官方未公开 Token 无效/权限不足/调用超限的状态码；无法识别的状态码显示为带数值的安全 ProviderError，不做语义猜测。
@@ -161,7 +179,7 @@ tests/installer/           安装工具测试
 
 ## 路线图
 
-- Microsoft Store 上架（v1.0）
+- 人工验收后发布 v1.0.0 到 Microsoft Store
 - 更多余额 Provider
 - 本地化完善
 

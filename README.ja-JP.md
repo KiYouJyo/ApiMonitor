@@ -7,14 +7,15 @@
 
 **ApiMonitor** は WinUI 3 製の軽量 Windows デスクトップアプリで、自分自身の API アカウント残高とサービス健全性を照会し、ローカルに記録します。**DeepSeek**、**OpenRouter**、**Moonshot / Kimi**、**SiliconFlow**、**xAI** の残高照会に加え、国内地図プラットフォーム（**高德**、**百度地図**、**テンセント位置情報**、**天地図**）とセルフホスト GIS サービス（**SuperMap iServer**、汎用 **OGC** WMS/WMTS/WFS）の健全性監視に対応し、複数アカウント管理と Windows 通知センターのアラート（任意）を備えています。
 
-- 現在のバージョン: **v0.9.0**（DisplayVersion `0.9.0` / PackageVersion `0.9.0.0`）
+- 現在のバージョン: **v1.0.0**（DisplayVersion `1.0.0`；GitHub サイドロード候補 PackageVersion `1.0.0.1`；Microsoft Store PackageVersion `1.0.0.0`）
 - ランタイム: .NET 10 / Windows App SDK 2.x、x64
-- 配布: MSIX サイドロード（自己署名開発者証明書）、Microsoft Store の掲載準備中（Store 版は Microsoft Store による署名・更新配信）
+- 配布: MSIX サイドロード（自己署名開発者証明書）と Microsoft Store 初回正式候補（公式 ID `JoKiy.ApiMonitor`、手動受入待ち）
 - ライセンス: [MIT](LICENSE)
 - 言語: 简体中文 · English · 日本語（設定 → 外観と言語 で切替）
 
 ## アップグレード
 
+- **v1.0.0 GitHub サイドロード版**は v0.9.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker のエントリ、最新残高/履歴、しきい値、全設定を保持します。**Microsoft Store 版は新規インストール**（`JoKiy.ApiMonitor_4wdwgytaw3v2m`）として扱われ、旧サイドロードのデータを読み取らず移行もしません。初回起動時にガイドが表示され、空のアカウント一覧から始まります。
 - **v0.9.0** は v0.8.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker のエントリ（新しいマルチスロット資格情報を含む）、最新残高/履歴、しきい値、自動更新・通知・トレイ・フローティングウィンドウ・サインイン起動・外観（テーマと言語）の設定はすべて保持されます。既存 5 つの AI Provider とその Metric ID は一切変更されません。accounts/history JSON の schema は v3 のままです（新フィールドはすべて任意）。
 - **v0.8.0** は v0.7.0 の上にその場でアップグレードしました（履歴）。
 - **v0.7.0** は v0.6.0 の上に**その場でアップグレード**します。アカウント、AccountId、Credential Locker の API キー、最新残高、履歴、しきい値、自動更新・通知・トレイ・フローティングウィンドウ・サインイン起動・外観（テーマと言語）の設定はすべて保持されます。旧 `compact-window-settings.json` は初回起動時に一度だけ冪等に `floating-window-settings.json` へ移行されます。インストーラーは通知やサインイン起動を自動的に有効化しません。
@@ -83,13 +84,28 @@ Release アセットの完全な **Test.zip** を推奨します。解凍後、`
 
 ## ソースからのビルド
 
-. NET 10 SDK と Windows SDK が必要です。
+.NET 10 SDK と Windows SDK が必要です。
 
 ```powershell
 dotnet restore ApiMonitor.slnx -p:Platform=x64 -p:RuntimeIdentifier=win-x64
 dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug --no-restore
 dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 ```
+
+配布チャネルは**ビルド時**に `DistributionChannel` MSBuild プロパティで決定します（`Development` / `GitHubSideload` / `MicrosoftStore`）。証明書、`Install.cmd`、ネットワーク状態、Debug/Release などから実行時に推測することはありません。
+
+```powershell
+# Debug x64（Development チャネル、既定）
+dotnet build ApiMonitor.csproj -c Debug -p:Platform=x64
+
+# GitHub サイドロード Release x64（署名済み 1.0.0.1 候補）
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=GitHubSideload
+
+# Microsoft Store Release x64（コンパイル確認。パッケージ化は New-StorePackage.ps1）
+dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:DistributionChannel=MicrosoftStore
+```
+
+Store のパッケージ化はすべてスクリプト化され手動のみです。`packaging/New-StorePackage.ps1` が隔離ワークツリーで未署名の `.msixupload`（公式 ID、`1.0.0.0`）をビルド・検証し、必要に応じてローカル受入用の開発者署名 MSIX も生成します。GitHub 候補は `packaging/New-GitHubCandidatePackage.ps1` を使用します。Store 出力は `packaging/output/v1.0.0/store/`、GitHub 出力は `packaging/output/v1.0.0/github/` で、混在しません。詳細は [docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md)。
 
 ## 現在の制限
 
@@ -99,7 +115,8 @@ dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 - 天地図はトークン無効・権限不足・呼び出し超過のステータスコードを公式公開していないため、認識できないコードは数値付きの安全な ProviderError として表示します（意味は推測しません）。
 - MapGIS Server には公式に証明された安定した公開カタログ/健全性インターフェースがないため、汎用 OGC Provider（WMS/WMTS/WFS GetCapabilities）で監視します。検証されていない `mapgis-server` Provider は追加しません。
 - SuperMap 管理状態プローブは既定オフで、権限のある資格情報を提供し明示的に有効化した場合のみ使用します。
-- Microsoft Store への掲載は準備中で、まだ公開されていません。Store 版は Microsoft Store による署名と更新配信が行われます。
+- Microsoft Store 初回正式版（v1.0.0）は準備済みですが未公開です。公式 ID の候補、WACK レポート、3 言語ストア資料がローカルに用意されており、手動受入完了後にのみ Partner Center へ提出します。
+- Store 版は Microsoft Store 経由でのみ更新し、GitHub サイドロード パッケージをダウンロードしません。Store 版は新規インストールとして扱われ、旧サイドロードのデータは移行されません。
 - GitHub サイドロード版は自己署名開発者証明書（`CN=ApiMonitorDev`）で署名されています。
 - 本プロジェクトは高德、百度、テンセント、天地図、SuperMap、MapGIS（中地数码）および各 AI プラットフォームとは一切の所属・公式提携関係はありません。
 
