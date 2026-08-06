@@ -115,6 +115,12 @@ try {
         throw "Expected exactly one .msixupload; found $($upload.Count)."
     }
 
+    # The single-project MSIX pipeline also emits a dev-layout "_Test" folder
+    # (Add-AppDevPackage scripts, Install.ps1, Dependencies, duplicate MSIX).
+    # It must never remain in the Store output directory.
+    Get-ChildItem -LiteralPath $packageDirectory -Directory -Filter 'ApiMonitor_*_Test' -ErrorAction SilentlyContinue |
+        ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
+
     # ---- 4. Validate identity/version/contents ----
     $validation = (& (Join-Path $PSScriptRoot 'Test-StorePackageIdentity.ps1') `
         -PackagePath $upload[0].FullName `
@@ -192,6 +198,9 @@ try {
             throw "Expected exactly one signed local-acceptance .msix; found $($signedMsix.Count)."
         }
         Copy-Item -LiteralPath $signedMsix[0].FullName -Destination $localMsix -Force
+        # The dev-layout AppPackages under local-test is a build byproduct and
+        # must not remain in the Store output.
+        Remove-Item -LiteralPath $localAppPackages -Recurse -Force
 
         $localHash = (Get-FileHash -LiteralPath $localMsix -Algorithm SHA256).Hash.ToUpperInvariant()
         $readme = @(
