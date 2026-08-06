@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v1.0.0：Microsoft Store 正式身份 manifest（Partner Center 2026-08-06 读取）：
+    ProductId          9N6KR2XFMKQ2
+    Identity Name      JoKiy.ApiMonitor
+    Publisher          CN=C4E4B33A-7B77-4121-897C-7D720A5471F8
+    Package Family     JoKiy.ApiMonitor_4wdwgytaw3v2m
+    PackageVersion     1.0.0.0（最终 Store 候选；禁止用不同二进制反复替换同版本）
+  该文件只用于 Store 构建（packaging/New-StorePackage.ps1 在隔离 worktree 中
+  复制为 Package.appxmanifest）；GitHub 侧载构建继续使用 Package.appxmanifest
+  （侧载开发身份），两者互不覆盖。
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap desktop com">
+
+  <Identity Name="JoKiy.ApiMonitor" Publisher="CN=C4E4B33A-7B77-4121-897C-7D720A5471F8" Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>ApiMonitor</DisplayName>
+    <PublisherDisplayName>Jo Kiyō</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="zh-CN" />
+    <Resource Language="en-US" />
+    <Resource Language="ja-JP" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+      <uap:VisualElements
+        DisplayName="ApiMonitor"
+        Description="本地监测 API 余额、Credits、凭据状态与地图/GIS 服务健康"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <desktop:Extension Category="windows.startupTask" Executable="ApiMonitor.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="ApiMonitorStartup" Enabled="false" DisplayName="ApiMonitor" />
+        </desktop:Extension>
+        <!-- 通知点击/按钮激活：AppNotification（Windows App SDK） -->
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation ToastActivatorCLSID="1F2A3B4C-5D6E-4F80-9A1B-2C3D4E5F6070" />
+        </desktop:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="ApiMonitor.exe" DisplayName="ApiMonitor" Arguments="----AppNotificationActivated:">
+              <com:Class Id="1F2A3B4C-5D6E-4F80-9A1B-2C3D4E5F6070" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>
