@@ -1,20 +1,39 @@
 <Project>
   <!--
-    ApiMonitor 集中版本来源（v0.6.0 起）。
+    ApiMonitor 集中版本来源（v0.6.0 起；v1.0.0 增加分发渠道维度）。
 
     明确分离两种版本：
-      1. ApiMonitorDisplayVersion（如 0.6.0）
+      1. ApiMonitorDisplayVersion（如 1.0.0）
          - 用于界面、关于页、README 与 GitHub 标签；
-      2. ApiMonitorPackageVersion（如 0.6.0.0）
+      2. ApiMonitorPackageVersion（如 1.0.0.0 / 1.0.0.1）
          - 用于 MSIX 升级判断（AssemblyVersion / FileVersion / Package.appxmanifest）。
     不再通过“强制 major.minor.0”推导产品版本。
+
+    分发渠道在构建时通过 DistributionChannel 属性确定（Development /
+    GitHubSideload / MicrosoftStore），不允许运行时猜测。渠道决定：
+      - 包版本（GitHub 侧载候选使用递增修订号，Store 正式版使用 1.0.0.0）；
+      - 编译常量（DISTRIBUTION_CHANNEL_*）；
+      - Store 构建使用 packaging/Package.Store.appxmanifest 官方身份。
 
     Package.appxmanifest 的 Identity Version 与打包脚本
     （packaging/New-PreviewInstallerPackage.ps1 等）使用的版本必须与本文件一致。
   -->
   <PropertyGroup>
-    <ApiMonitorDisplayVersion>0.9.0</ApiMonitorDisplayVersion>
-    <ApiMonitorPackageVersion>0.9.0.0</ApiMonitorPackageVersion>
+    <ApiMonitorDisplayVersion>1.0.0</ApiMonitorDisplayVersion>
+
+    <!--
+      分发渠道（构建时单一配置，不通过环境/证书/目录猜测）：
+        Development      - 本地开发构建（默认）；
+        GitHubSideload   - GitHub 侧载正式构建；
+        MicrosoftStore   - Microsoft Store 正式构建（需 Store 身份 manifest）。
+    -->
+    <DistributionChannel Condition="'$(DistributionChannel)' == ''">Development</DistributionChannel>
+
+    <!-- 包版本由渠道决定：Store 正式版固定 1.0.0.0；侧载候选使用递增修订号。 -->
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'MicrosoftStore'">1.0.0.0</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'GitHubSideload'">1.0.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'Development'">1.0.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(ApiMonitorPackageVersion)' == ''">1.0.0.1</ApiMonitorPackageVersion>
 
     <!-- 程序集四段版本（MSIX 升级判断）。 -->
     <Version>$(ApiMonitorPackageVersion)</Version>
@@ -23,5 +42,20 @@
 
     <!-- 用户可见版本（关于页/界面/诊断信息读取 AssemblyInformationalVersion）。 -->
     <InformationalVersion>$(ApiMonitorDisplayVersion)</InformationalVersion>
+  </PropertyGroup>
+
+  <!--
+    渠道编译常量：服务层据此在构建时确定 DistributionChannelConfig.Current。
+    渠道永远不会在运行时根据证书、Publisher 字符串、Install.cmd、是否联网
+    或 Debug/Release 推断。
+  -->
+  <PropertyGroup Condition="'$(DistributionChannel)' == 'MicrosoftStore'">
+    <DefineConstants>$(DefineConstants);DISTRIBUTION_CHANNEL_MICROSOFT_STORE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DistributionChannel)' == 'GitHubSideload'">
+    <DefineConstants>$(DefineConstants);DISTRIBUTION_CHANNEL_GITHUB_SIDELOAD</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DistributionChannel)' == 'Development'">
+    <DefineConstants>$(DefineConstants);DISTRIBUTION_CHANNEL_DEVELOPMENT</DefineConstants>
   </PropertyGroup>
 </Project>

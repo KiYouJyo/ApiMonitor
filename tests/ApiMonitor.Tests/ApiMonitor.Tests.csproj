@@ -96,6 +96,8 @@
     <Compile Include="../../Services/JsonNotificationStateStore.cs" Link="Services/JsonNotificationStateStore.cs" />
     <Compile Include="../../Services/NotificationPolicyEvaluator.cs" Link="Services/NotificationPolicyEvaluator.cs" />
     <Compile Include="../../Services/IAppNotificationService.cs" Link="Services/IAppNotificationService.cs" />
+    <Compile Include="../../Services/IOnboardingStateService.cs" Link="Services/IOnboardingStateService.cs" />
+    <Compile Include="../../Services/AppHealthService.cs" Link="Services/AppHealthService.cs" />
     <Compile Include="../../Services/NotificationCoordinator.cs" Link="Services/NotificationCoordinator.cs" />
     <Compile Include="../../Services/NotificationActivationRouter.cs" Link="Services/NotificationActivationRouter.cs" />
     <Compile Include="../../Services/ITrayIconService.cs" Link="Services/ITrayIconService.cs" />
@@ -131,6 +133,7 @@
     <Compile Include="../../ViewModels/DataManagementViewModel.cs" Link="ViewModels/DataManagementViewModel.cs" />
     <Compile Include="../../ViewModels/InsightsViewModel.cs" Link="ViewModels/InsightsViewModel.cs" />
     <Compile Include="../../ViewModels/AboutViewModel.cs" Link="ViewModels/AboutViewModel.cs" />
+    <Compile Include="../../ViewModels/OnboardingViewModel.cs" Link="ViewModels/OnboardingViewModel.cs" />
     <Compile Include="../../Services/AppInfo.cs" Link="Services/AppInfo.cs" />
     <Compile Include="../../Services/AppearanceSettingsStore.cs" Link="Services/AppearanceSettingsStore.cs" />
     <Compile Include="../../Services/AppearanceService.cs" Link="Services/AppearanceService.cs" />
@@ -141,7 +144,13 @@
     <Compile Include="../../Services/InsightsHistoryProvider.cs" Link="Services/InsightsHistoryProvider.cs" />
     <Compile Include="../../Services/IPortableBackupService.cs" Link="Services/IPortableBackupService.cs" />
     <Compile Include="../../Services/PortableBackupService.cs" Link="Services/PortableBackupService.cs" />
-    <Compile Include="../../Services/UpdateCheckService.cs" Link="Services/UpdateCheckService.cs" />
+    <Compile Include="../../Services/DistributionChannel.cs" Link="Services/DistributionChannel.cs" />
+    <Compile Include="../../Services/IDistributionChannelService.cs" Link="Services/IDistributionChannelService.cs" />
+    <Compile Include="../../Services/IUpdateService.cs" Link="Services/IUpdateService.cs" />
+    <Compile Include="../../Services/GitHubUpdateService.cs" Link="Services/GitHubUpdateService.cs" />
+    <Compile Include="../../Services/DevelopmentUpdateService.cs" Link="Services/DevelopmentUpdateService.cs" />
+    <Compile Include="../../Services/MicrosoftStoreUpdateService.cs" Link="Services/MicrosoftStoreUpdateService.cs" />
+    <Compile Include="../../Services/UpdateServiceFactory.cs" Link="Services/UpdateServiceFactory.cs" />
     <Compile Include="../../Services/DiagnosticsInfoService.cs" Link="Services/DiagnosticsInfoService.cs" />
     <Compile Include="../../Services/IFilePickerService.cs" Link="Services/IFilePickerService.cs" />
     <Compile Include="../../Services/IAppStrings.cs" Link="Services/IAppStrings.cs" />

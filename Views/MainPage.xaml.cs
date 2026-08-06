@@ -34,6 +34,7 @@ public sealed partial class MainPage : UserControl
             SettingsPageControl.ViewModel = value;
             InsightsPageControl.ViewModel = value;
             AboutPageControl.ViewModel = value;
+            OnboardingPageControl.ViewModel = value;
             if (value is not null)
             {
                 value.PropertyChanged += OnViewModelPropertyChanged;
@@ -57,6 +58,7 @@ public sealed partial class MainPage : UserControl
             AppPageKind.Insights => "Insights",
             AppPageKind.Settings => "Settings",
             AppPageKind.About => "About",
+            AppPageKind.Onboarding => "Home",
             _ => "Home",
         };
 

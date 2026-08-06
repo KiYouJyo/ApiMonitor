@@ -227,6 +227,11 @@
                     <HyperlinkButton
                         NavigateUri="https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"
                         loc:Loc.Key="Settings.PrivacyLink" />
+                    <Button
+                        loc:Loc.Key="Settings.ReopenOnboarding"
+                        Command="{Binding ReopenOnboardingCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -13,21 +13,29 @@ public sealed record AboutProviderRow(string ProviderId, string DisplayName);
 /// <summary>关于页链接项。</summary>
 public sealed record AboutLinkRow(string Key, string Title, string Url);
 
+/// <summary>运行状况检查结果行（只含非敏感信息）。</summary>
+public sealed record HealthCheckRow(string CheckId, string StatusText, string Message);
+
 /// <summary>
 /// v0.6.0：完整“关于”页 ViewModel。
+/// v1.0.0：版本、渠道、更新来源全部从 IDistributionChannelService / IUpdateService
+/// 读取；渠道行为由构建配置决定，不在 XAML/ViewModel 中硬编码版本或渠道。
 /// 版本来自统一元数据服务 AppInfo（不在 XAML 硬编码）；
 /// Provider 列表来自 Provider 注册表（不写死）；
-/// 更新检查只在用户点击时访问 GitHub，不自动下载/安装。
+/// 更新检查只在用户点击时按渠道执行，不自动下载/安装。
 /// </summary>
 public sealed partial class AboutViewModel : ObservableObject
 {
-    private readonly IUpdateCheckService _updateCheck;
+    private readonly IUpdateService _updateService;
+    private readonly IDistributionChannelService _channel;
     private readonly IDiagnosticsInfoService _diagnostics;
+    private readonly IAppHealthService _health;
     private readonly IClipboardService _clipboard;
     private readonly IExternalLinkLauncher _launcher;
     private readonly ILocalDataFolderOpener _dataFolderOpener;
     private readonly IFilePickerService _filePicker;
     private readonly IPortableBackupService _backup;
+    private readonly Func<CancellationToken, Task<UpdateCheckResult>>? _storeInstallRequest;
     private readonly AppLog? _log;
     private readonly CancellationTokenSource _lifetime = new();
 
@@ -41,6 +49,20 @@ public sealed partial class AboutViewModel : ObservableObject
     public string PackageVersionText => L10n.Format("About.PackageVersionFormat", AppInfo.PackageVersion);
 
     public string ArchitectureText => L10n.Format("About.ArchitectureFormat", AppInfo.Architecture);
+
+    public string DistributionChannelText => L10n.Format(
+        "About.DistributionChannelFormat",
+        FormatChannelName(_channel.CurrentChannel));
+
+    public string UpdateSourceText => L10n.Format(
+        "About.UpdateSourceFormat",
+        L10n.Get(_channel.UpdateSourceKey));
+
+    public string PackageFamilyText => L10n.Format(
+        "About.PackageFamilyFormat",
+        string.IsNullOrEmpty(AppInfo.PackageFamilyName)
+            ? L10n.Get("About.PackageFamilyNone")
+            : AppInfo.PackageFamilyName);
 
     public string PackageIdentityText => L10n.Format("About.PackageIdentityFormat", AppInfo.PackageIdentity);
 
@@ -101,6 +123,20 @@ public sealed partial class AboutViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDiagnosticsCopying;
 
+    [ObservableProperty]
+    private bool _hasStoreInstallAvailable;
+
+    [ObservableProperty]
+    private bool _isRunningHealthChecks;
+
+    [ObservableProperty]
+    private bool _hasHealthResults;
+
+    [ObservableProperty]
+    private string _overallHealthText = string.Empty;
+
+    public ObservableCollection<HealthCheckRow> HealthChecks { get; } = new();
+
     /// <summary>当前 UI 语言与主题（关于页“当前能力”展示）。</summary>
     public string CurrentLanguageText { get; private set; } = L10n.Format("About.CurrentLanguageFormat", "en-US");
 
@@ -121,26 +157,39 @@ public sealed partial class AboutViewModel : ObservableObject
     /// <summary>打开发布页（更新可用时）。</summary>
     public IAsyncRelayCommand OpenReleasePageCommand { get; }
 
+    /// <summary>Store 渠道：由用户主动请求下载并安装更新（StoreContext 官方流程）。</summary>
+    public IAsyncRelayCommand InstallStoreUpdateCommand { get; }
+
+    public IAsyncRelayCommand RunHealthChecksCommand { get; }
+
+    public IAsyncRelayCommand OpenSupportCommand { get; }
+
     public AboutViewModel(
         IReadOnlyList<ProviderInfo> providers,
-        IUpdateCheckService updateCheck,
+        IUpdateService updateService,
+        IDistributionChannelService channel,
         IDiagnosticsInfoService diagnostics,
+        IAppHealthService health,
         IClipboardService clipboard,
         IExternalLinkLauncher launcher,
         ILocalDataFolderOpener dataFolderOpener,
         IFilePickerService filePicker,
         IPortableBackupService backup,
+        Func<CancellationToken, Task<UpdateCheckResult>>? storeInstallRequest,
         string languageCode,
         string themeName,
         AppLog? log = null)
     {
-        _updateCheck = updateCheck;
+        _updateService = updateService;
+        _channel = channel;
         _diagnostics = diagnostics;
+        _health = health;
         _clipboard = clipboard;
         _launcher = launcher;
         _dataFolderOpener = dataFolderOpener;
         _filePicker = filePicker;
         _backup = backup;
+        _storeInstallRequest = storeInstallRequest;
         _log = log ?? new AppLog(System.IO.Path.GetTempPath());
 
         // 语言与主题状态来自统一服务，避免默认值错误显示。
@@ -161,6 +210,9 @@ public sealed partial class AboutViewModel : ObservableObject
         ExportBackupCommand = new AsyncRelayCommand(ExportBackupAsync);
         ImportBackupCommand = new AsyncRelayCommand(ImportBackupAsync);
         OpenReleasePageCommand = new AsyncRelayCommand(OpenReleasePageAsync);
+        InstallStoreUpdateCommand = new AsyncRelayCommand(InstallStoreUpdateAsync, () => HasStoreInstallAvailable);
+        RunHealthChecksCommand = new AsyncRelayCommand(RunHealthChecksAsync, () => !IsRunningHealthChecks);
+        OpenSupportCommand = new AsyncRelayCommand(OpenSupportAsync);
     }
 
     /// <summary>设置当前语言与主题文本（由视图层或注入方调用）。</summary>
@@ -179,6 +231,14 @@ public sealed partial class AboutViewModel : ObservableObject
             nameof(AppThemePreference.Dark) => L10n.Get("About.ThemeDark"),
             _ => L10n.Get("About.ThemeSystem"),
         };
+
+    /// <summary>渠道名称（非敏感元数据）。</summary>
+    public static string FormatChannelName(DistributionChannel channel) => channel switch
+    {
+        DistributionChannel.MicrosoftStore => L10n.Get("Channel.MicrosoftStore"),
+        DistributionChannel.GitHubSideload => L10n.Get("Channel.GitHubSideload"),
+        _ => L10n.Get("Channel.Development"),
+    };
 
     private async Task OpenReleasePageAsync()
     {
@@ -200,6 +260,10 @@ public sealed partial class AboutViewModel : ObservableObject
 
     partial void OnIsDiagnosticsCopyingChanged(bool value) => CopyDiagnosticsCommand.NotifyCanExecuteChanged();
 
+    partial void OnHasStoreInstallAvailableChanged(bool value) => InstallStoreUpdateCommand.NotifyCanExecuteChanged();
+
+    partial void OnIsRunningHealthChecksChanged(bool value) => RunHealthChecksCommand.NotifyCanExecuteChanged();
+
     private async Task CheckUpdatesAsync()
     {
         if (IsCheckingUpdates)
@@ -209,11 +273,12 @@ public sealed partial class AboutViewModel : ObservableObject
 
         IsCheckingUpdates = true;
         HasUpdateAvailable = false;
+        HasStoreInstallAvailable = false;
         UpdateStatusText = L10n.Get("About.CheckingUpdates");
         HasUpdateStatus = true;
         try
         {
-            var result = await _updateCheck.CheckAsync(_lifetime.Token);
+            var result = await _updateService.CheckAsync(_lifetime.Token);
             switch (result.Status)
             {
                 case UpdateCheckStatus.UpToDate:
@@ -224,9 +289,16 @@ public sealed partial class AboutViewModel : ObservableObject
                     UpdateReleaseUrl = result.ReleaseUrl ?? string.Empty;
                     UpdateStatusText = L10n.Format("About.UpdateAvailableFormat", result.LatestVersion ?? string.Empty);
                     HasUpdateAvailable = true;
+                    HasStoreInstallAvailable = result.CanInstallFromStore && _storeInstallRequest is not null;
                     break;
                 case UpdateCheckStatus.DevVersionNewer:
                     UpdateStatusText = L10n.Get("About.DevVersionNewer");
+                    break;
+                case UpdateCheckStatus.DevelopmentBuild:
+                    UpdateStatusText = L10n.Get("About.DevelopmentBuild");
+                    break;
+                case UpdateCheckStatus.UnsupportedChannel:
+                    UpdateStatusText = L10n.Get("About.UpdateUnsupportedChannel");
                     break;
                 default:
                     UpdateStatusText = L10n.Format("About.UpdateCheckFailedFormat", result.ErrorMessage ?? L10n.Get("Common.Unknown"));
@@ -244,6 +316,104 @@ public sealed partial class AboutViewModel : ObservableObject
         finally
         {
             IsCheckingUpdates = false;
+        }
+    }
+
+    private async Task InstallStoreUpdateAsync()
+    {
+        if (_storeInstallRequest is null || IsCheckingUpdates)
+        {
+            return;
+        }
+
+        IsCheckingUpdates = true;
+        try
+        {
+            UpdateStatusText = L10n.Get("About.InstallingStoreUpdate");
+            HasUpdateStatus = true;
+            var result = await _storeInstallRequest(_lifetime.Token);
+            UpdateStatusText = result.Status == UpdateCheckStatus.UpToDate
+                ? L10n.Get("About.StoreUpdateInstalled")
+                : L10n.Format("About.UpdateCheckFailedFormat", result.ErrorMessage ?? L10n.Get("Common.Unknown"));
+            HasUpdateStatus = true;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"请求 Store 更新失败: {ex.GetType().Name}");
+            UpdateStatusText = L10n.Get("About.StoreInstallFailed");
+            HasUpdateStatus = true;
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+        }
+    }
+
+    private async Task RunHealthChecksAsync()
+    {
+        if (IsRunningHealthChecks)
+        {
+            return;
+        }
+
+        IsRunningHealthChecks = true;
+        try
+        {
+            var results = await _health.RunAsync(_lifetime.Token);
+            HealthChecks.Clear();
+            foreach (var result in results.OrderBy(r => r.CheckId, StringComparer.Ordinal))
+            {
+                HealthChecks.Add(new HealthCheckRow(
+                    result.CheckId,
+                    FormatHealthStatus(result.Status),
+                    result.Message));
+            }
+
+            int failed = results.Count(r => r.Status == HealthStatus.Failed);
+            int warnings = results.Count(r => r.Status == HealthStatus.Warning);
+            OverallHealthText = failed == 0 && warnings == 0
+                ? L10n.Get("Health.OverallOk")
+                : L10n.Format("Health.OverallIssues", warnings, failed);
+            HasHealthResults = true;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log?.Error($"运行状况检查失败: {ex.GetType().Name}");
+            OverallHealthText = L10n.Get("Health.RunFailed");
+            HasHealthResults = true;
+        }
+        finally
+        {
+            IsRunningHealthChecks = false;
+        }
+    }
+
+    private static string FormatHealthStatus(HealthStatus status) => status switch
+    {
+        HealthStatus.Ok => L10n.Get("Health.StatusOk"),
+        HealthStatus.Warning => L10n.Get("Health.StatusWarning"),
+        HealthStatus.Failed => L10n.Get("Health.StatusFailed"),
+        _ => L10n.Get("Health.StatusNotApplicable"),
+    };
+
+    private async Task OpenSupportAsync()
+    {
+        if (!Uri.TryCreate(_channel.SupportPageUrl, UriKind.Absolute, out var uri))
+        {
+            return;
+        }
+
+        bool ok = await _launcher.LaunchUriAsync(uri);
+        if (!ok)
+        {
+            UpdateStatusText = L10n.Get("About.LinkLaunchFailed");
+            HasUpdateStatus = true;
         }
     }
 

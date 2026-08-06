@@ -41,6 +41,23 @@ public sealed class CredentialLockerSecretStore : ISecretStore
         }
     }
 
+    /// <summary>
+    /// Credential Locker 可用性探测：构造 PasswordVault 失败（系统策略/关闭）
+    /// 即视为不可用；不读取、不写入任何凭据内容。
+    /// </summary>
+    public bool IsAvailable()
+    {
+        try
+        {
+            _ = new PasswordVault();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public Task<string?> GetAsync(
         string accountId,
         CancellationToken cancellationToken,

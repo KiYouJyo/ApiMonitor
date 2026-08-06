@@ -8,6 +8,9 @@ namespace ApiMonitor.Services;
 /// </summary>
 public interface IMonitoringScheduler
 {
+    /// <summary>调度循环是否正在运行（健康检查/诊断只读状态）。</summary>
+    bool IsRunning { get; }
+
     void Start(CancellationToken applicationToken);
 
     void Stop();

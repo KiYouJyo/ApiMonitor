@@ -162,7 +162,7 @@ public sealed class LocalizationIntegrityTests
         foreach (var key in keys)
         {
             // 若 key 形如 X.Text/X.Content/X.Header/X.Title/X.Message，检查 X 是否也是叶子键。
-            foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message" })
+            foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message", ".Description" })
             {
                 if (key.EndsWith(suffix, StringComparison.Ordinal))
                 {

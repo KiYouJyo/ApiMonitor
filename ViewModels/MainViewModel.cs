@@ -132,6 +132,12 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>关于页 ViewModel（由 CompositionRoot 注入）。</summary>
     public AboutViewModel? About { get; set; }
 
+    /// <summary>首次启动引导 ViewModel（v1.0.0，由 CompositionRoot 注入）。</summary>
+    public OnboardingViewModel? Onboarding { get; set; }
+
+    /// <summary>设置页“重新打开首次使用引导”。</summary>
+    public IAsyncRelayCommand ReopenOnboardingCommand { get; }
+
     /// <summary>主页空状态隐私说明（v0.6.0 起从资源取，避免硬编码）。</summary>
     public string HomePrivacyMessage { get; } =
         L10n.Get("Home.PrivacyMessageText");
@@ -194,6 +200,7 @@ public sealed partial class MainViewModel : ObservableObject
         RefreshAllCommand = new AsyncRelayCommand(
             RefreshAllAsync,
             () => HasAccounts && !IsRefreshingAll);
+        ReopenOnboardingCommand = new AsyncRelayCommand(ReopenOnboardingAsync);
 
         _accountManager.RefreshStarted += OnRefreshStarted;
         _accountManager.RefreshCompleted += OnRefreshCompleted;
@@ -217,6 +224,29 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>切换到指定导航页面（不会重建账户状态，不重启调度器）。</summary>
     public void NavigateTo(AppPageKind page) => CurrentPage = page;
+
+    /// <summary>
+    /// 应用启动时检查首次引导：未完成则在数据加载后导航到引导页。
+    /// 引导完成/跳过由 OnboardingViewModel 写状态并回调主页。
+    /// </summary>
+    public async Task EnsureOnboardingAsync(CancellationToken cancellationToken)
+    {
+        if (Onboarding is not null && !await Onboarding.IsCompletedAsync(cancellationToken))
+        {
+            CurrentPage = AppPageKind.Onboarding;
+        }
+    }
+
+    private async Task ReopenOnboardingAsync()
+    {
+        if (Onboarding is null)
+        {
+            return;
+        }
+
+        await Onboarding.ReopenAsync(_lifetime.Token);
+        NavigateTo(AppPageKind.Onboarding);
+    }
 
     /// <summary>把指定账户设为悬浮窗账户并显示/切换悬浮窗（账户卡片入口）。</summary>
     public void SetFloatingAccount(string accountId) =>
@@ -243,6 +273,9 @@ public sealed partial class MainViewModel : ObservableObject
         {
             await _accountManager.LoadAsync(_lifetime.Token);
             await ReloadAccountsAsync(_lifetime.Token);
+
+            // v1.0.0：首次启动引导（完成/跳过后不再自动弹出）。
+            await EnsureOnboardingAsync(_lifetime.Token);
 
             foreach (var message in _accountManager.RecoveryMessages)
             {

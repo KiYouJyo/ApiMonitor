@@ -4,59 +4,26 @@ using System.Text.Json;
 
 namespace ApiMonitor.Services;
 
-/// <summary>更新检查结果。</summary>
-public enum UpdateCheckStatus
-{
-    /// <summary>当前版本为最新。</summary>
-    UpToDate,
-
-    /// <summary>发现新版本。</summary>
-    UpdateAvailable,
-
-    /// <summary>当前版本高于最新发布（开发版本）。</summary>
-    DevVersionNewer,
-
-    /// <summary>检查失败（网络/超时/403/404/限速/非法 JSON）。</summary>
-    Failed,
-}
-
-public sealed class UpdateCheckResult
-{
-    public UpdateCheckStatus Status { get; init; }
-
-    /// <summary>最新发布版本号（UpdateAvailable 时有效）。</summary>
-    public string? LatestVersion { get; init; }
-
-    /// <summary>发布页 URL（UpdateAvailable 时有效）。</summary>
-    public string? ReleaseUrl { get; init; }
-
-    /// <summary>失败原因（Failed 时）。</summary>
-    public string? ErrorMessage { get; init; }
-}
-
 /// <summary>
-/// 手动更新检查：只在用户点击“检查更新”时访问 GitHub REST
+/// GitHub 侧载渠道手动更新检查：只在用户点击“检查更新”时访问 GitHub REST
 /// repos/KiYouJyo/ApiMonitor/releases/latest。
 /// 要求：User-Agent=ApiMonitor/&lt;DisplayVersion&gt;；15 秒超时；不用用户 Token；
-/// 不上传任何账户/余额/设备数据；不自动下载/安装；不绕过 Install.cmd。
+/// 不上传任何账户/余额/设备数据；不自动下载/安装；发现更新后打开 Release 页面。
 /// </summary>
-public interface IUpdateCheckService
-{
-    Task<UpdateCheckResult> CheckAsync(CancellationToken cancellationToken);
-}
-
-public sealed class UpdateCheckService : IUpdateCheckService
+public sealed class GitHubUpdateService : IUpdateService
 {
     private const string LatestReleaseUrl = "https://api.github.com/repos/KiYouJyo/ApiMonitor/releases/latest";
 
     private readonly IHttpRequestService _http;
     private readonly string _displayVersion;
 
-    public UpdateCheckService(IHttpRequestService http, string displayVersion)
+    public GitHubUpdateService(IHttpRequestService http, string displayVersion)
     {
         _http = http;
         _displayVersion = displayVersion;
     }
+
+    public DistributionChannel Channel => DistributionChannel.GitHubSideload;
 
     public async Task<UpdateCheckResult> CheckAsync(CancellationToken cancellationToken)
     {
@@ -110,7 +77,7 @@ public sealed class UpdateCheckService : IUpdateCheckService
                 };
             }
 
-            // tag_name 形如 v0.6.0；比较语义版本。
+            // tag_name 形如 v1.0.0；比较语义版本。
             string normalized = tagName.Trim().TrimStart('v');
             int comparison = CompareVersions(normalized, _displayVersion);
             if (comparison > 0)

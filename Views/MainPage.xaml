@@ -85,6 +85,9 @@
             <views:AboutPage
                 x:Name="AboutPageControl"
                 Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=About}" />
+            <views:OnboardingPage
+                x:Name="OnboardingPageControl"
+                Visibility="{Binding CurrentPage, Converter={StaticResource PageVisibilityConverter}, ConverterParameter=Onboarding}" />
         </Grid>
     </NavigationView>
 </UserControl>

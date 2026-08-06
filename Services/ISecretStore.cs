@@ -12,6 +12,9 @@ public interface ISecretStore
 {
     bool Contains(string accountId);
 
+    /// <summary>Credential Locker 是否可用（只读探测，不读写任何凭据）。</summary>
+    bool IsAvailable();
+
     Task<string?> GetAsync(
         string accountId,
         CancellationToken cancellationToken,

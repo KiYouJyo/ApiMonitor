@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== Navigation ===================== -->
 
@@ -826,4 +826,141 @@
   
   <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>Health probe for “{0}” completed.</value></data>
   
+  <data name="About.DevelopmentBuild" xml:space="preserve"><value>This is a development build; no official update check is performed.</value></data>
+  <data name="About.DistributionChannelFormat" xml:space="preserve"><value>Distribution channel: {0}</value></data>
+  <data name="About.HealthDescription" xml:space="preserve"><value>Health checks read non-sensitive state only; re-run or copy diagnostics at any time.</value></data>
+  <data name="About.HealthSectionTitle" xml:space="preserve"><value>App health</value></data>
+  <data name="About.InstallingStoreUpdate" xml:space="preserve"><value>Downloading and installing the update through Microsoft Store…</value></data>
+  <data name="About.InstallStoreUpdate" xml:space="preserve"><value>Download and install update</value></data>
+  <data name="About.OpenSupport" xml:space="preserve"><value>Open support documentation</value></data>
+  <data name="About.PackageFamilyFormat" xml:space="preserve"><value>Package family: {0}</value></data>
+  <data name="About.PackageFamilyNone" xml:space="preserve"><value>(unpackaged)</value></data>
+  <data name="About.RunHealthChecks" xml:space="preserve"><value>Run checks</value></data>
+  <data name="About.StoreInstallFailed" xml:space="preserve"><value>Could not install the update through Microsoft Store.</value></data>
+  <data name="About.StoreUpdateInstalled" xml:space="preserve"><value>The update was installed through Microsoft Store.</value></data>
+  <data name="About.UpdateSourceFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="About.UpdateUnsupportedChannel" xml:space="preserve"><value>Update checks are not supported on this channel.</value></data>
+  <data name="Channel.Development" xml:space="preserve"><value>Development</value></data>
+  <data name="Channel.GitHubSideload" xml:space="preserve"><value>GitHub Sideload</value></data>
+  <data name="Channel.MicrosoftStore" xml:space="preserve"><value>Microsoft Store</value></data>
+  <data name="Channel.UpdateSourceDevelopment" xml:space="preserve"><value>Update source: no official update checks</value></data>
+  <data name="Channel.UpdateSourceGitHub" xml:space="preserve"><value>Update source: GitHub Releases</value></data>
+  <data name="Channel.UpdateSourceStore" xml:space="preserve"><value>Update source: Microsoft Store</value></data>
+  <data name="Health.AccountsFileOk" xml:space="preserve"><value>The account data file parses correctly.</value></data>
+  <data name="Health.AccountsFileRecovered" xml:space="preserve"><value>The account data file was corrupt; it was backed up and defaults were restored.</value></data>
+  <data name="Health.AccountsFileUnreadable" xml:space="preserve"><value>Could not read the account data file.</value></data>
+  <data name="Health.ArchitectureOk" xml:space="preserve"><value>Architecture: {0}.</value></data>
+  <data name="Health.ArchitectureUnexpected" xml:space="preserve"><value>Architecture {0} differs from the official x64 build.</value></data>
+  <data name="Health.ChannelOk" xml:space="preserve"><value>Distribution channel OK: {0}.</value></data>
+  <data name="Health.CredentialLockerOk" xml:space="preserve"><value>Credential Locker is available.</value></data>
+  <data name="Health.CredentialLockerUnavailable" xml:space="preserve"><value>Credential Locker is unavailable (it may be disabled by the system).</value></data>
+  <data name="Health.DisplayVersionMissing" xml:space="preserve"><value>The product version is missing.</value></data>
+  <data name="Health.DisplayVersionOk" xml:space="preserve"><value>Product version: {0}.</value></data>
+  <data name="Health.IdentityMismatch" xml:space="preserve"><value>Installed identity ({0}) does not match the channel expectation ({1}).</value></data>
+  <data name="Health.IdentityNotApplicable" xml:space="preserve"><value>Identity matching does not apply to development builds.</value></data>
+  <data name="Health.IdentityOk" xml:space="preserve"><value>Installed identity matches the channel ({0}).</value></data>
+  <data name="Health.LastQueryNeverSucceeded" xml:space="preserve"><value>No successful query has been recorded yet.</value></data>
+  <data name="Health.LastQueryNoAccounts" xml:space="preserve"><value>No accounts; nothing to query.</value></data>
+  <data name="Health.LastQueryOk" xml:space="preserve"><value>Last successful query: {0}.</value></data>
+  <data name="Health.LastQueryUnknown" xml:space="preserve"><value>Could not read the last query time.</value></data>
+  <data name="Health.NotificationNotEnabled" xml:space="preserve"><value>Balance alerts are disabled; system notification state does not affect usage.</value></data>
+  <data name="Health.NotificationNotRegistered" xml:space="preserve"><value>AppNotification is not registered.</value></data>
+  <data name="Health.NotificationRegistered" xml:space="preserve"><value>AppNotification is registered.</value></data>
+  <data name="Health.NotificationSystemLikelyDisabled" xml:space="preserve"><value>Balance alerts are enabled but notifications are not registered; Windows notifications may be disabled by the system.</value></data>
+  <data name="Health.NotificationSystemOk" xml:space="preserve"><value>Windows notifications are available.</value></data>
+  <data name="Health.NotificationSystemUnknown" xml:space="preserve"><value>Could not determine the Windows notification state.</value></data>
+  <data name="Health.OverallIssues" xml:space="preserve"><value>{0} warning(s) and {1} failure(s).</value></data>
+  <data name="Health.OverallOk" xml:space="preserve"><value>All checks passed.</value></data>
+  <data name="Health.PackageFamilyMissing" xml:space="preserve"><value>Could not read the package family.</value></data>
+  <data name="Health.PackageFamilyNotApplicable" xml:space="preserve"><value>Running unpackaged; no package family.</value></data>
+  <data name="Health.PackageFamilyOk" xml:space="preserve"><value>Package family: {0}.</value></data>
+  <data name="Health.PackageVersionInvalid" xml:space="preserve"><value>The package version format is invalid.</value></data>
+  <data name="Health.PackageVersionOk" xml:space="preserve"><value>Package version: {0}.</value></data>
+  <data name="Health.ProviderDeepSeek" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Health.ProviderLoaded" xml:space="preserve"><value>The {0} provider is loaded.</value></data>
+  <data name="Health.ProviderMissing" xml:space="preserve"><value>The {0} provider is not loaded.</value></data>
+  <data name="Health.ProviderOpenRouter" xml:space="preserve"><value>OpenRouter</value></data>
+  <data name="Health.ProviderRegistryEmpty" xml:space="preserve"><value>The provider registry is empty.</value></data>
+  <data name="Health.ProviderRegistryOk" xml:space="preserve"><value>Provider registry OK ({0} providers).</value></data>
+  <data name="Health.RecordsFileOk" xml:space="preserve"><value>The history file parses correctly.</value></data>
+  <data name="Health.RecordsFileRecovered" xml:space="preserve"><value>The history file was corrupt; it was backed up and defaults were restored.</value></data>
+  <data name="Health.RecordsFileUnreadable" xml:space="preserve"><value>Could not read the history file.</value></data>
+  <data name="Health.RunFailed" xml:space="preserve"><value>The health checks could not be completed.</value></data>
+  <data name="Health.SchedulerNotRunning" xml:space="preserve"><value>The auto-refresh scheduler is not running.</value></data>
+  <data name="Health.SchedulerOk" xml:space="preserve"><value>The auto-refresh scheduler is running.</value></data>
+  <data name="Health.SettingsFileOk" xml:space="preserve"><value>The settings file parses correctly.</value></data>
+  <data name="Health.SettingsFileUnreadable" xml:space="preserve"><value>Could not read the settings file.</value></data>
+  <data name="Health.StartupTaskDisabled" xml:space="preserve"><value>Start at login is disabled (OK).</value></data>
+  <data name="Health.StartupTaskDisabledByUser" xml:space="preserve"><value>Start at login was disabled by the user in system settings.</value></data>
+  <data name="Health.StartupTaskEnabled" xml:space="preserve"><value>Start at login is enabled.</value></data>
+  <data name="Health.StartupTaskUnknown" xml:space="preserve"><value>Could not read the start-at-login state.</value></data>
+  <data name="Health.StatusFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Health.StatusNotApplicable" xml:space="preserve"><value>N/A</value></data>
+  <data name="Health.StatusOk" xml:space="preserve"><value>OK</value></data>
+  <data name="Health.StatusWarning" xml:space="preserve"><value>Warning</value></data>
+  <data name="Health.TrayNotRunning" xml:space="preserve"><value>The tray service is not running.</value></data>
+  <data name="Health.TrayOk" xml:space="preserve"><value>The tray service is running.</value></data>
+  <data name="Health.UnknownError" xml:space="preserve"><value>Could not read this item's state.</value></data>
+  <data name="Health.UpdateServiceMatches" xml:space="preserve"><value>The update service matches the current channel.</value></data>
+  <data name="Health.UpdateServiceMismatch" xml:space="preserve"><value>The update service does not match the current channel.</value></data>
+  <data name="Health.WindowsMainMissing" xml:space="preserve"><value>The main window is not registered.</value></data>
+  <data name="Health.WindowsOk" xml:space="preserve"><value>The main window service is OK.</value></data>
+  <data name="Health.WindowsWithFloating" xml:space="preserve"><value>The main window and floating window services are OK.</value></data>
+  <data name="Onboarding.AddAccountNow" xml:space="preserve"><value>Add an account now</value></data>
+  <data name="Onboarding.Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Onboarding.ConfigureLater" xml:space="preserve"><value>Configure in Settings</value></data>
+  <data name="Onboarding.EnterApp" xml:space="preserve"><value>Enter ApiMonitor</value></data>
+  <data name="Onboarding.Entry.AddAccount.Title" xml:space="preserve"><value>Add account</value></data>
+  <data name="Onboarding.Entry.AddAccount.Description" xml:space="preserve"><value>Add DeepSeek, OpenRouter, and other accounts from the home page.</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Title" xml:space="preserve"><value>Floating window</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Description" xml:space="preserve"><value>Check a chosen account's balance at a glance.</value></data>
+  <data name="Onboarding.Entry.Insights.Title" xml:space="preserve"><value>Insights</value></data>
+  <data name="Onboarding.Entry.Insights.Description" xml:space="preserve"><value>View balance trends and consumption estimates.</value></data>
+  <data name="Onboarding.Entry.Settings.Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Onboarding.Entry.Settings.Description" xml:space="preserve"><value>Manage alerts, tray, appearance, language, and data.</value></data>
+  <data name="Onboarding.Entry.Tray.Title" xml:space="preserve"><value>Tray</value></data>
+  <data name="Onboarding.Entry.Tray.Description" xml:space="preserve"><value>Minimize to the notification area for quick access.</value></data>
+  <data name="Onboarding.Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Onboarding.Privacy.CredentialLocker" xml:space="preserve"><value>API keys are stored in Windows Credential Locker.</value></data>
+  <data name="Onboarding.Privacy.LocalPurpose" xml:space="preserve"><value>ApiMonitor queries and records your own API balances.</value></data>
+  <data name="Onboarding.Privacy.LocalStorage" xml:space="preserve"><value>Accounts, balances, history, and settings are stored locally.</value></data>
+  <data name="Onboarding.Privacy.NoCloud" xml:space="preserve"><value>No developer cloud servers.</value></data>
+  <data name="Onboarding.Privacy.NoTelemetry" xml:space="preserve"><value>No telemetry and no ads.</value></data>
+  <data name="Onboarding.Privacy.ProviderOnly" xml:space="preserve"><value>API keys are sent only to the official endpoints of the providers you choose.</value></data>
+  <data name="Onboarding.PrivacyPolicy" xml:space="preserve"><value>View privacy policy</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Title" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Description" xml:space="preserve"><value>Use a DeepSeek API key to check your balance.</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Title" xml:space="preserve"><value>OpenRouter API key</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Description" xml:space="preserve"><value>Used to view key quota and usage.</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Title" xml:space="preserve"><value>OpenRouter Management Key</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Description" xml:space="preserve"><value>Higher privilege; used to query account credits.</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Title" xml:space="preserve"><value>Auto-refresh</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Description" xml:space="preserve"><value>Automatically query balances at each account's configured interval.</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Title" xml:space="preserve"><value>Balance alerts</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Description" xml:space="preserve"><value>Get a Windows notification when a balance falls below a threshold.</value></data>
+  <data name="Onboarding.Run.CloseToTray.Title" xml:space="preserve"><value>Close to notification area</value></data>
+  <data name="Onboarding.Run.CloseToTray.Description" xml:space="preserve"><value>Keep running in the notification area when the window closes.</value></data>
+  <data name="Onboarding.Run.DefaultOff" xml:space="preserve"><value>Default: off</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Title" xml:space="preserve"><value>Start when you sign in to Windows</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Description" xml:space="preserve"><value>Start in the background when you sign in to Windows.</value></data>
+  <data name="Onboarding.Skip" xml:space="preserve"><value>Skip guide</value></data>
+  <data name="Onboarding.SkipAccountHint" xml:space="preserve"><value>You can skip this and add an account later from the home page.</value></data>
+  <data name="Onboarding.Step1.Body" xml:space="preserve"><value>ApiMonitor queries and records your own API balances; all data stays on your device.</value></data>
+  <data name="Onboarding.Step1.Title" xml:space="preserve"><value>Welcome and privacy</value></data>
+  <data name="Onboarding.Step2.Body" xml:space="preserve"><value>Choose a provider and save your API key. You can skip and add one later from the home page.</value></data>
+  <data name="Onboarding.Step2.Title" xml:space="preserve"><value>Add your first account</value></data>
+  <data name="Onboarding.Step3.Body" xml:space="preserve"><value>Auto-refresh, balance alerts, close-to-tray, and start at login are all off by default; adjust them anytime in Settings.</value></data>
+  <data name="Onboarding.Step3.Title" xml:space="preserve"><value>How it runs</value></data>
+  <data name="Onboarding.Step4.Body" xml:space="preserve"><value>ApiMonitor is ready. Start from the home page.</value></data>
+  <data name="Onboarding.Step4.Title" xml:space="preserve"><value>Done</value></data>
+  <data name="Onboarding.StepProgress" xml:space="preserve"><value>Step {0} of {1}</value></data>
+  <data name="Onboarding.Title" xml:space="preserve"><value>First-run guide</value></data>
+  <data name="Settings.ReopenOnboarding" xml:space="preserve"><value>Reopen first-run guide</value></data>
+  <data name="Update.StoreCancelled" xml:space="preserve"><value>The update check was cancelled.</value></data>
+  <data name="Update.StoreInstallFailed" xml:space="preserve"><value>Could not install the update; retry in Microsoft Store later.</value></data>
+  <data name="Update.StoreInstallState" xml:space="preserve"><value>The update process returned: {0}</value></data>
+  <data name="Update.StoreNoPendingUpdate" xml:space="preserve"><value>There are no pending updates to install.</value></data>
+  <data name="Update.StoreServiceUnavailable" xml:space="preserve"><value>The Microsoft Store service is unavailable ({0}).</value></data>
+  <data name="Update.StoreServiceUnavailableGeneric" xml:space="preserve"><value>The Microsoft Store service is currently unavailable; try again later.</value></data>
+  <data name="Update.StoreWindowUnavailable" xml:space="preserve"><value>The main window is unavailable, so the Microsoft Store update service cannot be used.</value></data>
 </root>

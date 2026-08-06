@@ -19,6 +19,18 @@ public sealed class MonitoringScheduler : IMonitoringScheduler
     private CancellationTokenSource? _cts;
     private Task? _loop;
 
+    /// <summary>调度循环是否正在运行（Start 后为 true，Stop 后为 false）。</summary>
+    public bool IsRunning
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _loop is not null;
+            }
+        }
+    }
+
     public MonitoringScheduler(IAccountManager accountManager, TimeProvider time, AppLog log)
     {
         _accountManager = accountManager;
