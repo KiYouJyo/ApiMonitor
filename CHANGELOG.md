@@ -1,6 +1,8 @@
 # Changelog
 
-## [1.0.0] - 2026-08-06 (Microsoft Store first release candidate)
+## Unreleased
+
+## 1.0.0（2026-08-06，已正式发布）
 
 ### Added
 
