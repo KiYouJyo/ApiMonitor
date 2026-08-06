@@ -97,8 +97,9 @@ public sealed class ResourceConsistencyTests
         var keys = ReadKeys("zh-CN").Keys;
         foreach (var key in keys)
         {
-            // 支持 "Prefix.Name"（纯文本）与 "Prefix.Name.Property"（x:Uid 属性键）。
-            Assert.Matches(@"^[A-Za-z][A-Za-z0-9]*\.[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9]*)?$", key);
+            // 支持 "Prefix.Name"（纯文本）与 "Prefix.Name.Property"（x:Uid 属性键），
+            // v1.0.0 起也允许 "Prefix.Name.Detail.Property" 形式的分层键。
+            Assert.Matches(@"^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9]*)+$", key);
         }
     }
 

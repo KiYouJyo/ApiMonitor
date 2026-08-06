@@ -8,7 +8,7 @@ namespace ApiMonitor.Tests;
 
 public sealed class UpdateCheckServiceTests
 {
-    private static string LatestJson(string tagName, string htmlUrl = "https://github.com/KiYouJyo/ApiMonitor/releases/tag/v0.8.0") =>
+    private static string LatestJson(string tagName, string htmlUrl = "https://github.com/KiYouJyo/ApiMonitor/releases/tag/v1.0.0") =>
         $$"""
         {
           "tag_name": "{{tagName}}",
@@ -21,7 +21,7 @@ public sealed class UpdateCheckServiceTests
     public async Task NoUpdate_IsUpToDate()
     {
         var http = FakeHttpRequestService.Returning(LatestJson("v0.6.0"));
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -32,7 +32,7 @@ public sealed class UpdateCheckServiceTests
     public async Task NewVersion_IsUpdateAvailable()
     {
         var http = FakeHttpRequestService.Returning(LatestJson("v0.8.0"));
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -45,7 +45,7 @@ public sealed class UpdateCheckServiceTests
     public async Task DevVersion_IsNewerThanLatest()
     {
         var http = FakeHttpRequestService.Returning(LatestJson("v0.5.0"));
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -56,7 +56,7 @@ public sealed class UpdateCheckServiceTests
     public async Task NotFound_IsFailure()
     {
         var http = FakeHttpRequestService.Returning("{}", HttpStatusCode.NotFound);
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -68,7 +68,7 @@ public sealed class UpdateCheckServiceTests
     public async Task Forbidden_IsRateLimited()
     {
         var http = FakeHttpRequestService.Returning("{}", HttpStatusCode.Forbidden);
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -80,7 +80,7 @@ public sealed class UpdateCheckServiceTests
     public async Task InvalidJson_IsFailure()
     {
         var http = FakeHttpRequestService.Returning("{not valid");
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -91,7 +91,7 @@ public sealed class UpdateCheckServiceTests
     public async Task NetworkError_IsFailure()
     {
         var http = FakeHttpRequestService.Throwing<HttpRequestException>();
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         var result = await service.CheckAsync(CancellationToken.None);
 
@@ -111,7 +111,7 @@ public sealed class UpdateCheckServiceTests
                 Content = new StringContent(LatestJson("v0.6.0"), Encoding.UTF8, "application/json"),
             });
         });
-        var service = new UpdateCheckService(http, "0.6.0");
+        var service = new GitHubUpdateService(http, "0.6.0");
 
         await service.CheckAsync(CancellationToken.None);
 
@@ -121,9 +121,9 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public void CompareVersions_HandlesFourSegments()
     {
-        Assert.True(UpdateCheckService.CompareVersions("0.6.0.1", "0.6.0") > 0);
-        Assert.True(UpdateCheckService.CompareVersions("0.6.0", "0.6.0.1") < 0);
-        Assert.Equal(0, UpdateCheckService.CompareVersions("0.6.0", "0.6.0"));
-        Assert.True(UpdateCheckService.CompareVersions("0.10.0", "0.9.9") > 0);
+        Assert.True(GitHubUpdateService.CompareVersions("0.6.0.1", "0.6.0") > 0);
+        Assert.True(GitHubUpdateService.CompareVersions("0.6.0", "0.6.0.1") < 0);
+        Assert.Equal(0, GitHubUpdateService.CompareVersions("0.6.0", "0.6.0"));
+        Assert.True(GitHubUpdateService.CompareVersions("0.10.0", "0.9.9") > 0);
     }
 }

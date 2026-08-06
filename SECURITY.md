@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-The latest formal release (currently v0.9.0) is the supported version for security fixes. Older releases should upgrade in place to the latest release.
+The latest formal release (currently v1.0.0) is the supported version for security fixes. Older releases should upgrade in place to the latest release.
 
 ## Credential handling and host whitelist
 

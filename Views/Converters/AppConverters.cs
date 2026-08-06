@@ -61,3 +61,18 @@ public sealed class PageVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>
         throw new NotSupportedException();
 }
+
+/// <summary>整数等于 ConverterParameter 时可见（引导步骤面板切换用）。</summary>
+public sealed class IntToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        bool visible = value is int number
+            && int.TryParse(parameter?.ToString(), out int expected)
+            && number == expected;
+        return visible ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotSupportedException();
+}

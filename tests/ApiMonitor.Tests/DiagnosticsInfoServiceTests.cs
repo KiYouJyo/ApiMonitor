@@ -27,6 +27,7 @@ public sealed class DiagnosticsInfoServiceTests
             accountManager,
             new JsonNotificationStateStore(temp.Path),
             new FakeStartupTaskService(),
+            new DistributionChannelService("1.0.0", "1.0.0.1"),
             language: "zh-CN",
             theme: "System");
 
@@ -34,6 +35,7 @@ public sealed class DiagnosticsInfoServiceTests
 
         Assert.Contains("DisplayVersion:", diagnostics);
         Assert.Contains("PackageVersion:", diagnostics);
+        Assert.Contains("DistributionChannel:", diagnostics);
         Assert.Contains("Architecture:", diagnostics);
         Assert.Contains("ProviderIds:", diagnostics);
         Assert.Contains("AccountCount: 1", diagnostics);

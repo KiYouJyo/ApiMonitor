@@ -7,9 +7,14 @@ public sealed class FakeSecretStore : ISecretStore
 {
     private readonly Dictionary<string, string> _secrets = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Credential Locker 可用性（测试可切换）。</summary>
+    public bool Available { get; set; } = true;
+
     public IReadOnlyDictionary<string, string> Secrets => _secrets;
 
     public bool Contains(string accountId) => _secrets.ContainsKey(accountId);
+
+    public bool IsAvailable() => Available;
 
     public Task<string?> GetAsync(
         string accountId,

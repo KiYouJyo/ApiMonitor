@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== ナビゲーション ===================== -->
 
@@ -826,4 +826,141 @@
   
   <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>「{0}」のサービスプローブが完了しました。</value></data>
   
+  <data name="About.DevelopmentBuild" xml:space="preserve"><value>開発ビルドのため、公式更新は確認されません。</value></data>
+  <data name="About.DistributionChannelFormat" xml:space="preserve"><value>配布チャネル: {0}</value></data>
+  <data name="About.HealthDescription" xml:space="preserve"><value>動作状態の確認は機密情報を読み取らず、いつでも再確認・診断情報のコピーができます。</value></data>
+  <data name="About.HealthSectionTitle" xml:space="preserve"><value>アプリの動作状態</value></data>
+  <data name="About.InstallingStoreUpdate" xml:space="preserve"><value>Microsoft Store 経由で更新をダウンロード中です…</value></data>
+  <data name="About.InstallStoreUpdate" xml:space="preserve"><value>更新をダウンロードしてインストール</value></data>
+  <data name="About.OpenSupport" xml:space="preserve"><value>サポート文書を開く</value></data>
+  <data name="About.PackageFamilyFormat" xml:space="preserve"><value>パッケージ ファミリ: {0}</value></data>
+  <data name="About.PackageFamilyNone" xml:space="preserve"><value>(未パッケージ)</value></data>
+  <data name="About.RunHealthChecks" xml:space="preserve"><value>チェックを実行</value></data>
+  <data name="About.StoreInstallFailed" xml:space="preserve"><value>Microsoft Store 経由で更新をインストールできませんでした。</value></data>
+  <data name="About.StoreUpdateInstalled" xml:space="preserve"><value>更新は Microsoft Store 経由でインストールされました。</value></data>
+  <data name="About.UpdateSourceFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="About.UpdateUnsupportedChannel" xml:space="preserve"><value>このチャネルでは更新確認はサポートされていません。</value></data>
+  <data name="Channel.Development" xml:space="preserve"><value>開発ビルド</value></data>
+  <data name="Channel.GitHubSideload" xml:space="preserve"><value>GitHub サイドロード</value></data>
+  <data name="Channel.MicrosoftStore" xml:space="preserve"><value>Microsoft Store</value></data>
+  <data name="Channel.UpdateSourceDevelopment" xml:space="preserve"><value>更新元: 公式更新は確認しません</value></data>
+  <data name="Channel.UpdateSourceGitHub" xml:space="preserve"><value>更新元: GitHub Releases</value></data>
+  <data name="Channel.UpdateSourceStore" xml:space="preserve"><value>更新元: Microsoft Store</value></data>
+  <data name="Health.AccountsFileOk" xml:space="preserve"><value>アカウント データ ファイルは正常に解析できます。</value></data>
+  <data name="Health.AccountsFileRecovered" xml:space="preserve"><value>アカウント データ ファイルが破損していたため、バックアップ後デフォルトに戻しました。</value></data>
+  <data name="Health.AccountsFileUnreadable" xml:space="preserve"><value>アカウント データ ファイルを読み取れませんでした。</value></data>
+  <data name="Health.ArchitectureOk" xml:space="preserve"><value>アーキテクチャ: {0}。</value></data>
+  <data name="Health.ArchitectureUnexpected" xml:space="preserve"><value>アーキテクチャ {0} は正式版の x64 と異なります。</value></data>
+  <data name="Health.ChannelOk" xml:space="preserve"><value>配布チャネル正常: {0}。</value></data>
+  <data name="Health.CredentialLockerOk" xml:space="preserve"><value>Credential Locker は利用可能です。</value></data>
+  <data name="Health.CredentialLockerUnavailable" xml:space="preserve"><value>Credential Locker が利用できません（システムで無効になっている可能性があります）。</value></data>
+  <data name="Health.DisplayVersionMissing" xml:space="preserve"><value>製品バージョンがありません。</value></data>
+  <data name="Health.DisplayVersionOk" xml:space="preserve"><value>製品バージョン: {0}。</value></data>
+  <data name="Health.IdentityMismatch" xml:space="preserve"><value>インストール済み ID（{0}）がチャネルの期待値（{1}）と一致しません。</value></data>
+  <data name="Health.IdentityNotApplicable" xml:space="preserve"><value>開発ビルドではパッケージ ID の照合は適用されません。</value></data>
+  <data name="Health.IdentityOk" xml:space="preserve"><value>インストール済み ID はチャネルと一致しています（{0}）。</value></data>
+  <data name="Health.LastQueryNeverSucceeded" xml:space="preserve"><value>成功した照会はまだ記録されていません。</value></data>
+  <data name="Health.LastQueryNoAccounts" xml:space="preserve"><value>アカウントがないため、照会は不要です。</value></data>
+  <data name="Health.LastQueryOk" xml:space="preserve"><value>直近の成功した照会: {0}。</value></data>
+  <data name="Health.LastQueryUnknown" xml:space="preserve"><value>直近の照会時刻を読み取れませんでした。</value></data>
+  <data name="Health.NotificationNotEnabled" xml:space="preserve"><value>残高通知が無効のため、システム通知の状態は利用に影響しません。</value></data>
+  <data name="Health.NotificationNotRegistered" xml:space="preserve"><value>AppNotification が未登録です。</value></data>
+  <data name="Health.NotificationRegistered" xml:space="preserve"><value>AppNotification は登録済みです。</value></data>
+  <data name="Health.NotificationSystemLikelyDisabled" xml:space="preserve"><value>残高通知は有効ですが通知が未登録です。Windows 通知がシステムで無効になっている可能性があります。</value></data>
+  <data name="Health.NotificationSystemOk" xml:space="preserve"><value>Windows 通知を利用できます。</value></data>
+  <data name="Health.NotificationSystemUnknown" xml:space="preserve"><value>Windows 通知の状態を判断できませんでした。</value></data>
+  <data name="Health.OverallIssues" xml:space="preserve"><value>注意 {0} 件、失敗 {1} 件。</value></data>
+  <data name="Health.OverallOk" xml:space="preserve"><value>すべてのチェックが正常です。</value></data>
+  <data name="Health.PackageFamilyMissing" xml:space="preserve"><value>パッケージ ファミリを読み取れませんでした。</value></data>
+  <data name="Health.PackageFamilyNotApplicable" xml:space="preserve"><value>未パッケージ実行のため、パッケージ ファミリはありません。</value></data>
+  <data name="Health.PackageFamilyOk" xml:space="preserve"><value>パッケージ ファミリ: {0}。</value></data>
+  <data name="Health.PackageVersionInvalid" xml:space="preserve"><value>パッケージ バージョンの形式が無効です。</value></data>
+  <data name="Health.PackageVersionOk" xml:space="preserve"><value>パッケージ バージョン: {0}。</value></data>
+  <data name="Health.ProviderDeepSeek" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Health.ProviderLoaded" xml:space="preserve"><value>{0} Provider が読み込まれています。</value></data>
+  <data name="Health.ProviderMissing" xml:space="preserve"><value>{0} Provider が読み込まれていません。</value></data>
+  <data name="Health.ProviderOpenRouter" xml:space="preserve"><value>OpenRouter</value></data>
+  <data name="Health.ProviderRegistryEmpty" xml:space="preserve"><value>Provider レジストリが空です。</value></data>
+  <data name="Health.ProviderRegistryOk" xml:space="preserve"><value>Provider レジストリ正常（{0} 個）。</value></data>
+  <data name="Health.RecordsFileOk" xml:space="preserve"><value>履歴ファイルは正常に解析できます。</value></data>
+  <data name="Health.RecordsFileRecovered" xml:space="preserve"><value>履歴ファイルが破損していたため、バックアップ後デフォルトに戻しました。</value></data>
+  <data name="Health.RecordsFileUnreadable" xml:space="preserve"><value>履歴ファイルを読み取れませんでした。</value></data>
+  <data name="Health.RunFailed" xml:space="preserve"><value>動作状態のチェックを完了できませんでした。</value></data>
+  <data name="Health.SchedulerNotRunning" xml:space="preserve"><value>自動更新スケジューラが実行されていません。</value></data>
+  <data name="Health.SchedulerOk" xml:space="preserve"><value>自動更新スケジューラは実行中です。</value></data>
+  <data name="Health.SettingsFileOk" xml:space="preserve"><value>設定ファイルは正常に解析できます。</value></data>
+  <data name="Health.SettingsFileUnreadable" xml:space="preserve"><value>設定ファイルを読み取れませんでした。</value></data>
+  <data name="Health.StartupTaskDisabled" xml:space="preserve"><value>ログイン時起動は無効です（正常）。</value></data>
+  <data name="Health.StartupTaskDisabledByUser" xml:space="preserve"><value>ログイン時起動はユーザーがシステム設定で無効にしました。</value></data>
+  <data name="Health.StartupTaskEnabled" xml:space="preserve"><value>ログイン時起動は有効です。</value></data>
+  <data name="Health.StartupTaskUnknown" xml:space="preserve"><value>ログイン時起動の状態を読み取れませんでした。</value></data>
+  <data name="Health.StatusFailed" xml:space="preserve"><value>失敗</value></data>
+  <data name="Health.StatusNotApplicable" xml:space="preserve"><value>該当なし</value></data>
+  <data name="Health.StatusOk" xml:space="preserve"><value>正常</value></data>
+  <data name="Health.StatusWarning" xml:space="preserve"><value>注意</value></data>
+  <data name="Health.TrayNotRunning" xml:space="preserve"><value>トレイ サービスが実行されていません。</value></data>
+  <data name="Health.TrayOk" xml:space="preserve"><value>トレイ サービスは実行中です。</value></data>
+  <data name="Health.UnknownError" xml:space="preserve"><value>この項目の状態を読み取れませんでした。</value></data>
+  <data name="Health.UpdateServiceMatches" xml:space="preserve"><value>更新サービスは現在のチャネルと一致しています。</value></data>
+  <data name="Health.UpdateServiceMismatch" xml:space="preserve"><value>更新サービスが現在のチャネルと一致しません。</value></data>
+  <data name="Health.WindowsMainMissing" xml:space="preserve"><value>メイン ウィンドウが登録されていません。</value></data>
+  <data name="Health.WindowsOk" xml:space="preserve"><value>メイン ウィンドウ サービスは正常です。</value></data>
+  <data name="Health.WindowsWithFloating" xml:space="preserve"><value>メイン ウィンドウとフローティング ウィンドウのサービスは正常です。</value></data>
+  <data name="Onboarding.AddAccountNow" xml:space="preserve"><value>今すぐアカウントを追加</value></data>
+  <data name="Onboarding.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Onboarding.ConfigureLater" xml:space="preserve"><value>設定で変更</value></data>
+  <data name="Onboarding.EnterApp" xml:space="preserve"><value>ApiMonitor を開始</value></data>
+  <data name="Onboarding.Entry.AddAccount.Title" xml:space="preserve"><value>アカウントを追加</value></data>
+  <data name="Onboarding.Entry.AddAccount.Description" xml:space="preserve"><value>ホーム画面から DeepSeek、OpenRouter などのアカウントを追加します。</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Title" xml:space="preserve"><value>フローティング ウィンドウ</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Description" xml:space="preserve"><value>指定したアカウントの残高をいつでも確認できます。</value></data>
+  <data name="Onboarding.Entry.Insights.Title" xml:space="preserve"><value>データ洞察</value></data>
+  <data name="Onboarding.Entry.Insights.Description" xml:space="preserve"><value>残高の推移と消費見積もりを確認できます。</value></data>
+  <data name="Onboarding.Entry.Settings.Title" xml:space="preserve"><value>設定</value></data>
+  <data name="Onboarding.Entry.Settings.Description" xml:space="preserve"><value>通知、トレイ、外観、言語、データを管理します。</value></data>
+  <data name="Onboarding.Entry.Tray.Title" xml:space="preserve"><value>トレイ</value></data>
+  <data name="Onboarding.Entry.Tray.Description" xml:space="preserve"><value>通知領域に格納し、メイン ウィンドウをすぐに開けます。</value></data>
+  <data name="Onboarding.Next" xml:space="preserve"><value>次へ</value></data>
+  <data name="Onboarding.Privacy.CredentialLocker" xml:space="preserve"><value>API キーは Windows Credential Locker に保存されます。</value></data>
+  <data name="Onboarding.Privacy.LocalPurpose" xml:space="preserve"><value>ApiMonitor はあなた自身の API 残高を照会・記録します。</value></data>
+  <data name="Onboarding.Privacy.LocalStorage" xml:space="preserve"><value>アカウント、残高、履歴、設定はこのデバイスに保存されます。</value></data>
+  <data name="Onboarding.Privacy.NoCloud" xml:space="preserve"><value>開発者のクラウド サーバーはありません。</value></data>
+  <data name="Onboarding.Privacy.NoTelemetry" xml:space="preserve"><value>テレメトリも広告もありません。</value></data>
+  <data name="Onboarding.Privacy.ProviderOnly" xml:space="preserve"><value>API キーは、あなたが選んだ Provider の公式エンドポイントにのみ送信されます。</value></data>
+  <data name="Onboarding.PrivacyPolicy" xml:space="preserve"><value>プライバシー ポリシーを表示</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Title" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Description" xml:space="preserve"><value>DeepSeek の API キーで残高を確認します。</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Title" xml:space="preserve"><value>OpenRouter API キー</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Description" xml:space="preserve"><value>キーのクォータと利用状況の確認に使います。</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Title" xml:space="preserve"><value>OpenRouter Management Key</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Description" xml:space="preserve"><value>権限が高く、アカウントの Credits 照会に使います。</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Title" xml:space="preserve"><value>自動更新</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Description" xml:space="preserve"><value>アカウントごとの設定間隔で残高を自動照会します。</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Title" xml:space="preserve"><value>残高通知</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Description" xml:space="preserve"><value>残高がしきい値を下回ると Windows 通知で知らせます。</value></data>
+  <data name="Onboarding.Run.CloseToTray.Title" xml:space="preserve"><value>トレイに閉じる</value></data>
+  <data name="Onboarding.Run.CloseToTray.Description" xml:space="preserve"><value>ウィンドウを閉じても通知領域で動作を続けます。</value></data>
+  <data name="Onboarding.Run.DefaultOff" xml:space="preserve"><value>既定: オフ</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Title" xml:space="preserve"><value>Windows サインイン時に起動</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Description" xml:space="preserve"><value>Windows サインイン時にバックグラウンドで起動します。</value></data>
+  <data name="Onboarding.Skip" xml:space="preserve"><value>ガイドをスキップ</value></data>
+  <data name="Onboarding.SkipAccountHint" xml:space="preserve"><value>スキップして、後でホーム画面から追加できます。</value></data>
+  <data name="Onboarding.Step1.Body" xml:space="preserve"><value>ApiMonitor はあなた自身の API 残高を照会・記録します。すべてのデータはこのデバイスに保存されます。</value></data>
+  <data name="Onboarding.Step1.Title" xml:space="preserve"><value>ようこそとプライバシー</value></data>
+  <data name="Onboarding.Step2.Body" xml:space="preserve"><value>Provider を選んで API キーを保存します。後でホーム画面から追加することもできます。</value></data>
+  <data name="Onboarding.Step2.Title" xml:space="preserve"><value>最初のアカウントを追加</value></data>
+  <data name="Onboarding.Step3.Body" xml:space="preserve"><value>自動更新、残高通知、トレイに閉じる、ログイン時起動は既定でオフです。設定でいつでも変更できます。</value></data>
+  <data name="Onboarding.Step3.Title" xml:space="preserve"><value>動作のしかた</value></data>
+  <data name="Onboarding.Step4.Body" xml:space="preserve"><value>ApiMonitor の準備ができました。ホーム画面から始められます。</value></data>
+  <data name="Onboarding.Step4.Title" xml:space="preserve"><value>完了</value></data>
+  <data name="Onboarding.StepProgress" xml:space="preserve"><value>ステップ {0} / {1}</value></data>
+  <data name="Onboarding.Title" xml:space="preserve"><value>初回起動ガイド</value></data>
+  <data name="Settings.ReopenOnboarding" xml:space="preserve"><value>初回起動ガイドを再度開く</value></data>
+  <data name="Update.StoreCancelled" xml:space="preserve"><value>更新確認はキャンセルされました。</value></data>
+  <data name="Update.StoreInstallFailed" xml:space="preserve"><value>更新をインストールできませんでした。後で Microsoft Store でお試しください。</value></data>
+  <data name="Update.StoreInstallState" xml:space="preserve"><value>更新プロセスが状態を返しました: {0}</value></data>
+  <data name="Update.StoreNoPendingUpdate" xml:space="preserve"><value>インストール待ちの更新はありません。</value></data>
+  <data name="Update.StoreServiceUnavailable" xml:space="preserve"><value>Microsoft Store サービスを利用できません（{0}）。</value></data>
+  <data name="Update.StoreServiceUnavailableGeneric" xml:space="preserve"><value>Microsoft Store サービスは現在利用できません。後でもう一度お試しください。</value></data>
+  <data name="Update.StoreWindowUnavailable" xml:space="preserve"><value>メイン ウィンドウを関連付けられないため、Microsoft Store の更新サービスを利用できません。</value></data>
 </root>

@@ -1,0 +1,1 @@
+﻿API balance,balance monitor,API monitor,DeepSeek balance,OpenRouter credits,Moonshot balance,SiliconFlow balance,xAI balance,AMap,Baidu Maps,Tencent Location,Tianditu,SuperMap,OGC,GIS health,WinUI,Windows app

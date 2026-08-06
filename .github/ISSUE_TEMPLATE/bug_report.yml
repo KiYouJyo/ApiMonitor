@@ -5,12 +5,12 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Before submitting:** never paste real API keys (`sk-...`), Credential Locker data, or LocalState dumps. Check any logs for secrets before attaching them.
+        **Before submitting:** never paste real API keys (`sk-...`), Management Keys, Authorization headers, Credential Locker data, full intranet GIS addresses, or LocalState dumps. Check any logs and copied diagnostics for secrets before attaching them.
   - type: input
     id: version
     attributes:
       label: ApiMonitor version
-      description: e.g. v0.2.0 (shown on the main page)
+      description: e.g. v1.0.0 (shown on the About page)
     validations:
       required: true
   - type: input

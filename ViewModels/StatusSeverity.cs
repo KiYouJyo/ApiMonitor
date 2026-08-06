@@ -35,4 +35,7 @@ public enum AppPageKind
     Insights,
     Settings,
     About,
+
+    /// <summary>v1.0.0：首次启动引导（完成/跳过后不再自动出现）。</summary>
+    Onboarding,
 }

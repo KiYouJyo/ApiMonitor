@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- ===================== 导航 ===================== -->
 
@@ -826,4 +826,141 @@
   
   <data name="Status.ServiceProbeSuccessMessage" xml:space="preserve"><value>账户“{0}”的服务探测已完成。</value></data>
   
+  <data name="About.DevelopmentBuild" xml:space="preserve"><value>当前为开发构建，不检查正式更新。</value></data>
+  <data name="About.DistributionChannelFormat" xml:space="preserve"><value>分发渠道：{0}</value></data>
+  <data name="About.HealthDescription" xml:space="preserve"><value>运行检查只读取非敏感状态，可随时重新检查或复制诊断信息。</value></data>
+  <data name="About.HealthSectionTitle" xml:space="preserve"><value>应用运行状况</value></data>
+  <data name="About.InstallingStoreUpdate" xml:space="preserve"><value>正在通过 Microsoft Store 下载并安装更新…</value></data>
+  <data name="About.InstallStoreUpdate" xml:space="preserve"><value>下载并安装更新</value></data>
+  <data name="About.OpenSupport" xml:space="preserve"><value>打开支持文档</value></data>
+  <data name="About.PackageFamilyFormat" xml:space="preserve"><value>包系列：{0}</value></data>
+  <data name="About.PackageFamilyNone" xml:space="preserve"><value>（未打包）</value></data>
+  <data name="About.RunHealthChecks" xml:space="preserve"><value>运行检查</value></data>
+  <data name="About.StoreInstallFailed" xml:space="preserve"><value>无法通过 Microsoft Store 安装更新。</value></data>
+  <data name="About.StoreUpdateInstalled" xml:space="preserve"><value>更新已通过 Microsoft Store 安装。</value></data>
+  <data name="About.UpdateSourceFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="About.UpdateUnsupportedChannel" xml:space="preserve"><value>当前渠道不支持此更新方式。</value></data>
+  <data name="Channel.Development" xml:space="preserve"><value>开发构建</value></data>
+  <data name="Channel.GitHubSideload" xml:space="preserve"><value>GitHub 侧载</value></data>
+  <data name="Channel.MicrosoftStore" xml:space="preserve"><value>微软商店</value></data>
+  <data name="Channel.UpdateSourceDevelopment" xml:space="preserve"><value>更新来源：不检查正式更新</value></data>
+  <data name="Channel.UpdateSourceGitHub" xml:space="preserve"><value>更新来源：GitHub Releases</value></data>
+  <data name="Channel.UpdateSourceStore" xml:space="preserve"><value>更新来源：Microsoft Store</value></data>
+  <data name="Health.AccountsFileOk" xml:space="preserve"><value>账户数据文件可正常解析。</value></data>
+  <data name="Health.AccountsFileRecovered" xml:space="preserve"><value>账户数据文件损坏，已备份并回退默认值。</value></data>
+  <data name="Health.AccountsFileUnreadable" xml:space="preserve"><value>无法读取账户数据文件。</value></data>
+  <data name="Health.ArchitectureOk" xml:space="preserve"><value>架构：{0}。</value></data>
+  <data name="Health.ArchitectureUnexpected" xml:space="preserve"><value>架构 {0} 与正式版 x64 不同。</value></data>
+  <data name="Health.ChannelOk" xml:space="preserve"><value>分发渠道正常：{0}。</value></data>
+  <data name="Health.CredentialLockerOk" xml:space="preserve"><value>Credential Locker 可用。</value></data>
+  <data name="Health.CredentialLockerUnavailable" xml:space="preserve"><value>Credential Locker 不可用（系统可能已关闭）。</value></data>
+  <data name="Health.DisplayVersionMissing" xml:space="preserve"><value>产品版本缺失。</value></data>
+  <data name="Health.DisplayVersionOk" xml:space="preserve"><value>产品版本：{0}。</value></data>
+  <data name="Health.IdentityMismatch" xml:space="preserve"><value>安装包身份（{0}）与渠道期望（{1}）不一致。</value></data>
+  <data name="Health.IdentityNotApplicable" xml:space="preserve"><value>开发构建不匹配安装包身份。</value></data>
+  <data name="Health.IdentityOk" xml:space="preserve"><value>安装包身份与渠道一致（{0}）。</value></data>
+  <data name="Health.LastQueryNeverSucceeded" xml:space="preserve"><value>还没有成功查询记录。</value></data>
+  <data name="Health.LastQueryNoAccounts" xml:space="preserve"><value>没有账户，无需查询。</value></data>
+  <data name="Health.LastQueryOk" xml:space="preserve"><value>最近一次成功查询：{0}。</value></data>
+  <data name="Health.LastQueryUnknown" xml:space="preserve"><value>无法读取最近查询时间。</value></data>
+  <data name="Health.NotificationNotEnabled" xml:space="preserve"><value>未启用余额提醒，系统通知状态不影响使用。</value></data>
+  <data name="Health.NotificationNotRegistered" xml:space="preserve"><value>AppNotification 未注册。</value></data>
+  <data name="Health.NotificationRegistered" xml:space="preserve"><value>AppNotification 已注册。</value></data>
+  <data name="Health.NotificationSystemLikelyDisabled" xml:space="preserve"><value>已启用余额提醒但通知未注册，Windows 通知可能被系统关闭。</value></data>
+  <data name="Health.NotificationSystemOk" xml:space="preserve"><value>Windows 通知可用。</value></data>
+  <data name="Health.NotificationSystemUnknown" xml:space="preserve"><value>无法判断 Windows 通知状态。</value></data>
+  <data name="Health.OverallIssues" xml:space="preserve"><value>有 {0} 项需要注意、{1} 项失败。</value></data>
+  <data name="Health.OverallOk" xml:space="preserve"><value>全部检查正常。</value></data>
+  <data name="Health.PackageFamilyMissing" xml:space="preserve"><value>无法读取 Package Family。</value></data>
+  <data name="Health.PackageFamilyNotApplicable" xml:space="preserve"><value>未打包运行，无 Package Family。</value></data>
+  <data name="Health.PackageFamilyOk" xml:space="preserve"><value>Package Family：{0}。</value></data>
+  <data name="Health.PackageVersionInvalid" xml:space="preserve"><value>包版本格式无效。</value></data>
+  <data name="Health.PackageVersionOk" xml:space="preserve"><value>包版本：{0}。</value></data>
+  <data name="Health.ProviderDeepSeek" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Health.ProviderLoaded" xml:space="preserve"><value>{0} Provider 已加载。</value></data>
+  <data name="Health.ProviderMissing" xml:space="preserve"><value>{0} Provider 未加载。</value></data>
+  <data name="Health.ProviderOpenRouter" xml:space="preserve"><value>OpenRouter</value></data>
+  <data name="Health.ProviderRegistryEmpty" xml:space="preserve"><value>Provider 注册表为空。</value></data>
+  <data name="Health.ProviderRegistryOk" xml:space="preserve"><value>Provider 注册表正常（{0} 个）。</value></data>
+  <data name="Health.RecordsFileOk" xml:space="preserve"><value>历史文件可正常解析。</value></data>
+  <data name="Health.RecordsFileRecovered" xml:space="preserve"><value>历史文件损坏，已备份并回退默认值。</value></data>
+  <data name="Health.RecordsFileUnreadable" xml:space="preserve"><value>无法读取历史文件。</value></data>
+  <data name="Health.RunFailed" xml:space="preserve"><value>运行状况检查未能完成。</value></data>
+  <data name="Health.SchedulerNotRunning" xml:space="preserve"><value>自动刷新调度器未运行。</value></data>
+  <data name="Health.SchedulerOk" xml:space="preserve"><value>自动刷新调度器正在运行。</value></data>
+  <data name="Health.SettingsFileOk" xml:space="preserve"><value>设置文件可正常解析。</value></data>
+  <data name="Health.SettingsFileUnreadable" xml:space="preserve"><value>无法读取设置文件。</value></data>
+  <data name="Health.StartupTaskDisabled" xml:space="preserve"><value>登录启动未启用（正常）。</value></data>
+  <data name="Health.StartupTaskDisabledByUser" xml:space="preserve"><value>登录启动已被用户在系统设置中关闭。</value></data>
+  <data name="Health.StartupTaskEnabled" xml:space="preserve"><value>登录启动已启用。</value></data>
+  <data name="Health.StartupTaskUnknown" xml:space="preserve"><value>无法读取登录启动状态。</value></data>
+  <data name="Health.StatusFailed" xml:space="preserve"><value>失败</value></data>
+  <data name="Health.StatusNotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Health.StatusOk" xml:space="preserve"><value>正常</value></data>
+  <data name="Health.StatusWarning" xml:space="preserve"><value>注意</value></data>
+  <data name="Health.TrayNotRunning" xml:space="preserve"><value>托盘服务未运行。</value></data>
+  <data name="Health.TrayOk" xml:space="preserve"><value>托盘服务正在运行。</value></data>
+  <data name="Health.UnknownError" xml:space="preserve"><value>无法读取该项状态。</value></data>
+  <data name="Health.UpdateServiceMatches" xml:space="preserve"><value>更新服务与当前渠道匹配。</value></data>
+  <data name="Health.UpdateServiceMismatch" xml:space="preserve"><value>更新服务与当前渠道不匹配。</value></data>
+  <data name="Health.WindowsMainMissing" xml:space="preserve"><value>主窗口未登记。</value></data>
+  <data name="Health.WindowsOk" xml:space="preserve"><value>主窗口服务正常。</value></data>
+  <data name="Health.WindowsWithFloating" xml:space="preserve"><value>主窗口与悬浮窗服务正常。</value></data>
+  <data name="Onboarding.AddAccountNow" xml:space="preserve"><value>立即添加账户</value></data>
+  <data name="Onboarding.Back" xml:space="preserve"><value>上一步</value></data>
+  <data name="Onboarding.ConfigureLater" xml:space="preserve"><value>前往设置配置</value></data>
+  <data name="Onboarding.EnterApp" xml:space="preserve"><value>进入 ApiMonitor</value></data>
+  <data name="Onboarding.Entry.AddAccount.Title" xml:space="preserve"><value>添加账户</value></data>
+  <data name="Onboarding.Entry.AddAccount.Description" xml:space="preserve"><value>从主页添加 DeepSeek、OpenRouter 等账户。</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Title" xml:space="preserve"><value>悬浮窗</value></data>
+  <data name="Onboarding.Entry.FloatingWindow.Description" xml:space="preserve"><value>随时查看指定账户的余额。</value></data>
+  <data name="Onboarding.Entry.Insights.Title" xml:space="preserve"><value>数据洞察</value></data>
+  <data name="Onboarding.Entry.Insights.Description" xml:space="preserve"><value>查看余额趋势与消耗估算。</value></data>
+  <data name="Onboarding.Entry.Settings.Title" xml:space="preserve"><value>设置</value></data>
+  <data name="Onboarding.Entry.Settings.Description" xml:space="preserve"><value>管理提醒、托盘、外观、语言与数据。</value></data>
+  <data name="Onboarding.Entry.Tray.Title" xml:space="preserve"><value>托盘</value></data>
+  <data name="Onboarding.Entry.Tray.Description" xml:space="preserve"><value>最小化到通知区域，快速打开主窗口。</value></data>
+  <data name="Onboarding.Next" xml:space="preserve"><value>下一步</value></data>
+  <data name="Onboarding.Privacy.CredentialLocker" xml:space="preserve"><value>API Key 保存在 Windows Credential Locker。</value></data>
+  <data name="Onboarding.Privacy.LocalPurpose" xml:space="preserve"><value>ApiMonitor 用于查询并记录你自己的 API 余额。</value></data>
+  <data name="Onboarding.Privacy.LocalStorage" xml:space="preserve"><value>账户、余额、历史和设置保存在本机。</value></data>
+  <data name="Onboarding.Privacy.NoCloud" xml:space="preserve"><value>没有开发者云端服务器。</value></data>
+  <data name="Onboarding.Privacy.NoTelemetry" xml:space="preserve"><value>没有遥测和广告。</value></data>
+  <data name="Onboarding.Privacy.ProviderOnly" xml:space="preserve"><value>API Key 只发送给你选择的 Provider 官方接口。</value></data>
+  <data name="Onboarding.PrivacyPolicy" xml:space="preserve"><value>查看隐私政策</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Title" xml:space="preserve"><value>DeepSeek</value></data>
+  <data name="Onboarding.Provider.DeepSeek.Description" xml:space="preserve"><value>使用 DeepSeek API Key 查询余额。</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Title" xml:space="preserve"><value>OpenRouter 普通 API Key</value></data>
+  <data name="Onboarding.Provider.OpenRouterApiKey.Description" xml:space="preserve"><value>用于查看密钥额度与使用情况。</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Title" xml:space="preserve"><value>OpenRouter Management Key</value></data>
+  <data name="Onboarding.Provider.OpenRouterManagementKey.Description" xml:space="preserve"><value>权限更高，用于查询账户 Credits。</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Title" xml:space="preserve"><value>自动刷新</value></data>
+  <data name="Onboarding.Run.AutoRefresh.Description" xml:space="preserve"><value>按账户设置的时间间隔自动查询余额。</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Title" xml:space="preserve"><value>余额提醒</value></data>
+  <data name="Onboarding.Run.BalanceAlerts.Description" xml:space="preserve"><value>余额低于阈值时通过 Windows 通知提醒。</value></data>
+  <data name="Onboarding.Run.CloseToTray.Title" xml:space="preserve"><value>关闭到通知区域</value></data>
+  <data name="Onboarding.Run.CloseToTray.Description" xml:space="preserve"><value>关闭窗口时驻留通知区域，而不是退出。</value></data>
+  <data name="Onboarding.Run.DefaultOff" xml:space="preserve"><value>默认：关闭</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Title" xml:space="preserve"><value>登录 Windows 时启动</value></data>
+  <data name="Onboarding.Run.StartAtLogin.Description" xml:space="preserve"><value>登录 Windows 时在后台启动。</value></data>
+  <data name="Onboarding.Skip" xml:space="preserve"><value>跳过引导</value></data>
+  <data name="Onboarding.SkipAccountHint" xml:space="preserve"><value>可以暂时跳过，稍后从主页添加。</value></data>
+  <data name="Onboarding.Step1.Body" xml:space="preserve"><value>ApiMonitor 用于查询并记录你自己的 API 余额，全部数据保存在本机。</value></data>
+  <data name="Onboarding.Step1.Title" xml:space="preserve"><value>欢迎与隐私</value></data>
+  <data name="Onboarding.Step2.Body" xml:space="preserve"><value>选择 Provider 并保存 API Key。也可以暂时跳过，稍后从主页添加。</value></data>
+  <data name="Onboarding.Step2.Title" xml:space="preserve"><value>添加第一个账户</value></data>
+  <data name="Onboarding.Step3.Body" xml:space="preserve"><value>自动刷新、余额提醒、关闭到通知区域和登录启动默认全部关闭，可在设置中随时调整。</value></data>
+  <data name="Onboarding.Step3.Title" xml:space="preserve"><value>运行方式</value></data>
+  <data name="Onboarding.Step4.Body" xml:space="preserve"><value>ApiMonitor 已准备好。可以从主页开始使用。</value></data>
+  <data name="Onboarding.Step4.Title" xml:space="preserve"><value>完成</value></data>
+  <data name="Onboarding.StepProgress" xml:space="preserve"><value>第 {0} 步，共 {1} 步</value></data>
+  <data name="Onboarding.Title" xml:space="preserve"><value>首次使用引导</value></data>
+  <data name="Settings.ReopenOnboarding" xml:space="preserve"><value>重新打开首次使用引导</value></data>
+  <data name="Update.StoreCancelled" xml:space="preserve"><value>更新检查已取消。</value></data>
+  <data name="Update.StoreInstallFailed" xml:space="preserve"><value>无法安装更新，请稍后在 Microsoft Store 中重试。</value></data>
+  <data name="Update.StoreInstallState" xml:space="preserve"><value>更新流程返回状态：{0}</value></data>
+  <data name="Update.StoreNoPendingUpdate" xml:space="preserve"><value>没有待安装的更新。</value></data>
+  <data name="Update.StoreServiceUnavailable" xml:space="preserve"><value>Microsoft Store 服务不可用（{0}）。</value></data>
+  <data name="Update.StoreServiceUnavailableGeneric" xml:space="preserve"><value>Microsoft Store 服务当前不可用，请稍后重试。</value></data>
+  <data name="Update.StoreWindowUnavailable" xml:space="preserve"><value>无法关联主窗口，无法使用 Microsoft Store 更新服务。</value></data>
 </root>

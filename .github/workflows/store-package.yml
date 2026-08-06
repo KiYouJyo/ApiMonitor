@@ -1,0 +1,79 @@
+name: store-package
+
+# v1.0.0: Manual-only Microsoft Store candidate package workflow.
+# Generates the unsigned .msixupload with the official Store identity and
+# validates it. It never submits to Partner Center, never publishes, contains
+# no secrets or private keys, and never creates a GitHub Release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageVersion:
+        description: Store package version (must be 1.0.0.0 for v1.0.0)
+        required: true
+        default: '1.0.0.0'
+      confirmation:
+        description: Type STORE_1000_FROZEN to confirm code freeze for this package
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-monitor-store-package
+  cancel-in-progress: false
+
+jobs:
+  build-store-package:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Verify store package gate
+        shell: pwsh
+        run: |
+          if ('${{ inputs.packageVersion }}' -cne '1.0.0.0') {
+            throw 'v1.0.0 Store candidate must use package version 1.0.0.0.'
+          }
+          if ('${{ inputs.confirmation }}' -cne 'STORE_1000_FROZEN') {
+            throw 'Store package confirmation is invalid. Type STORE_1000_FROZEN.'
+          }
+          if ('${{ github.ref }}' -ne 'refs/heads/feature/v1.0.0-store-readiness' -and
+              '${{ github.ref }}' -notlike 'refs/pull/*') {
+            throw 'Store packaging is only allowed on the v1.0.0 branch or its PRs.'
+          }
+
+      - name: Restore
+        run: dotnet restore ApiMonitor.slnx -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+
+      - name: Run all tests
+        run: dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Debug --no-restore
+
+      - name: Run installer tooling tests (isolated temp directory)
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\Installer.Tests.ps1
+
+      - name: Build Release x64 (MicrosoftStore channel compile check)
+        run: dotnet build ApiMonitor.csproj -c Release -p:Platform=x64 -p:RuntimeIdentifier=win-x64 -p:DistributionChannel=MicrosoftStore --no-restore
+
+      - name: Generate and validate Store upload package
+        shell: pwsh
+        run: |
+          $head = git rev-parse HEAD
+          ./packaging/New-StorePackage.ps1 -SourceCommit $head -PackageVersion '1.0.0.0' -OutputDirectory "$env:RUNNER_TEMP\ApiMonitor-Store"
+          Get-ChildItem "$env:RUNNER_TEMP\ApiMonitor-Store" -Recurse -File | Select-Object FullName, Length
+
+      - name: Upload Store package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApiMonitor-v1.0.0-store
+          path: ${{ runner.temp }}\ApiMonitor-Store
+          if-no-files-found: error

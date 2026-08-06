@@ -1,5 +1,45 @@
 # Changelog
 
+## Unreleased
+
+## 1.0.0（2026-08-06，已正式发布）
+
+### Added
+
+- 分发渠道模型：`DistributionChannel`（Development / GitHubSideload / MicrosoftStore），渠道在构建时通过 MSBuild 属性确定，禁止运行时猜测；关于页与诊断信息显示渠道、更新来源、包身份与架构
+- Microsoft Store 正式渠道：Partner Center 官方身份 `JoKiy.ApiMonitor`（ProductId `9N6KR2XFMKQ2`），Store 构建使用独立 `Package.Store.appxmanifest` 与隔离输出目录 `packaging\output\v1.0.0\store`
+- 按渠道的更新检查：`IUpdateService` + GitHubUpdateService / MicrosoftStoreUpdateService（StoreContext + 主窗口 HWND）/ DevelopmentUpdateService；Store 版绝不打开 GitHub 下载页
+- 首次启动引导：四步（欢迎与隐私 / 添加第一个账户 / 运行方式 / 完成），可跳过、可重开，不自动开启通知、登录启动、自动刷新或关闭到托盘
+- 应用运行状况检查：21 项只读非敏感检查（渠道、版本、包身份、架构、Credential Locker、数据文件、Provider、通知、托盘、登录启动、调度器、窗口、最近查询、更新服务匹配），支持重新检查、复制诊断、打开支持文档
+- `store-package.yml` 手动工作流（仅 `workflow_dispatch`，无密钥，无 Partner Center 调用）
+- Store 打包脚本 `New-StorePackage.ps1` / `Test-StorePackageIdentity.ps1` 与 GitHub 候选脚本 `New-GitHubCandidatePackage.ps1`
+
+### Changed
+
+- 用户可见版本 `1.0.0`；GitHub 侧载候选包版本 `1.0.0.1`；Store 正式包版本固定 `1.0.0.0`
+- 版本与渠道配置集中在 `Directory.Build.props`；`AppInfo` 读取实际安装包身份
+- 关于页新增分发渠道 / 更新来源 / 包系列 / 应用运行状况区域
+- 设置页新增“重新打开首次使用引导”
+- 三语资源扩展到 803 键；README / PRIVACY / docs 更新为 v1.0.0 状态
+
+### Security / privacy
+
+- Store 版按全新安装处理，不实现任何跨包数据迁移（无旧 PFN 检测、无旧 LocalState 读取、无 Credential Locker 跨包读取、无迁移向导）
+- 运行状况与诊断信息只含非敏感元数据，不含 API Key、余额、账户名、完整路径或 Credential Locker Resource 明细
+- 本地 Store 身份测试包使用与正式 Publisher 同名的本地测试证书签名，仅用于本机人工验收，绝不上传
+
+### Compatibility
+
+- GitHub 侧载版在 v0.9.0 之上原地升级，保留账户、凭据、历史与设置
+- Microsoft Store 版为全新身份（`JoKiy.ApiMonitor_4wdwgytaw3v2m`），首次启动为空账户并显示引导
+- 全部既有 Provider、账户模型与数据 schema（v3）保持不变
+
+### Known limitations
+
+- Microsoft Store 尚未正式上架：候选包、WACK 报告与商店资料已准备，等待人工验收后另行提交
+- Partner Center 占位草稿未修改、未提交审核
+- Store 版更新检查依赖 StoreContext 与 Store 服务可用性；离线或服务不可用时显示明确错误，不回退 GitHub
+
 ## [0.9.0] - 2026-08-05
 
 ### Added

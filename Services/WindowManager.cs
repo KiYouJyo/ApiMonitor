@@ -16,6 +16,10 @@ public sealed class WindowManager : IWindowManager
         remove => _tracker.AllWindowsClosed -= value;
     }
 
+    public bool IsMainWindowOpen => _tracker.IsMainWindowOpen;
+
+    public bool IsFloatingWindowOpen => _tracker.IsFloatingWindowOpen;
+
     public void RegisterMainWindow(Window window)
     {
         _tracker.MainWindowOpened();

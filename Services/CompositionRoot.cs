@@ -400,26 +400,82 @@ public sealed class CompositionRoot
             filePicker,
             Log);
 
-        var updateCheck = new UpdateCheckService(http, AppInfo.DisplayVersion);
+        // v1.0.0：分发渠道服务与按渠道选择的更新服务。
+        // 渠道来自构建配置（DistributionChannelConfig.Current），更新检查按渠道
+        // 执行（Development 不检查 / GitHub 侧载查 GitHub / Store 查 StoreContext）。
+        var distributionChannel = new DistributionChannelService(
+            AppInfo.DisplayVersion,
+            AppInfo.PackageVersion);
+        var updateService = UpdateServiceFactory.Create(
+            http,
+            AppInfo.DisplayVersion,
+            () => _mainWindowHandle == IntPtr.Zero ? null : _mainWindowHandle);
+        var storeInstallRequest = updateService is MicrosoftStoreUpdateService storeUpdateService
+            ? (Func<CancellationToken, Task<UpdateCheckResult>>)storeUpdateService.RequestInstallAsync
+            : null;
         var diagnostics = new DiagnosticsInfoService(
             accountManager,
             notificationStateStore,
             StartupTaskService,
+            distributionChannel,
             languageService.CurrentLanguageCode,
             _appearanceService.Theme.ToString());
 
+        // v1.0.0：应用运行状况检查（21 项，只读非敏感状态，单项失败不崩溃）。
+        var appHealth = new AppHealthService(
+            distributionChannel,
+            secretStore,
+            accountStore,
+            snapshotStore,
+            appearanceStore,
+            registry,
+            notificationService,
+            async ct =>
+            {
+                var settings = await notificationSettingsStore.LoadAsync(ct);
+                return settings.BalanceNotificationsEnabled;
+            },
+            trayRef!,
+            StartupTaskService,
+            MonitoringScheduler,
+            () => WindowManager.IsMainWindowOpen,
+            () => WindowManager.IsFloatingWindowOpen,
+            accountManager,
+            updateService);
+
         AboutViewModel = new AboutViewModel(
             registry.Infos,
-            updateCheck,
+            updateService,
+            distributionChannel,
             diagnostics,
+            appHealth,
             clipboard,
             new DefaultExternalLinkLauncher(),
             new LocalDataFolderOpener(),
             filePicker,
             backupService,
+            storeInstallRequest,
             languageService.CurrentLanguageCode,
             _appearanceService.Theme.ToString(),
             Log);
+
+        // v1.0.0：首次启动引导（Store 正式身份按全新安装处理，不迁移旧数据）。
+        var onboardingStore = new JsonOnboardingStateStore(dataDirectory);
+        var onboarding = new OnboardingViewModel(
+            onboardingStore,
+            completeCallback: () =>
+            {
+                MainViewModel.NavigateTo(AppPageKind.Home);
+                return Task.CompletedTask;
+            },
+            addAccountCallback: () =>
+            {
+                MainViewModel.NavigateTo(AppPageKind.Home);
+                return MainViewModel.AddAccountAsync();
+            },
+            openSettingsCallback: () => MainViewModel.NavigateTo(AppPageKind.Settings),
+            launchUri: uri => new DefaultExternalLinkLauncher().LaunchUriAsync(uri));
+        MainViewModel.Onboarding = onboarding;
 
         MainViewModel.AppearanceSettings = AppearanceSettings;
         MainViewModel.DataManagement = DataManagement;

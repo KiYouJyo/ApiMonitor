@@ -121,6 +121,8 @@ public sealed class FakeMonitoringScheduler : IMonitoringScheduler
 
     public int StopCalls { get; private set; }
 
+    public bool IsRunning => true;
+
     public void Start(CancellationToken applicationToken) => StartCalls++;
 
     public void Stop() => StopCalls++;

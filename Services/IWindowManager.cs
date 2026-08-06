@@ -10,6 +10,12 @@ public interface IWindowManager
 {
     event Action? AllWindowsClosed;
 
+    /// <summary>主窗口是否已登记（健康检查/诊断只读状态）。</summary>
+    bool IsMainWindowOpen { get; }
+
+    /// <summary>是否有悬浮窗处于打开状态。</summary>
+    bool IsFloatingWindowOpen { get; }
+
     void RegisterMainWindow(Window window);
 
     void RegisterFloatingWindow(Window window);
