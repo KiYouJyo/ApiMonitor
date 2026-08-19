@@ -48,13 +48,22 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
-          $displayVersion = @($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0]
-          $packageVersion = @(
+          $displayNode = @(
             $props.Project.PropertyGroup |
-              Where-Object { [string]$_.Condition -like '*MicrosoftStore*' } |
-              ForEach-Object { $_.ApiMonitorPackageVersion } |
+              ForEach-Object { $_.ApiMonitorDisplayVersion } |
               Where-Object { $_ }
           )[0]
+          $packageNodes = @(
+            $props.Project.PropertyGroup |
+              ForEach-Object { $_.ApiMonitorPackageVersion } |
+              Where-Object { $_ }
+          )
+          $packageNode = @(
+            $packageNodes |
+              Where-Object { [string]$_.Condition -like '*MicrosoftStore*' }
+          )[0]
+          $displayVersion = if ($displayNode) { [string]$displayNode.InnerText } else { '' }
+          $packageVersion = if ($packageNode) { [string]$packageNode.InnerText } else { '' }
           if ([string]::IsNullOrWhiteSpace($displayVersion) -or [string]::IsNullOrWhiteSpace($packageVersion)) {
             throw 'Unable to resolve ApiMonitor MicrosoftStore display/package version.'
           }
@@ -138,11 +147,14 @@ jobs:
           CLIENT_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
         run: |
           $ErrorActionPreference = 'Stop'
-          & msstore reconfigure `
-            --tenantId $env:TENANT_ID.Trim() `
-            --sellerId $env:SELLER_ID.Trim() `
-            --clientId $env:CLIENT_ID.Trim() `
-            --clientSecret $env:CLIENT_SECRET
+          $arguments = @(
+            'reconfigure',
+            '--tenantId', $env:TENANT_ID.Trim(),
+            '--sellerId', $env:SELLER_ID.Trim(),
+            '--clientId', $env:CLIENT_ID.Trim(),
+            '--clientSecret', $env:CLIENT_SECRET
+          )
+          & msstore @arguments
           if ($LASTEXITCODE -ne 0) { throw "Microsoft Store CLI reconfiguration failed: $LASTEXITCODE" }
           & msstore settings --enableTelemetry false
           if ($LASTEXITCODE -ne 0) { throw "Microsoft Store CLI telemetry setting failed: $LASTEXITCODE" }
@@ -183,6 +195,8 @@ jobs:
         env:
           MSBUILD_PATH: ${{ steps.msbuild.outputs.path }}
           PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+          SOURCE_SHA: ${{ steps.version.outputs.source_sha }}
+          PRODUCT_VERSION: ${{ steps.version.outputs.product_version }}
         run: |
           $ErrorActionPreference = 'Stop'
           # Store identity replaces the sideload manifest only in this ephemeral runner checkout.
@@ -214,10 +228,7 @@ jobs:
             -ExpectedVersion $env:PACKAGE_VERSION `
             -OutputDirectory $validationDir | Out-String
           if ($LASTEXITCODE -ne 0) { throw 'Store package identity validation failed.' }
-          $validation = $validationJson | ConvertFrom-Json
-          if ([string]$validation.ValidationResult -notin @('Passed','Success','Valid')) {
-            Write-Output $validationJson
-          }
+          $null = $validationJson | ConvertFrom-Json -ErrorAction Stop
 
           $sensitive = @(Get-ChildItem -LiteralPath $output -Recurse -File |
             Where-Object { $_.Extension -in '.pfx','.p12','.cer','.key','.pvk','.pem','.log' })
@@ -227,8 +238,8 @@ jobs:
 
           $hash = (Get-FileHash -LiteralPath $upload.FullName -Algorithm SHA256).Hash.ToUpperInvariant()
           $metadata = [ordered]@{
-            sourceCommit = '${{ steps.version.outputs.source_sha }}'
-            productVersion = '${{ steps.version.outputs.product_version }}'
+            sourceCommit = $env:SOURCE_SHA
+            productVersion = $env:PRODUCT_VERSION
             packageVersion = $env:PACKAGE_VERSION
             package = $upload.FullName
             sha256 = $hash
