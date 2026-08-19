@@ -192,11 +192,13 @@ if ($runtimeCandidates.Count -eq 0) {
     throw "在 $runtimePackageRoot 中未找到 x64 Microsoft.WindowsAppRuntime Framework MSIX。"
 }
 if ($runtimeCandidates.Count -gt 1) {
-    $candidateList = ($runtimeCandidates | ForEach-Object { "[$($_.Name)] $($_.Path)" }) -join '; '
-    throw "发现多个 x64 Windows App Runtime Framework MSIX，无法安全选择：$candidateList"
+    Write-Warning ("发现多个合法 x64 Windows App Runtime Framework MSIX，将按版本与路径稳定选择：{0}" -f `
+        (($runtimeCandidates | ForEach-Object { "[$($_.Name) $($_.Version)] $($_.Path)" }) -join '; '))
 }
 
-$runtime = $runtimeCandidates[0]
+$runtime = @($runtimeCandidates |
+    Sort-Object @{ Expression = { try { [version]$_.Version } catch { [version]'0.0.0.0' } }; Descending = $true }, `
+                @{ Expression = { $_.Path }; Descending = $false })[0]
 $depDir = Join-Path $resolvedStage 'Dependencies\x64'
 New-Item -ItemType Directory -Path $depDir | Out-Null
 $depDest = Join-Path $depDir 'Microsoft.WindowsAppRuntime.2.msix'
