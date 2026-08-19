@@ -1,0 +1,284 @@
+name: Publish GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Three-part product version, for example 1.1.0'
+        required: true
+        type: string
+      dry_run:
+        description: 'Build, sign, and validate without creating or modifying a Release'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: api-monitor-github-release-${{ github.ref_name || inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 50
+
+    steps:
+      - name: Resolve version and source tag
+        id: version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ('${{ github.event_name }}' -eq 'push') {
+            $refName = '${{ github.ref_name }}'
+            if ($refName -notmatch '^v\d+\.\d+\.\d+$') {
+              throw "Invalid release tag: $refName"
+            }
+            $version = $refName.Substring(1)
+          }
+          else {
+            $version = '${{ inputs.version }}'.Trim()
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Invalid product version: $version"
+          }
+          "product_version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          "source_ref=refs/tags/v$version" >> $env:GITHUB_OUTPUT
+          "dry_run=$('${{ inputs.dry_run }}'.ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.version.outputs.source_ref }}
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Validate source version, package identity, and tag
+        id: source
+        shell: pwsh
+        env:
+          PRODUCT_VERSION: ${{ steps.version.outputs.product_version }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
+          $displayVersion = @($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0]
+          $packageVersion = @(
+            $props.Project.PropertyGroup |
+              Where-Object { [string]$_.Condition -like '*GitHubSideload*' } |
+              ForEach-Object { $_.ApiMonitorPackageVersion } |
+              Where-Object { $_ }
+          )[0]
+          if ([string]::IsNullOrWhiteSpace($displayVersion) -or [string]::IsNullOrWhiteSpace($packageVersion)) {
+            throw 'Unable to resolve ApiMonitor display/package version for GitHubSideload.'
+          }
+          if ($displayVersion -cne $env:PRODUCT_VERSION) {
+            throw "Tag/product version mismatch. Tag=$($env:PRODUCT_VERSION) Source=$displayVersion"
+          }
+          if ($packageVersion -notmatch ('^' + [regex]::Escape($displayVersion) + '\.\d+$')) {
+            throw "GitHub package version must extend product version with a revision. Product=$displayVersion Package=$packageVersion"
+          }
+
+          [xml]$manifest = Get-Content -LiteralPath Package.appxmanifest -Raw
+          $identity = $manifest.Package.Identity
+          if ([string]$identity.Name -cne 'ApiMonitor' -or [string]$identity.Publisher -cne 'CN=ApiMonitorDev') {
+            throw "Unexpected GitHub sideload identity. Name=$($identity.Name) Publisher=$($identity.Publisher)"
+          }
+          if ([string]$identity.Version -cne $packageVersion) {
+            throw "GitHub manifest version mismatch. Manifest=$($identity.Version) Source=$packageVersion"
+          }
+
+          $tagCommit = (git rev-list -n 1 $env:RELEASE_TAG).Trim()
+          $headCommit = (git rev-parse HEAD).Trim()
+          if ($tagCommit -cne $headCommit) {
+            throw "Checked out source is not the exact release tag commit. Tag=$tagCommit HEAD=$headCommit"
+          }
+          if (git status --porcelain) {
+            throw 'Release source must be clean before packaging.'
+          }
+
+          "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
+          "source_sha=$headCommit" >> $env:GITHUB_OUTPUT
+
+      - name: Validate and import GitHub signing certificate
+        id: signing
+        shell: pwsh
+        env:
+          RELEASE_CERTIFICATE_BASE64: ${{ secrets.GH_RELEASE_CERTIFICATE_BASE64 }}
+          RELEASE_CERTIFICATE_PASSWORD: ${{ secrets.GH_RELEASE_CERTIFICATE_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:RELEASE_CERTIFICATE_BASE64) -or
+              [string]::IsNullOrWhiteSpace($env:RELEASE_CERTIFICATE_PASSWORD)) {
+            throw 'GitHub release signing secrets are not configured.'
+          }
+          $pfx = Join-Path $env:RUNNER_TEMP 'apimonitor-release-signing.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:RELEASE_CERTIFICATE_BASE64))
+          $password = ConvertTo-SecureString $env:RELEASE_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $password
+          if (-not $cert -or -not $cert.HasPrivateKey) {
+            throw 'Imported release certificate has no private key.'
+          }
+          if ([string]$cert.Subject -cne 'CN=ApiMonitorDev') {
+            throw "Release certificate subject does not match Package.appxmanifest Publisher. Subject=$($cert.Subject)"
+          }
+          "thumbprint=$($cert.Thumbprint)" >> $env:GITHUB_OUTPUT
+          Remove-Item -LiteralPath $pfx -Force
+
+      - name: Restore
+        run: dotnet restore ApiMonitor.slnx -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+
+      - name: Run all tests
+        run: dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Release --no-restore
+
+      - name: Run installer tooling tests
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\Installer.Tests.ps1
+
+      - name: Locate MSBuild
+        id: msbuild
+        shell: pwsh
+        run: |
+          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere)) { throw 'vswhere.exe was not found.' }
+          $install = (& $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -property installationPath).Trim()
+          if (-not $install) { throw 'Visual Studio with MSBuild was not found.' }
+          $msbuild = Join-Path $install 'MSBuild\Current\Bin\amd64\MSBuild.exe'
+          if (-not (Test-Path -LiteralPath $msbuild)) { throw "MSBuild.exe was not found: $msbuild" }
+          "path=$msbuild" >> $env:GITHUB_OUTPUT
+
+      - name: Build signed GitHub MSIX
+        id: package
+        shell: pwsh
+        env:
+          MSBUILD_PATH: ${{ steps.msbuild.outputs.path }}
+          PACKAGE_VERSION: ${{ steps.source.outputs.package_version }}
+          CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'ApiMonitor-GitHub-AppPackages'
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          & $env:MSBUILD_PATH ApiMonitor.csproj /t:Build /m `
+            /p:Configuration=Release /p:Platform=x64 `
+            /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 `
+            /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=true `
+            "/p:PackageCertificateThumbprint=$env:CERT_THUMBPRINT" `
+            /p:AppxBundle=Never "/p:AppxPackageDir=$output\" /p:Restore=false
+          if ($LASTEXITCODE -ne 0) { throw "Signed GitHub package build failed: $LASTEXITCODE" }
+
+          $expected = "ApiMonitor_$($env:PACKAGE_VERSION)_x64.msix"
+          $packages = @(Get-ChildItem -LiteralPath $output -Recurse -Filter '*.msix' -File |
+            Where-Object { $_.FullName -notmatch '(?i)\\Dependencies\\' -and $_.Name -eq $expected })
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one $expected package; found $($packages.Count)."
+          }
+          $msix = $packages[0]
+          $sig = Get-AuthenticodeSignature -FilePath $msix.FullName
+          if (-not $sig.SignerCertificate) { throw 'Signed MSIX has no signer certificate.' }
+          if ($sig.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or
+              [string]$sig.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
+            throw "Signed MSIX signer mismatch. Subject=$($sig.SignerCertificate.Subject) Thumbprint=$($sig.SignerCertificate.Thumbprint)"
+          }
+          if ($sig.Status -eq 'UnknownError') {
+            if ($sig.StatusMessage -notmatch '(?i)not trusted|trust provider|untrusted|self-signed') {
+              throw "Unexpected Authenticode error: $($sig.StatusMessage)"
+            }
+          }
+          elseif ($sig.Status -ne 'Valid') {
+            throw "Signed MSIX status is not acceptable: $($sig.Status) / $($sig.StatusMessage)"
+          }
+          "msix_path=$($msix.FullName)" >> $env:GITHUB_OUTPUT
+          "msix_file=$($msix.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Assemble one-click sideload package and checksums
+        id: assets
+        shell: pwsh
+        env:
+          MSIX_PATH: ${{ steps.package.outputs.msix_path }}
+          PACKAGE_VERSION: ${{ steps.source.outputs.package_version }}
+          CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'ApiMonitor-ReleaseAssets'
+          New-Item -ItemType Directory -Force -Path $assets | Out-Null
+          & ./packaging/New-PreviewInstallerPackage.ps1 `
+            -Version $env:PACKAGE_VERSION `
+            -MsixPath $env:MSIX_PATH `
+            -CertificateThumbprint $env:CERT_THUMBPRINT `
+            -OutputDirectory $assets
+          if ($LASTEXITCODE -ne 0) { throw 'One-click installer package assembly failed.' }
+
+          $zip = Get-Item -LiteralPath (Join-Path $assets "ApiMonitor_$($env:PACKAGE_VERSION)_x64_Test.zip")
+          $sha = Get-Item -LiteralPath (Join-Path $assets 'SHA256SUMS.txt')
+          $msixCopy = Join-Path $assets (Split-Path -Leaf $env:MSIX_PATH)
+          Copy-Item -LiteralPath $env:MSIX_PATH -Destination $msixCopy -Force
+
+          foreach ($file in @($msixCopy, $zip.FullName)) {
+            $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToUpperInvariant()
+            if ($hash -notmatch '^[A-F0-9]{64}$') { throw "Invalid SHA-256 for $file" }
+          }
+          "directory=$assets" >> $env:GITHUB_OUTPUT
+          "zip_path=$($zip.FullName)" >> $env:GITHUB_OUTPUT
+          "zip_file=$($zip.Name)" >> $env:GITHUB_OUTPUT
+          "sha_path=$($sha.FullName)" >> $env:GITHUB_OUTPUT
+          "release_msix=$msixCopy" >> $env:GITHUB_OUTPUT
+
+      - name: Upload validated release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ApiMonitor-GitHub-${{ steps.source.outputs.package_version }}
+          path: |
+            ${{ steps.assets.outputs.release_msix }}
+            ${{ steps.assets.outputs.zip_path }}
+            ${{ steps.assets.outputs.sha_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create or reconcile GitHub Release
+        if: steps.version.outputs.dry_run != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          PRODUCT_VERSION: ${{ steps.version.outputs.product_version }}
+          MSIX_PATH: ${{ steps.assets.outputs.release_msix }}
+          ZIP_PATH: ${{ steps.assets.outputs.zip_path }}
+          SHA_PATH: ${{ steps.assets.outputs.sha_path }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -ne 0) {
+            & gh release create $env:RELEASE_TAG --verify-tag --title "ApiMonitor $env:RELEASE_TAG" --generate-notes
+            if ($LASTEXITCODE -ne 0) { throw 'GitHub Release creation failed.' }
+          }
+
+          $assetPaths = @($env:MSIX_PATH, $env:ZIP_PATH, $env:SHA_PATH)
+          foreach ($path in $assetPaths) {
+            $name = Split-Path -Leaf $path
+            $remoteDir = Join-Path $env:RUNNER_TEMP ('remote-' + [Guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Force -Path $remoteDir | Out-Null
+            & gh release download $env:RELEASE_TAG --pattern $name --dir $remoteDir *> $null
+            if ($LASTEXITCODE -eq 0) {
+              $remotePath = Join-Path $remoteDir $name
+              $localHash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+              $remoteHash = (Get-FileHash -LiteralPath $remotePath -Algorithm SHA256).Hash
+              if ($localHash -cne $remoteHash) {
+                throw "Existing Release asset differs from validated local artifact: $name"
+              }
+              Write-Output "Release asset already matches: $name"
+            }
+            else {
+              & gh release upload $env:RELEASE_TAG $path
+              if ($LASTEXITCODE -ne 0) { throw "Release asset upload failed: $name" }
+            }
+          }
