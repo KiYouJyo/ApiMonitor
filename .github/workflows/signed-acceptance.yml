@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - codex/v1.1.0-winui3-webdav
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
