@@ -18,7 +18,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <!-- Same MVVM library as the app, needed to compile the linked ViewModels. -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>
 
@@ -144,6 +143,8 @@
     <Compile Include="../../Services/InsightsHistoryProvider.cs" Link="Services/InsightsHistoryProvider.cs" />
     <Compile Include="../../Services/IPortableBackupService.cs" Link="Services/IPortableBackupService.cs" />
     <Compile Include="../../Services/PortableBackupService.cs" Link="Services/PortableBackupService.cs" />
+    <Compile Include="../../Services/WebDavBackupService.cs" Link="Services/WebDavBackupService.cs" />
+    <Compile Include="../../Services/SupplementalResourceBootstrap.cs" Link="Services/SupplementalResourceBootstrap.cs" />
     <Compile Include="../../Services/DistributionChannel.cs" Link="Services/DistributionChannel.cs" />
     <Compile Include="../../Services/IDistributionChannelService.cs" Link="Services/IDistributionChannelService.cs" />
     <Compile Include="../../Services/IUpdateService.cs" Link="Services/IUpdateService.cs" />
