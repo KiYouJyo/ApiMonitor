@@ -50,7 +50,8 @@ jobs:
           "product_version=$version" >> $env:GITHUB_OUTPUT
           "tag=v$version" >> $env:GITHUB_OUTPUT
           "source_ref=refs/tags/v$version" >> $env:GITHUB_OUTPUT
-          "dry_run=$('${{ inputs.dry_run }}'.ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          $dryRun = if ('${{ github.event_name }}' -eq 'workflow_dispatch') { '${{ inputs.dry_run }}'.ToLowerInvariant() } else { 'false' }
+          "dry_run=$dryRun" >> $env:GITHUB_OUTPUT
 
       - name: Checkout tagged source
         uses: actions/checkout@v7
@@ -72,13 +73,22 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
-          $displayVersion = @($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0]
-          $packageVersion = @(
+          $displayNode = @(
             $props.Project.PropertyGroup |
-              Where-Object { [string]$_.Condition -like '*GitHubSideload*' } |
-              ForEach-Object { $_.ApiMonitorPackageVersion } |
+              ForEach-Object { $_.ApiMonitorDisplayVersion } |
               Where-Object { $_ }
           )[0]
+          $packageNodes = @(
+            $props.Project.PropertyGroup |
+              ForEach-Object { $_.ApiMonitorPackageVersion } |
+              Where-Object { $_ }
+          )
+          $packageNode = @(
+            $packageNodes |
+              Where-Object { [string]$_.Condition -like '*GitHubSideload*' }
+          )[0]
+          $displayVersion = if ($displayNode) { [string]$displayNode.InnerText } else { '' }
+          $packageVersion = if ($packageNode) { [string]$packageNode.InnerText } else { '' }
           if ([string]::IsNullOrWhiteSpace($displayVersion) -or [string]::IsNullOrWhiteSpace($packageVersion)) {
             throw 'Unable to resolve ApiMonitor display/package version for GitHubSideload.'
           }
@@ -250,7 +260,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
-          PRODUCT_VERSION: ${{ steps.version.outputs.product_version }}
           MSIX_PATH: ${{ steps.assets.outputs.release_msix }}
           ZIP_PATH: ${{ steps.assets.outputs.zip_path }}
           SHA_PATH: ${{ steps.assets.outputs.sha_path }}
