@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Settings.WebDavSection.Text" xml:space="preserve"><value>WebDAV バックアップ</value></data>
+  <data name="Settings.WebDavDescription.Text" xml:space="preserve"><value>既存のポータブルバックアップを自身の WebDAV サーバーに保存します。API キーと資格情報は含まれません。</value></data>
+  <data name="Settings.WebDavEndpoint.Header" xml:space="preserve"><value>サーバー アドレス</value></data>
+  <data name="Settings.WebDavUsername.Header" xml:space="preserve"><value>ユーザー名</value></data>
+  <data name="Settings.WebDavPassword.Header" xml:space="preserve"><value>パスワード</value></data>
+  <data name="Settings.WebDavRemoteDirectory.Header" xml:space="preserve"><value>リモート フォルダー</value></data>
+  <data name="Settings.WebDavSave.Content" xml:space="preserve"><value>設定を保存</value></data>
+  <data name="Settings.WebDavTest.Content" xml:space="preserve"><value>接続をテスト</value></data>
+  <data name="Settings.WebDavBackupNow.Content" xml:space="preserve"><value>今すぐバックアップ</value></data>
+  <data name="Settings.WebDavRestoreLatest.Content" xml:space="preserve"><value>最新のバックアップを復元</value></data>
+  <data name="Settings.WebDavAutoBackup.Header" xml:space="preserve"><value>1 日 1 回自動バックアップ</value></data>
+  <data name="Settings.WebDavHttpsOnly.Text" xml:space="preserve"><value>HTTPS のみ使用します。パスワードは Windows Credential Locker に保存されます。復元前にはマニフェスト、ハッシュ、バージョンを検証します。</value></data>
+  <data name="Settings.WebDavLastBackupFormat" xml:space="preserve"><value>前回の WebDAV バックアップ：{0}</value></data>
+  <data name="WebDav.StatusSaved" xml:space="preserve"><value>WebDAV 設定を保存しました。</value></data>
+  <data name="WebDav.StatusTesting" xml:space="preserve"><value>WebDAV 接続をテストしています…</value></data>
+  <data name="WebDav.StatusConnected" xml:space="preserve"><value>WebDAV 接続は正常です。</value></data>
+  <data name="WebDav.StatusConnectionFailed" xml:space="preserve"><value>WebDAV サーバーに接続できませんでした。</value></data>
+  <data name="WebDav.StatusBackingUp" xml:space="preserve"><value>バックアップを作成してアップロードしています…</value></data>
+  <data name="WebDav.StatusBackupUploaded" xml:space="preserve"><value>バックアップをアップロードしました：{0}</value></data>
+  <data name="WebDav.StatusRestoreStarted" xml:space="preserve"><value>最新のバックアップをダウンロードして検証しています…</value></data>
+  <data name="WebDav.StatusRestoreFinished" xml:space="preserve"><value>復元完了：{0} 件のアカウントを追加し、{1} 件を更新しました。</value></data>
+  <data name="WebDav.StatusNoRemoteBackup" xml:space="preserve"><value>リモート フォルダーに利用可能なバックアップがありません。</value></data>
+  <data name="WebDav.StatusFailed" xml:space="preserve"><value>WebDAV 操作に失敗しました：{0}</value></data>
+  <data name="WebDav.InvalidEndpoint" xml:space="preserve"><value>有効な HTTPS WebDAV アドレスとリモート フォルダーを入力してください。</value></data>
+  <data name="WebDav.PasswordRequired" xml:space="preserve"><value>WebDAV のユーザー名とパスワードを入力してください。</value></data>
+  <data name="About.InstallUpdate.Content" xml:space="preserve"><value>ダウンロードしてインストール</value></data>
+  <data name="Update.Installing" xml:space="preserve"><value>更新プログラムをダウンロードしてインストールの準備をしています…</value></data>
+  <data name="Update.InstallQueued" xml:space="preserve"><value>更新を Windows に渡しました。アプリが終了する場合があります。案内に従って再度開いてください。</value></data>
+  <data name="Update.InstallUnsupported" xml:space="preserve"><value>この配布チャネルではアプリ内インストールを利用できません。</value></data>
+  <data name="Update.NoPackageAsset" xml:space="preserve"><value>このリリースには利用可能な MSIX / MSIXBundle がありません。</value></data>
+  <data name="Update.DownloadFailed" xml:space="preserve"><value>更新パッケージをダウンロードできませんでした。</value></data>
+  <data name="Update.InstallFailed" xml:space="preserve"><value>更新をインストールできませんでした。</value></data>
+  <data name="Update.InstallFailedDetail" xml:space="preserve"><value>更新をインストールできませんでした（{0}）。</value></data>
+  <data name="Update.InvalidPackageUrl" xml:space="preserve"><value>更新パッケージの URL が無効、または HTTPS ではありません。</value></data>
+</root>

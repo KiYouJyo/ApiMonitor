@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Settings.WebDavSection.Text" xml:space="preserve"><value>WebDAV 备份</value></data>
+  <data name="Settings.WebDavDescription.Text" xml:space="preserve"><value>将现有便携备份保存到你自己的 WebDAV 服务器。API Key 与凭据不会进入备份。</value></data>
+  <data name="Settings.WebDavEndpoint.Header" xml:space="preserve"><value>服务器地址</value></data>
+  <data name="Settings.WebDavUsername.Header" xml:space="preserve"><value>用户名</value></data>
+  <data name="Settings.WebDavPassword.Header" xml:space="preserve"><value>密码</value></data>
+  <data name="Settings.WebDavRemoteDirectory.Header" xml:space="preserve"><value>远程目录</value></data>
+  <data name="Settings.WebDavSave.Content" xml:space="preserve"><value>保存设置</value></data>
+  <data name="Settings.WebDavTest.Content" xml:space="preserve"><value>测试连接</value></data>
+  <data name="Settings.WebDavBackupNow.Content" xml:space="preserve"><value>立即备份</value></data>
+  <data name="Settings.WebDavRestoreLatest.Content" xml:space="preserve"><value>恢复最新备份</value></data>
+  <data name="Settings.WebDavAutoBackup.Header" xml:space="preserve"><value>每天自动备份一次</value></data>
+  <data name="Settings.WebDavHttpsOnly.Text" xml:space="preserve"><value>仅允许 HTTPS；密码保存在 Windows Credential Locker。恢复前仍会验证清单、哈希和版本。</value></data>
+  <data name="Settings.WebDavLastBackupFormat" xml:space="preserve"><value>上次 WebDAV 备份：{0}</value></data>
+  <data name="WebDav.StatusSaved" xml:space="preserve"><value>WebDAV 设置已保存。</value></data>
+  <data name="WebDav.StatusTesting" xml:space="preserve"><value>正在测试 WebDAV 连接…</value></data>
+  <data name="WebDav.StatusConnected" xml:space="preserve"><value>WebDAV 连接正常。</value></data>
+  <data name="WebDav.StatusConnectionFailed" xml:space="preserve"><value>无法连接 WebDAV 服务器。</value></data>
+  <data name="WebDav.StatusBackingUp" xml:space="preserve"><value>正在生成并上传备份…</value></data>
+  <data name="WebDav.StatusBackupUploaded" xml:space="preserve"><value>已上传备份：{0}</value></data>
+  <data name="WebDav.StatusRestoreStarted" xml:space="preserve"><value>正在下载并验证最新备份…</value></data>
+  <data name="WebDav.StatusRestoreFinished" xml:space="preserve"><value>恢复完成：新增 {0} 个账户，更新 {1} 个账户。</value></data>
+  <data name="WebDav.StatusNoRemoteBackup" xml:space="preserve"><value>远程目录中没有可用备份。</value></data>
+  <data name="WebDav.StatusFailed" xml:space="preserve"><value>WebDAV 操作失败：{0}</value></data>
+  <data name="WebDav.InvalidEndpoint" xml:space="preserve"><value>请输入有效的 HTTPS WebDAV 地址和远程目录。</value></data>
+  <data name="WebDav.PasswordRequired" xml:space="preserve"><value>请输入 WebDAV 用户名和密码。</value></data>
+  <data name="About.InstallUpdate.Content" xml:space="preserve"><value>下载并安装</value></data>
+  <data name="Update.Installing" xml:space="preserve"><value>正在下载并准备安装更新…</value></data>
+  <data name="Update.InstallQueued" xml:space="preserve"><value>更新已交给 Windows 安装。应用可能关闭，请按系统提示重新打开。</value></data>
+  <data name="Update.InstallUnsupported" xml:space="preserve"><value>当前分发渠道不支持应用内安装。</value></data>
+  <data name="Update.NoPackageAsset" xml:space="preserve"><value>该 Release 没有可用的 MSIX/MSIXBundle 安装资产。</value></data>
+  <data name="Update.DownloadFailed" xml:space="preserve"><value>更新包下载失败。</value></data>
+  <data name="Update.InstallFailed" xml:space="preserve"><value>更新安装失败。</value></data>
+  <data name="Update.InstallFailedDetail" xml:space="preserve"><value>更新安装失败（{0}）。</value></data>
+  <data name="Update.InvalidPackageUrl" xml:space="preserve"><value>更新包地址无效或不是 HTTPS。</value></data>
+</root>

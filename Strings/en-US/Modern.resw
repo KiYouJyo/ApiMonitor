@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Settings.WebDavSection.Text" xml:space="preserve"><value>WebDAV backup</value></data>
+  <data name="Settings.WebDavDescription.Text" xml:space="preserve"><value>Save the existing portable backup to your own WebDAV server. API keys and credentials are never included.</value></data>
+  <data name="Settings.WebDavEndpoint.Header" xml:space="preserve"><value>Server address</value></data>
+  <data name="Settings.WebDavUsername.Header" xml:space="preserve"><value>Username</value></data>
+  <data name="Settings.WebDavPassword.Header" xml:space="preserve"><value>Password</value></data>
+  <data name="Settings.WebDavRemoteDirectory.Header" xml:space="preserve"><value>Remote folder</value></data>
+  <data name="Settings.WebDavSave.Content" xml:space="preserve"><value>Save settings</value></data>
+  <data name="Settings.WebDavTest.Content" xml:space="preserve"><value>Test connection</value></data>
+  <data name="Settings.WebDavBackupNow.Content" xml:space="preserve"><value>Back up now</value></data>
+  <data name="Settings.WebDavRestoreLatest.Content" xml:space="preserve"><value>Restore latest backup</value></data>
+  <data name="Settings.WebDavAutoBackup.Header" xml:space="preserve"><value>Back up automatically once a day</value></data>
+  <data name="Settings.WebDavHttpsOnly.Text" xml:space="preserve"><value>HTTPS only. The password is stored in Windows Credential Locker. Manifests, hashes, and versions are still validated before restore.</value></data>
+  <data name="Settings.WebDavLastBackupFormat" xml:space="preserve"><value>Last WebDAV backup: {0}</value></data>
+  <data name="WebDav.StatusSaved" xml:space="preserve"><value>WebDAV settings saved.</value></data>
+  <data name="WebDav.StatusTesting" xml:space="preserve"><value>Testing the WebDAV connection…</value></data>
+  <data name="WebDav.StatusConnected" xml:space="preserve"><value>WebDAV connection is working.</value></data>
+  <data name="WebDav.StatusConnectionFailed" xml:space="preserve"><value>Could not connect to the WebDAV server.</value></data>
+  <data name="WebDav.StatusBackingUp" xml:space="preserve"><value>Creating and uploading backup…</value></data>
+  <data name="WebDav.StatusBackupUploaded" xml:space="preserve"><value>Backup uploaded: {0}</value></data>
+  <data name="WebDav.StatusRestoreStarted" xml:space="preserve"><value>Downloading and validating the latest backup…</value></data>
+  <data name="WebDav.StatusRestoreFinished" xml:space="preserve"><value>Restore complete: {0} account(s) added, {1} account(s) updated.</value></data>
+  <data name="WebDav.StatusNoRemoteBackup" xml:space="preserve"><value>No usable backup was found in the remote folder.</value></data>
+  <data name="WebDav.StatusFailed" xml:space="preserve"><value>WebDAV operation failed: {0}</value></data>
+  <data name="WebDav.InvalidEndpoint" xml:space="preserve"><value>Enter a valid HTTPS WebDAV address and remote folder.</value></data>
+  <data name="WebDav.PasswordRequired" xml:space="preserve"><value>Enter the WebDAV username and password.</value></data>
+  <data name="About.InstallUpdate.Content" xml:space="preserve"><value>Download and install</value></data>
+  <data name="Update.Installing" xml:space="preserve"><value>Downloading and preparing the update…</value></data>
+  <data name="Update.InstallQueued" xml:space="preserve"><value>The update was handed to Windows for installation. The app may close; reopen it when prompted.</value></data>
+  <data name="Update.InstallUnsupported" xml:space="preserve"><value>In-app installation is not supported for this distribution channel.</value></data>
+  <data name="Update.NoPackageAsset" xml:space="preserve"><value>This release has no usable MSIX or MSIXBundle asset.</value></data>
+  <data name="Update.DownloadFailed" xml:space="preserve"><value>The update package could not be downloaded.</value></data>
+  <data name="Update.InstallFailed" xml:space="preserve"><value>The update could not be installed.</value></data>
+  <data name="Update.InstallFailedDetail" xml:space="preserve"><value>The update could not be installed ({0}).</value></data>
+  <data name="Update.InvalidPackageUrl" xml:space="preserve"><value>The update package URL is invalid or is not HTTPS.</value></data>
+</root>
