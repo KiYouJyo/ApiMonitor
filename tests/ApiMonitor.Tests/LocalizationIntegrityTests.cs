@@ -4,194 +4,138 @@ using Xunit;
 
 namespace ApiMonitor.Tests;
 
-/// <summary>
-/// v0.6.0 本地化完整性测试：
-///   1. XAML 中所有 loc:Loc.Key 引用的资源键在三语 resw 中必须存在；
-///   2. 键集合三语完全一致，且值非空；
-///   3. 关键控件（按钮/标题/ComboBox 项）的资源键有非空翻译；
-///   4. Loc 附加属性的占位机制不会把已知键误判为缺失。
-/// </summary>
+/// <summary>三语资源、附加本地化属性与核心壳层硬编码完整性。</summary>
 public sealed class LocalizationIntegrityTests
 {
     private static readonly string RepoRoot = FindRepoRoot();
+    private static readonly string[] Languages = { "zh-CN", "en-US", "ja-JP" };
+    private static readonly string[] PropertySuffixes =
+    {
+        ".Text", ".Content", ".Header", ".Title", ".Message", ".Description",
+        ".PlaceholderText", ".ToolTip", ".AutomationName", ".OnContent", ".OffContent",
+        ".PrimaryButtonText", ".SecondaryButtonText", ".CloseButtonText",
+    };
 
     private static string FindRepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "ApiMonitor.csproj")))
-        {
-            dir = dir.Parent;
-        }
-
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "ApiMonitor.csproj"))) dir = dir.Parent;
         return dir?.FullName ?? throw new InvalidOperationException("找不到仓库根目录。");
     }
 
     private static Dictionary<string, Dictionary<string, string>> LoadAllLangs()
     {
         var result = new Dictionary<string, Dictionary<string, string>>();
-        foreach (var lang in new[] { "zh-CN", "en-US", "ja-JP" })
+        foreach (string language in Languages)
         {
-            string path = Path.Combine(RepoRoot, "Strings", lang, "Resources.resw");
-            Assert.True(File.Exists(path), $"缺少资源文件：{path}");
-            var doc = XDocument.Load(path);
-            var dict = doc.Root!
-                .Elements("data")
-                .Where(e => e.Attribute("name") is not null)
-                .ToDictionary(e => e.Attribute("name")!.Value, e => e.Element("value")?.Value ?? string.Empty);
-            result[lang] = dict;
+            string directory = Path.Combine(RepoRoot, "Strings", language);
+            Assert.True(Directory.Exists(directory), $"缺少语言目录：{directory}");
+            var dict = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (string path in Directory.EnumerateFiles(directory, "*.resw", SearchOption.TopDirectoryOnly))
+            {
+                var doc = XDocument.Load(path);
+                foreach (var element in doc.Root!.Elements("data").Where(e => e.Attribute("name") is not null))
+                {
+                    string key = element.Attribute("name")!.Value;
+                    string value = element.Element("value")?.Value ?? string.Empty;
+                    Assert.True(dict.TryAdd(key, value), $"{language} 存在重复资源键：{key}");
+                }
+            }
+            result[language] = dict;
         }
-
         return result;
     }
 
-    /// <summary>收集所有 XAML 中的 loc:Loc.Key 引用。</summary>
     private static HashSet<string> CollectLocKeys()
     {
         var keys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var file in Directory.EnumerateFiles(RepoRoot, "*.xaml", SearchOption.AllDirectories))
+        var pattern = new Regex(@"loc:Loc\.(?:Key|PlaceholderKey|ToolTipKey|AutomationNameKey|OnContentKey|OffContentKey)=""([^""]+)""");
+        foreach (string file in Directory.EnumerateFiles(RepoRoot, "*.xaml", SearchOption.AllDirectories))
         {
-            if (file.Contains(Path.Combine("bin")) || file.Contains(Path.Combine("obj")))
-            {
-                continue;
-            }
-
+            if (file.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar)
+                || file.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar)) continue;
             string content = File.ReadAllText(file);
-            foreach (Match m in Regex.Matches(content, @"loc:Loc\.Key=""([^""]+)"""))
-            {
-                keys.Add(m.Groups[1].Value);
-            }
+            foreach (Match match in pattern.Matches(content)) keys.Add(match.Groups[1].Value);
         }
-
         return keys;
     }
+
+    private static bool ContainsResource(IReadOnlyDictionary<string, string> dict, string key) =>
+        new[] { key }.Concat(PropertySuffixes.Select(s => key + s)).Any(dict.ContainsKey);
 
     [Fact]
     public void AllLocKeys_ExistInAllThreeLanguages()
     {
         var langs = LoadAllLangs();
-        var locKeys = CollectLocKeys();
-        Assert.True(locKeys.Count > 0, "XAML 中应存在 loc:Loc.Key 引用。");
+        var keys = CollectLocKeys();
+        Assert.NotEmpty(keys);
+        foreach (string key in keys)
+        foreach (string language in Languages)
+            Assert.True(ContainsResource(langs[language], key), $"{language} 缺少 Loc 资源：{key}");
+    }
 
-        foreach (var key in locKeys)
+    [Fact]
+    public void ThreeLanguages_HaveIdenticalCombinedKeySets()
+    {
+        var langs = LoadAllLangs();
+        var baseline = langs["zh-CN"].Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray();
+        Assert.Equal(baseline, langs["en-US"].Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+        Assert.Equal(baseline, langs["ja-JP"].Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
+    public void AllResourceValues_AreNonEmpty()
+    {
+        foreach (var (language, dict) in LoadAllLangs())
+        foreach (var (key, value) in dict)
+            Assert.False(string.IsNullOrWhiteSpace(value), $"{language} 的 {key} 为空。");
+    }
+
+    [Fact]
+    public void NoKeyIsBothLeafAndPropertyParent()
+    {
+        foreach (var (language, dict) in LoadAllLangs())
         {
-            foreach (var (lang, dict) in langs)
+            var keys = new HashSet<string>(dict.Keys, StringComparer.Ordinal);
+            foreach (string key in keys)
+            foreach (string suffix in PropertySuffixes)
             {
-                bool found = dict.ContainsKey(key)
-                    || dict.ContainsKey(key + ".Text")
-                    || dict.ContainsKey(key + ".Content")
-                    || dict.ContainsKey(key + ".Header")
-                    || dict.ContainsKey(key + ".Title")
-                    || dict.ContainsKey(key + ".Message");
-                Assert.True(found, $"{lang} 缺少 Loc.Key 对应的资源：{key}");
+                if (!key.EndsWith(suffix, StringComparison.Ordinal)) continue;
+                string parent = key[..^suffix.Length];
+                Assert.False(keys.Contains(parent), $"{language} PRI 冲突：{parent} 与 {key}");
             }
         }
     }
 
     [Fact]
-    public void ThreeLanguages_HaveIdenticalKeySets()
+    public void CoreShellPages_HaveNoHardcodedCjkVisibleText()
     {
-        var langs = LoadAllLangs();
-        var zh = langs["zh-CN"].Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
-        foreach (var lang in new[] { "en-US", "ja-JP" })
+        string[] files = { "Views/MainPage.xaml", "Views/SettingsPage.xaml", "Views/AboutPage.xaml" };
+        var visibleAttribute = new Regex(@"(?:Text|Content|Header|PlaceholderText|OnContent|OffContent|AutomationProperties\.Name|ToolTipService\.ToolTip)=""([^""]*)""");
+        var cjk = new Regex("[\\u3040-\\u30ff\\u3400-\\u9fff]");
+        foreach (string relative in files)
         {
-            var other = langs[lang].Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
-            Assert.Equal(zh, other);
-        }
-    }
-
-    [Fact]
-    public void AllValues_NonEmpty()
-    {
-        var langs = LoadAllLangs();
-        foreach (var (lang, dict) in langs)
-        {
-            foreach (var (key, value) in dict)
+            string content = File.ReadAllText(Path.Combine(RepoRoot, relative.Replace('/', Path.DirectorySeparatorChar)));
+            foreach (Match match in visibleAttribute.Matches(content))
             {
-                Assert.False(string.IsNullOrWhiteSpace(value), $"{lang} 的 {key} 值为空。");
+                string value = match.Groups[1].Value;
+                if (value.StartsWith("{", StringComparison.Ordinal)) continue;
+                Assert.False(cjk.IsMatch(value), $"{relative} 存在可见硬编码文本：{value}");
             }
         }
     }
 
-    /// <summary>关键导航与按钮键在三种语言下都有非空值。</summary>
     [Fact]
-    public void CriticalKeys_HaveNonEmptyValues()
+    public void CriticalModernKeys_ArePresentInEveryLanguage()
     {
-        var langs = LoadAllLangs();
-        string[] critical =
-        {
-            "Nav.Home.Content", "Nav.Insights.Content", "Nav.Settings.Content", "Nav.About.Content",
-            "Home.AddAccount.Content", "Home.RefreshAll.Content", "Home.AccountOverview.Text",
-            "Home.FilterProvider.Text", "Home.FilterStatus.Text", "Home.Refresh.Content",
-            "Home.Edit.Content", "Home.ViewTrends.Content", "Home.CopyKey.Content",
-            "Home.History.Content", "Home.Delete.Content",
-            "Settings.Title.Text", "Settings.TraySection.Text", "Settings.NotificationSection.Text",
-            "Settings.AppearanceSection.Text", "Settings.DataSection.Text",
-            "Settings.ExportBackup.Content", "Settings.ImportBackup.Content", "Settings.OpenDataFolder.Content",
-            "Settings.Theme.Text", "Settings.Language.Text",
-            "Insights.Title.Text", "Insights.Subtitle.Text", "Insights.Account.Text",
-            "Insights.Metric.Text", "Insights.TimeRange.Text", "Insights.ExportCsv.Content",
-            "About.Title.Text", "About.CheckUpdates.Content", "About.CopyDiagnostics.Content",
-            "About.OpenDataFolder.Content",
-        };
-
-        foreach (var key in critical)
-        {
-            foreach (var (lang, dict) in langs)
-            {
-                // 支持无后缀与各属性后缀。
-                var candidates = new[] { key }
-                    .Concat(new[] { ".Text", ".Content", ".Header", ".Title" }.Select(s => key + s));
-                string? value = candidates.Select(c => dict.TryGetValue(c, out var v) ? v : null)
-                    .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
-                Assert.True(value is not null, $"{lang} 关键键缺失或为空：{key}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// 验证无 PRI“既是资源又是范围”冲突：不存在某个键 k，同时存在叶子键 k
-    /// 和以 k 为前缀的属性键（如 k.Text / k.Content）。
-    /// 示例冲突：Home.PrivacyMessage（叶子）与 Home.PrivacyMessage.Message（属性）。
-    /// </summary>
-    [Fact]
-    public void NoKeyIsBothLeafAndParentOfPropertySuffix()
-    {
-        var langs = LoadAllLangs();
-        var keys = langs["zh-CN"].Keys;
-        var leafSet = new HashSet<string>(keys, StringComparer.Ordinal);
-        foreach (var key in keys)
-        {
-            // 若 key 形如 X.Text/X.Content/X.Header/X.Title/X.Message，检查 X 是否也是叶子键。
-            foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message", ".Description" })
-            {
-                if (key.EndsWith(suffix, StringComparison.Ordinal))
-                {
-                    string parent = key[..^suffix.Length];
-                    Assert.False(
-                        leafSet.Contains(parent),
-                        $"PRI 冲突：{parent} 既是资源又是 {key} 的范围。");
-                }
-            }
-        }
-    }
-
-    /// <summary>ComboBox 选项相关的资源（如筛选标签）在三种语言下均有值。</summary>
-    [Fact]
-    public void ComboBoxRelatedKeys_HaveValues()
-    {
-        var langs = LoadAllLangs();
         string[] keys =
         {
-            "Home.FilterAllProviders", "Home.FilterAllStatus",
-            "Home.StatusNormal", "Home.StatusLow", "Home.StatusUnknown", "Home.StatusFailed",
+            "Settings.WebDavSection.Text", "Settings.WebDavEndpoint.Header", "Settings.WebDavPassword.Header",
+            "Settings.WebDavBackupNow.Content", "Settings.WebDavRestoreLatest.Content",
+            "About.InstallUpdate.Content", "Update.Installing", "Update.NoPackageAsset",
         };
-        foreach (var key in keys)
-        {
-            foreach (var (lang, dict) in langs)
-            {
-                Assert.True(dict.ContainsKey(key) && !string.IsNullOrWhiteSpace(dict[key]),
-                    $"{lang} 的 ComboBox 相关键 {key} 缺失或为空。");
-            }
-        }
+        foreach (var (language, dict) in LoadAllLangs())
+        foreach (string key in keys)
+            Assert.True(dict.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value), $"{language} 缺少 {key}");
     }
 }
