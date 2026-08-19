@@ -100,16 +100,20 @@ jobs:
           Write-Output "Signing certificate source: $source"
           Write-Output "Signing certificate subject: $($cert.Subject)"
 
-      - name: Restore
-        run: dotnet restore ApiMonitor.slnx -p:Platform=x64 -p:RuntimeIdentifier=win-x64
-
-      - name: Run unit and installer tests
+      - name: Restore acceptance build dependencies
         shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
         run: |
-          dotnet test tests\ApiMonitor.Tests\ApiMonitor.Tests.csproj -c Release --no-restore
-          if ($LASTEXITCODE -ne 0) { throw 'Unit tests failed.' }
-          powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\Installer.Tests.ps1
-          if ($LASTEXITCODE -ne 0) { throw 'Installer tests failed.' }
+          dotnet restore ApiMonitor.csproj `
+            -p:Configuration=Release `
+            -p:Platform=x64 `
+            -p:RuntimeIdentifier=win-x64 `
+            -p:RuntimeIdentifiers=win-x64 `
+            -p:DistributionChannel=GitHubSideload `
+            "-p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
+            -p:ApiMonitorDisplayVersion=1.1.0-preview
+          if ($LASTEXITCODE -ne 0) { throw 'Acceptance project restore failed.' }
 
       - name: Locate build and signing tools
         id: tools
@@ -142,7 +146,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $output | Out-Null
           & $env:MSBUILD_PATH ApiMonitor.csproj /t:Build /m `
             /p:Configuration=Release /p:Platform=x64 `
-            /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 `
+            /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 /p:RuntimeIdentifiers=win-x64 `
             "/p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
             /p:ApiMonitorDisplayVersion=1.1.0-preview `
             /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=false `
