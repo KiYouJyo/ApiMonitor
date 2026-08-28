@@ -217,7 +217,7 @@ jobs:
             /p:DistributionChannel=MicrosoftStore /p:RuntimeIdentifier=win-x64 `
             /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=false `
             /p:AppxBundle=Never /p:UapAppxPackageBuildMode=StoreUpload `
-            "/p:AppxPackageDir=$appPackages\" /p:Restore=false
+            "/p:AppxPackageDir=$appPackages\" /restore
           if ($LASTEXITCODE -ne 0) { throw "Microsoft Store package build failed: $LASTEXITCODE" }
 
           $uploads = @(Get-ChildItem -LiteralPath $appPackages -Recurse -Filter '*.msixupload' -File)
