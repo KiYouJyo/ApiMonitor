@@ -38,7 +38,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
-          $displayVersion = [string](@($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0].InnerText)
+          $displayVersion = [string](@($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0])
           if ($displayVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid display version: $displayVersion" }
           [xml]$manifest = Get-Content -LiteralPath Package.appxmanifest -Raw
           $sourceVersion = [Version]$manifest.Package.Identity.Version
