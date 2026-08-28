@@ -219,8 +219,6 @@ jobs:
             -MsixPath $env:MSIX_PATH `
             -CertificateThumbprint $env:CERT_THUMBPRINT `
             -OutputDirectory $assets
-          if ($LASTEXITCODE -ne 0) { throw 'One-click installer package assembly failed.' }
-
           $zip = Get-Item -LiteralPath (Join-Path $assets "ApiMonitor_$($env:PACKAGE_VERSION)_x64_Test.zip")
           $sha = Get-Item -LiteralPath (Join-Path $assets 'SHA256SUMS.txt')
           $msixCopy = Join-Path $assets (Split-Path -Leaf $env:MSIX_PATH)

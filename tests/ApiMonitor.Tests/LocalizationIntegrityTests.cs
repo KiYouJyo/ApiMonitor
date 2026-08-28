@@ -70,8 +70,8 @@ public sealed class LocalizationIntegrityTests
         var keys = CollectLocKeys();
         Assert.NotEmpty(keys);
         foreach (string key in keys)
-        foreach (string language in Languages)
-            Assert.True(ContainsResource(langs[language], key), $"{language} 缺少 Loc 资源：{key}");
+            foreach (string language in Languages)
+                Assert.True(ContainsResource(langs[language], key), $"{language} 缺少 Loc 资源：{key}");
     }
 
     [Fact]
@@ -87,8 +87,8 @@ public sealed class LocalizationIntegrityTests
     public void AllResourceValues_AreNonEmpty()
     {
         foreach (var (language, dict) in LoadAllLangs())
-        foreach (var (key, value) in dict)
-            Assert.False(string.IsNullOrWhiteSpace(value), $"{language} 的 {key} 为空。");
+            foreach (var (key, value) in dict)
+                Assert.False(string.IsNullOrWhiteSpace(value), $"{language} 的 {key} 为空。");
     }
 
     [Fact]
@@ -98,12 +98,12 @@ public sealed class LocalizationIntegrityTests
         {
             var keys = new HashSet<string>(dict.Keys, StringComparer.Ordinal);
             foreach (string key in keys)
-            foreach (string suffix in PropertySuffixes)
-            {
-                if (!key.EndsWith(suffix, StringComparison.Ordinal)) continue;
-                string parent = key[..^suffix.Length];
-                Assert.False(keys.Contains(parent), $"{language} PRI 冲突：{parent} 与 {key}");
-            }
+                foreach (string suffix in PropertySuffixes)
+                {
+                    if (!key.EndsWith(suffix, StringComparison.Ordinal)) continue;
+                    string parent = key[..^suffix.Length];
+                    Assert.False(keys.Contains(parent), $"{language} PRI 冲突：{parent} 与 {key}");
+                }
         }
     }
 
@@ -135,7 +135,7 @@ public sealed class LocalizationIntegrityTests
             "About.InstallUpdate.Content", "Update.Installing", "Update.NoPackageAsset",
         };
         foreach (var (language, dict) in LoadAllLangs())
-        foreach (string key in keys)
-            Assert.True(dict.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value), $"{language} 缺少 {key}");
+            foreach (string key in keys)
+                Assert.True(dict.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value), $"{language} 缺少 {key}");
     }
 }

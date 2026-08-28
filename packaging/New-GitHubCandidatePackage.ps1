@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^1\.0\.0\.\d+$')][string]$PackageVersion,
+    [Parameter(Mandatory)][ValidatePattern('^1\.1\.0\.\d+$')][string]$PackageVersion,
     [ValidateSet('Release')][string]$Configuration = 'Release',
     [ValidateSet('x64')][string]$Platform = 'x64',
     [string]$OutputDirectory = '',
@@ -8,16 +8,16 @@ param(
     [string]$CertificateThumbprint = '545198E3BC78BE49BDF861C3EA6863FFD285689F'
 )
 
-# v1.0.0: Builds a signed GitHub sideload candidate (1.0.0.x) and assembles
+# v1.1.0: Builds a signed GitHub sideload candidate (1.1.0.x) and assembles
 # the installer folder + Test.zip + SHA256SUMS.txt via
 # New-PreviewInstallerPackage.ps1. Output stays under
-# packaging\output\v1.0.0\github and is separate from the Store output.
+# packaging\output\v1.1.0\github and is separate from the Store output.
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
 if (-not $OutputDirectory) {
-    $OutputDirectory = Join-Path $repoRoot 'packaging\output\v1.0.0\github'
+    $OutputDirectory = Join-Path $repoRoot 'packaging\output\v1.1.0\github'
 }
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 
@@ -50,6 +50,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Restore failed.' }
 & $MsBuildPath (Join-Path $repoRoot 'ApiMonitor.csproj') /t:Build /m `
     "/p:Configuration=$Configuration" "/p:Platform=$Platform" `
     /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 `
+    "/p:ApiMonitorPackageVersion=$PackageVersion" /p:ApiMonitorDisplayVersion=1.1.0 `
     /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=true `
     "/p:PackageCertificateThumbprint=$CertificateThumbprint" `
     /p:AppxBundle=Never "/p:AppxPackageDir=$buildDir\\" /p:Restore=false
@@ -76,8 +77,6 @@ if (-not $versionOk) {
     -MsixPath $msix[0].FullName `
     -CertificateThumbprint $CertificateThumbprint `
     -OutputDirectory $output
-if ($LASTEXITCODE -ne 0) { throw 'Installer package assembly failed.' }
-
 $zip = Get-ChildItem -LiteralPath $output -Filter 'ApiMonitor_*_x64_Test.zip' -File |
     Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if (-not $zip) { throw 'Test.zip was not created.' }

@@ -37,6 +37,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
+          $displayVersion = [string](@($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0].InnerText)
+          if ($displayVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid display version: $displayVersion" }
           [xml]$manifest = Get-Content -LiteralPath Package.appxmanifest -Raw
           $sourceVersion = [Version]$manifest.Package.Identity.Version
           $acceptanceRevision = $sourceVersion.Revision + 1
@@ -49,7 +52,7 @@ jobs:
           $writer = [System.Xml.XmlWriter]::Create((Resolve-Path Package.appxmanifest), $settings)
           try { $manifest.Save($writer) } finally { $writer.Dispose() }
           "package_version=$acceptanceVersion" >> $env:GITHUB_OUTPUT
-          "display_version=1.1.0-preview" >> $env:GITHUB_OUTPUT
+          "display_version=$displayVersion-preview" >> $env:GITHUB_OUTPUT
           Write-Output "Acceptance package version: $acceptanceVersion"
 
       - name: Resolve signing certificate
@@ -112,7 +115,7 @@ jobs:
             -p:RuntimeIdentifiers=win-x64 `
             -p:DistributionChannel=GitHubSideload `
             "-p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
-            -p:ApiMonitorDisplayVersion=1.1.0-preview
+            "-p:ApiMonitorDisplayVersion=${{ steps.version.outputs.display_version }}"
           if ($LASTEXITCODE -ne 0) { throw 'Acceptance project restore failed.' }
 
       - name: Locate build and signing tools
@@ -148,7 +151,7 @@ jobs:
             /p:Configuration=Release /p:Platform=x64 `
             /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 /p:RuntimeIdentifiers=win-x64 `
             "/p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
-            /p:ApiMonitorDisplayVersion=1.1.0-preview `
+            "/p:ApiMonitorDisplayVersion=${{ steps.version.outputs.display_version }}" `
             /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=false `
             /p:AppxBundle=Never "/p:AppxPackageDir=$output\" /p:Restore=false
           if ($LASTEXITCODE -ne 0) { throw "Acceptance MSIX build failed: $LASTEXITCODE" }
@@ -202,8 +205,6 @@ jobs:
             -MsixPath $env:MSIX_PATH `
             -CertificateThumbprint $env:CERT_THUMBPRINT `
             -OutputDirectory $assets
-          if ($LASTEXITCODE -ne 0) { throw 'Acceptance installer assembly failed.' }
-
           $sourceZip = Join-Path $assets "ApiMonitor_$($env:PACKAGE_VERSION)_x64_Test.zip"
           if (-not (Test-Path -LiteralPath $sourceZip)) { throw 'Acceptance ZIP was not generated.' }
           $reviewZip = Join-Path $assets 'ApiMonitor-v1.1.0-PR12-signed-review-x64.zip'

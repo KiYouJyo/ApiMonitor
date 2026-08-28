@@ -1,6 +1,8 @@
 using ApiMonitor.Services;
 using ApiMonitor.Tests.TestDoubles;
 using ApiMonitor.Tests.TestHelpers;
+using System.Net;
+using System.Text;
 using Xunit;
 
 namespace ApiMonitor.Tests;
@@ -41,6 +43,63 @@ public sealed class WebDavBackupSecurityTests
         string json = File.ReadAllText(Path.Combine(temp.Path, WebDavBackupService.SettingsFileName));
         Assert.DoesNotContain("super-secret-value", json, StringComparison.Ordinal);
         Assert.Contains("super-secret-value", secrets.Secrets.Values);
+    }
+
+    [Fact]
+    public async Task List_IgnoresCrossOriginAndOutsideDirectoryEntries()
+    {
+        const string responseXml = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <d:multistatus xmlns:d="DAV:">
+              <d:response>
+                <d:href>https://attacker.example/stolen.apimonitor-backup</d:href>
+              </d:response>
+              <d:response>
+                <d:href>/dav/Other/outside.apimonitor-backup</d:href>
+              </d:response>
+              <d:response>
+                <d:href>/dav/ApiMonitor/Backups/good.apimonitor-backup</d:href>
+                <d:propstat><d:prop><d:getcontentlength>42</d:getcontentlength></d:prop></d:propstat>
+              </d:response>
+            </d:multistatus>
+            """;
+        using var temp = new TempDirectory();
+        var secrets = new FakeSecretStore();
+        var handler = new RecordingHandler(responseXml);
+        using var http = new HttpClient(handler);
+        using var service = new WebDavBackupService(new StubBackup(), secrets, temp.Path, http);
+        await service.SetPasswordAsync("secret", CancellationToken.None);
+        var settings = new WebDavBackupSettings
+        {
+            Endpoint = "https://webdav.example/dav/",
+            UserName = "user",
+            RemoteDirectory = "ApiMonitor/Backups",
+        };
+
+        var entries = await service.ListAsync(settings, CancellationToken.None);
+
+        var entry = Assert.Single(entries);
+        Assert.Equal("good.apimonitor-backup", entry.Name);
+        Assert.Equal("webdav.example", entry.Uri.Host);
+        Assert.Single(handler.RequestUris);
+        Assert.Equal("webdav.example", handler.RequestUris[0].Host);
+    }
+
+    private sealed class RecordingHandler(string responseXml) : HttpMessageHandler
+    {
+        public List<Uri> RequestUris { get; } = new();
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            RequestUris.Add(request.RequestUri!);
+            var response = new HttpResponseMessage((HttpStatusCode)207)
+            {
+                Content = new StringContent(responseXml, Encoding.UTF8, "application/xml"),
+            };
+            return Task.FromResult(response);
+        }
     }
 
     private sealed class StubBackup : IPortableBackupService

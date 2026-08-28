@@ -74,13 +74,16 @@ function Get-MsixManifestInfo {
         }
 
         $identity = $manifest.Package.Identity
-        $frameworkNode = $manifest.Package.Properties.Framework
+        $frameworkNode = @($manifest.Package.Properties.ChildNodes |
+            Where-Object { $_.LocalName -eq 'Framework' } |
+            Select-Object -First 1)[0]
         [pscustomobject]@{
             Path = $Path
             Name = [string]$identity.Name
+            Publisher = [string]$identity.Publisher
             Architecture = [string]$identity.ProcessorArchitecture
             Version = [string]$identity.Version
-            IsFramework = ([string]$frameworkNode -match '^(?i:true)$')
+            IsFramework = ($null -ne $frameworkNode -and [string]$frameworkNode.InnerText -match '^(?i:true)$')
         }
     }
     finally {
@@ -115,6 +118,17 @@ foreach ($name in @('Install.cmd', 'Install.ps1', 'Uninstall.cmd', 'Uninstall.ps
     }
     Copy-Item -LiteralPath $src -Destination (Join-Path $resolvedStage $name)
 }
+$installCmdPath = Join-Path $resolvedStage 'Install.cmd'
+$installCmd = [IO.File]::ReadAllText($installCmdPath)
+$installCmd = $installCmd.Replace(
+    '-File "%~dp0Install.ps1"',
+    ('-File "%~dp0Install.ps1" -PackageVersion "{0}"' -f $Version))
+[IO.File]::WriteAllText($installCmdPath, $installCmd, [Text.UTF8Encoding]::new($false))
+foreach ($versionedFileName in @('Install.ps1', 'INSTALL.md', 'UNINSTALL.md')) {
+    $versionedPath = Join-Path $resolvedStage $versionedFileName
+    $versionedContent = [IO.File]::ReadAllText($versionedPath).Replace('1.1.0.1', $Version)
+    [IO.File]::WriteAllText($versionedPath, $versionedContent, [Text.UTF8Encoding]::new($false))
+}
 Write-Step '已复制安装器脚本与文档。'
 
 # 备份/恢复函数库（与 Install.ps1 同目录，供其 dot-source）。
@@ -128,6 +142,13 @@ Copy-Item -LiteralPath $backupTool -Destination (Join-Path $resolvedStage 'SafeL
 # 3. Copy the signed MSIX.
 # ---------------------------------------------------------------------------
 $msixDest = Join-Path $resolvedStage $msixName
+$sourceManifest = Get-MsixManifestInfo -Path $MsixPath
+if ($sourceManifest.Name -cne 'ApiMonitor' -or
+    $sourceManifest.Publisher -cne 'CN=ApiMonitorDev' -or
+    $sourceManifest.Version -cne $Version) {
+    throw ('MSIX 身份或版本与候选不一致：Name={0}; Publisher={1}; Version={2}; Expected=ApiMonitor / CN=ApiMonitorDev / {3}' -f `
+        $sourceManifest.Name, $sourceManifest.Publisher, $sourceManifest.Version, $Version)
+}
 Copy-Item -LiteralPath $MsixPath -Destination $msixDest
 Write-Step "MSIX：$msixName ($((Get-Item -LiteralPath $msixDest).Length) bytes)"
 

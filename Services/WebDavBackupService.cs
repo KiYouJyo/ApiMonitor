@@ -163,6 +163,7 @@ public sealed class WebDavBackupService : IWebDavBackupService, IDisposable
             Uri uri;
             try { uri = new Uri(directory, href); }
             catch { continue; }
+            if (!IsSameOrigin(directory, uri) || !directory.IsBaseOf(uri)) continue;
             string name = Uri.UnescapeDataString(Path.GetFileName(uri.AbsolutePath.TrimEnd('/')));
             if (!name.EndsWith('.' + PortableBackupConstants.Extension, StringComparison.OrdinalIgnoreCase)) continue;
 
@@ -237,6 +238,11 @@ public sealed class WebDavBackupService : IWebDavBackupService, IDisposable
         CancellationToken cancellationToken)
     {
         ValidateSettings(settings, requireCredentials: true);
+        Uri endpoint = ValidateEndpoint(settings.Endpoint);
+        if (!IsSameOrigin(endpoint, uri))
+        {
+            throw new InvalidOperationException("WebDavInvalidEndpoint");
+        }
         string? password = await _secrets.GetAsync(CredentialId, cancellationToken);
         if (string.IsNullOrEmpty(password)) throw new InvalidOperationException("WebDavPasswordRequired");
         string raw = Convert.ToBase64String(Encoding.UTF8.GetBytes(settings.UserName + ":" + password));
@@ -262,12 +268,20 @@ public sealed class WebDavBackupService : IWebDavBackupService, IDisposable
     {
         if (!Uri.TryCreate(endpoint?.Trim(), UriKind.Absolute, out var uri)
             || !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            || !string.IsNullOrEmpty(uri.UserInfo))
+            || !string.IsNullOrEmpty(uri.UserInfo)
+            || !string.IsNullOrEmpty(uri.Query)
+            || !string.IsNullOrEmpty(uri.Fragment))
         {
             throw new InvalidOperationException("WebDavInvalidEndpoint");
         }
         return uri;
     }
+
+    private static bool IsSameOrigin(Uri expected, Uri candidate) =>
+        string.Equals(expected.Scheme, candidate.Scheme, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(expected.IdnHost, candidate.IdnHost, StringComparison.OrdinalIgnoreCase)
+        && expected.Port == candidate.Port
+        && string.IsNullOrEmpty(candidate.UserInfo);
 
     private static string[] SplitRemoteDirectory(string value)
     {
