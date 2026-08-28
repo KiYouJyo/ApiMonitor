@@ -70,8 +70,8 @@ jobs:
           $displayNode = @($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0]
           $packageNodes = @($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorPackageVersion } | Where-Object { $_ })
           $packageNode = @($packageNodes | Where-Object { [string]$_.Condition -like '*GitHubSideload*' })[0]
-          $displayVersion = if ($displayNode) { [string]$displayNode.InnerText } else { '' }
-          $packageVersion = if ($packageNode) { [string]$packageNode.InnerText } else { '' }
+          $displayVersion = if ($displayNode -is [System.Xml.XmlElement]) { [string]$displayNode.InnerText } elseif ($displayNode) { [string]$displayNode } else { '' }
+          $packageVersion = if ($packageNode -is [System.Xml.XmlElement]) { [string]$packageNode.InnerText } elseif ($packageNode) { [string]$packageNode } else { '' }
           if ([string]::IsNullOrWhiteSpace($displayVersion) -or [string]::IsNullOrWhiteSpace($packageVersion)) {
             throw 'Unable to resolve ApiMonitor display/package version for GitHubSideload.'
           }
