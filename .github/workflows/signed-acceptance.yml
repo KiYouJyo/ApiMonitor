@@ -1,0 +1,244 @@
+name: Signed acceptance package
+
+on:
+  push:
+    branches:
+      - codex/v1.1.0-winui3-webdav
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-monitor-signed-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Resolve acceptance version
+        id: version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml]$props = Get-Content -LiteralPath Directory.Build.props -Raw
+          $displayVersion = [string](@($props.Project.PropertyGroup | ForEach-Object { $_.ApiMonitorDisplayVersion } | Where-Object { $_ })[0])
+          if ($displayVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid display version: $displayVersion" }
+          [xml]$manifest = Get-Content -LiteralPath Package.appxmanifest -Raw
+          $sourceVersion = [Version]$manifest.Package.Identity.Version
+          $acceptanceRevision = $sourceVersion.Revision + 1
+          if ($acceptanceRevision -lt 0) { $acceptanceRevision = 1 }
+          $acceptanceVersion = '{0}.{1}.{2}.{3}' -f $sourceVersion.Major,$sourceVersion.Minor,$sourceVersion.Build,$acceptanceRevision
+          $manifest.Package.Identity.Version = $acceptanceVersion
+          $settings = New-Object System.Xml.XmlWriterSettings
+          $settings.Indent = $true
+          $settings.Encoding = New-Object System.Text.UTF8Encoding($false)
+          $writer = [System.Xml.XmlWriter]::Create((Resolve-Path Package.appxmanifest), $settings)
+          try { $manifest.Save($writer) } finally { $writer.Dispose() }
+          "package_version=$acceptanceVersion" >> $env:GITHUB_OUTPUT
+          "display_version=$displayVersion-preview" >> $env:GITHUB_OUTPUT
+          Write-Output "Acceptance package version: $acceptanceVersion"
+
+      - name: Resolve signing certificate
+        id: signing
+        shell: pwsh
+        env:
+          RELEASE_CERTIFICATE_BASE64: ${{ secrets.GH_RELEASE_CERTIFICATE_BASE64 }}
+          RELEASE_CERTIFICATE_PASSWORD: ${{ secrets.GH_RELEASE_CERTIFICATE_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cert = $null
+          $source = 'acceptance-only'
+
+          if (-not [string]::IsNullOrWhiteSpace($env:RELEASE_CERTIFICATE_BASE64) -and
+              -not [string]::IsNullOrWhiteSpace($env:RELEASE_CERTIFICATE_PASSWORD)) {
+            $pfx = Join-Path $env:RUNNER_TEMP 'apimonitor-configured-signing.pfx'
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:RELEASE_CERTIFICATE_BASE64))
+            $password = ConvertTo-SecureString $env:RELEASE_CERTIFICATE_PASSWORD -AsPlainText -Force
+            $configured = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $password
+            Remove-Item -LiteralPath $pfx -Force
+            if ($configured -and $configured.HasPrivateKey -and [string]$configured.Subject -ceq 'CN=ApiMonitorDev') {
+              $cert = $configured
+              $source = 'configured-repository-certificate'
+            }
+            elseif ($configured) {
+              Write-Warning "Configured repository certificate subject '$($configured.Subject)' does not match the existing ApiMonitor sideload Publisher 'CN=ApiMonitorDev'. The review package will use an acceptance-only certificate so the package identity is not silently changed."
+            }
+          }
+
+          if (-not $cert) {
+            $cert = New-SelfSignedCertificate `
+              -Type Custom `
+              -Subject 'CN=ApiMonitorDev' `
+              -FriendlyName 'ApiMonitor PR12 acceptance signing' `
+              -CertStoreLocation 'Cert:\CurrentUser\My' `
+              -KeyAlgorithm RSA `
+              -KeyLength 2048 `
+              -HashAlgorithm SHA256 `
+              -KeyUsage DigitalSignature `
+              -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3') `
+              -NotAfter (Get-Date).AddYears(1)
+            if (-not $cert -or -not $cert.HasPrivateKey) { throw 'Unable to create acceptance signing certificate.' }
+          }
+
+          if ([string]$cert.Subject -cne 'CN=ApiMonitorDev') { throw "Unexpected signing subject: $($cert.Subject)" }
+          "thumbprint=$($cert.Thumbprint)" >> $env:GITHUB_OUTPUT
+          "certificate_source=$source" >> $env:GITHUB_OUTPUT
+          Write-Output "Signing certificate source: $source"
+          Write-Output "Signing certificate subject: $($cert.Subject)"
+
+      - name: Restore acceptance build dependencies
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        run: |
+          dotnet restore ApiMonitor.csproj `
+            -p:Configuration=Release `
+            -p:Platform=x64 `
+            -p:RuntimeIdentifier=win-x64 `
+            -p:RuntimeIdentifiers=win-x64 `
+            -p:DistributionChannel=GitHubSideload `
+            "-p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
+            "-p:ApiMonitorDisplayVersion=${{ steps.version.outputs.display_version }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Acceptance project restore failed.' }
+
+      - name: Locate build and signing tools
+        id: tools
+        shell: pwsh
+        run: |
+          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere)) { throw 'vswhere.exe was not found.' }
+          $install = (& $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -property installationPath).Trim()
+          if (-not $install) { throw 'Visual Studio with MSBuild was not found.' }
+          $msbuild = Join-Path $install 'MSBuild\Current\Bin\amd64\MSBuild.exe'
+          if (-not (Test-Path -LiteralPath $msbuild)) { throw "MSBuild.exe was not found: $msbuild" }
+          $kitsRoot = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+          $signtool = Get-ChildItem (Join-Path $kitsRoot 'Windows Kits\10\bin') -Recurse -Filter signtool.exe |
+            Where-Object FullName -match '\\x64\\signtool.exe$' |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+          if (-not $signtool) { throw 'x64 signtool.exe was not found.' }
+          "msbuild=$msbuild" >> $env:GITHUB_OUTPUT
+          "signtool=$($signtool.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Build unsigned acceptance MSIX
+        id: package
+        shell: pwsh
+        env:
+          MSBUILD_PATH: ${{ steps.tools.outputs.msbuild }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'ApiMonitor-Acceptance-AppPackages'
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          & $env:MSBUILD_PATH ApiMonitor.csproj /t:Build /m `
+            /p:Configuration=Release /p:Platform=x64 `
+            /p:DistributionChannel=GitHubSideload /p:RuntimeIdentifier=win-x64 /p:RuntimeIdentifiers=win-x64 `
+            "/p:ApiMonitorPackageVersion=$env:PACKAGE_VERSION" `
+            "/p:ApiMonitorDisplayVersion=${{ steps.version.outputs.display_version }}" `
+            /p:GenerateAppxPackageOnBuild=true /p:AppxPackageSigningEnabled=false `
+            /p:AppxBundle=Never "/p:AppxPackageDir=$output\" /p:Restore=false
+          if ($LASTEXITCODE -ne 0) { throw "Acceptance MSIX build failed: $LASTEXITCODE" }
+          $expected = "ApiMonitor_$($env:PACKAGE_VERSION)_x64.msix"
+          $packages = @(Get-ChildItem -LiteralPath $output -Recurse -Filter '*.msix' -File |
+            Where-Object { $_.FullName -notmatch '(?i)\\Dependencies\\' -and $_.Name -eq $expected })
+          if ($packages.Count -ne 1) { throw "Expected exactly one $expected; found $($packages.Count)." }
+          "msix=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
+          "msix_file=$expected" >> $env:GITHUB_OUTPUT
+
+      - name: Sign and verify MSIX
+        shell: pwsh
+        env:
+          SIGNTOOL_PATH: ${{ steps.tools.outputs.signtool }}
+          CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
+          MSIX_PATH: ${{ steps.package.outputs.msix }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & $env:SIGNTOOL_PATH sign /fd SHA256 /sha1 $env:CERT_THUMBPRINT /tr http://timestamp.digicert.com /td SHA256 $env:MSIX_PATH
+          if ($LASTEXITCODE -ne 0) { throw "signtool sign failed: $LASTEXITCODE" }
+          $sig = Get-AuthenticodeSignature -FilePath $env:MSIX_PATH
+          if (-not $sig.SignerCertificate) { throw 'Signed MSIX has no signer certificate.' }
+          if ($sig.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or
+              [string]$sig.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
+            throw "Signer mismatch. Subject=$($sig.SignerCertificate.Subject) Thumbprint=$($sig.SignerCertificate.Thumbprint)"
+          }
+          if ($sig.Status -eq 'UnknownError') {
+            if ($sig.StatusMessage -notmatch '(?i)not trusted|trust provider|untrusted|self-signed') {
+              throw "Unexpected Authenticode status: $($sig.Status) / $($sig.StatusMessage)"
+            }
+          }
+          elseif ($sig.Status -ne 'Valid') {
+            throw "Signed MSIX status is not acceptable: $($sig.Status) / $($sig.StatusMessage)"
+          }
+          Write-Output "Authenticode signer verified: $($sig.SignerCertificate.Subject) / $($sig.SignerCertificate.Thumbprint) / $($sig.Status)"
+
+      - name: Assemble signed review package
+        id: assets
+        shell: pwsh
+        env:
+          MSIX_PATH: ${{ steps.package.outputs.msix }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+          CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
+          CERT_SOURCE: ${{ steps.signing.outputs.certificate_source }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'ApiMonitor-Acceptance'
+          New-Item -ItemType Directory -Force -Path $assets | Out-Null
+          & ./packaging/New-PreviewInstallerPackage.ps1 `
+            -Version $env:PACKAGE_VERSION `
+            -MsixPath $env:MSIX_PATH `
+            -CertificateThumbprint $env:CERT_THUMBPRINT `
+            -OutputDirectory $assets
+          $sourceZip = Join-Path $assets "ApiMonitor_$($env:PACKAGE_VERSION)_x64_Test.zip"
+          if (-not (Test-Path -LiteralPath $sourceZip)) { throw 'Acceptance ZIP was not generated.' }
+          $reviewZip = Join-Path $assets 'ApiMonitor-v1.1.0-PR12-signed-review-x64.zip'
+          Copy-Item -LiteralPath $sourceZip -Destination $reviewZip -Force
+          $msixCopy = Join-Path $assets 'ApiMonitor-v1.1.0-PR12-signed-review-x64.msix'
+          Copy-Item -LiteralPath $env:MSIX_PATH -Destination $msixCopy -Force
+
+          $reviewInfo = Join-Path $assets 'REVIEW-INFO.txt'
+          @(
+            'ApiMonitor v1.1.0 PR #12 signed review package',
+            "Package version: $env:PACKAGE_VERSION",
+            'Package identity: ApiMonitor / CN=ApiMonitorDev',
+            "Certificate source: $env:CERT_SOURCE",
+            'Purpose: manual acceptance only; not a production GitHub Release or Microsoft Store submission.'
+          ) | Set-Content -LiteralPath $reviewInfo -Encoding UTF8
+
+          $reviewSha = Join-Path $assets 'REVIEW-SHA256SUMS.txt'
+          @($reviewZip,$msixCopy,$reviewInfo) | ForEach-Object {
+            '{0}  {1}' -f (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToUpperInvariant(), (Split-Path -Leaf $_)
+          } | Set-Content -LiteralPath $reviewSha -Encoding ascii
+
+          "review_zip=$reviewZip" >> $env:GITHUB_OUTPUT
+          "review_msix=$msixCopy" >> $env:GITHUB_OUTPUT
+          "review_sha=$reviewSha" >> $env:GITHUB_OUTPUT
+          "review_info=$reviewInfo" >> $env:GITHUB_OUTPUT
+
+      - name: Upload signed review artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ApiMonitor-v1.1.0-PR12-signed-review
+          path: |
+            ${{ steps.assets.outputs.review_zip }}
+            ${{ steps.assets.outputs.review_msix }}
+            ${{ steps.assets.outputs.review_sha }}
+            ${{ steps.assets.outputs.review_info }}
+          if-no-files-found: error
+          retention-days: 14

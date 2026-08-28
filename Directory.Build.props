@@ -19,7 +19,7 @@
     （packaging/New-PreviewInstallerPackage.ps1 等）使用的版本必须与本文件一致。
   -->
   <PropertyGroup>
-    <ApiMonitorDisplayVersion>1.0.0</ApiMonitorDisplayVersion>
+    <ApiMonitorDisplayVersion>1.1.0</ApiMonitorDisplayVersion>
 
     <!--
       分发渠道（构建时单一配置，不通过环境/证书/目录猜测）：
@@ -29,11 +29,11 @@
     -->
     <DistributionChannel Condition="'$(DistributionChannel)' == ''">Development</DistributionChannel>
 
-    <!-- 包版本由渠道决定：Store 正式版固定 1.0.0.0；侧载候选使用递增修订号。 -->
-    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'MicrosoftStore'">1.0.0.0</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'GitHubSideload'">1.0.0.2</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'Development'">1.0.0.2</ApiMonitorPackageVersion>
-    <ApiMonitorPackageVersion Condition="'$(ApiMonitorPackageVersion)' == ''">1.0.0.2</ApiMonitorPackageVersion>
+    <!-- 包版本由渠道决定：Store 正式版固定 1.1.0.0；侧载候选使用递增修订号。 -->
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'MicrosoftStore'">1.1.0.0</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'GitHubSideload'">1.1.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(DistributionChannel)' == 'Development'">1.1.0.1</ApiMonitorPackageVersion>
+    <ApiMonitorPackageVersion Condition="'$(ApiMonitorPackageVersion)' == ''">1.1.0.1</ApiMonitorPackageVersion>
 
     <!-- 程序集四段版本（MSIX 升级判断）。 -->
     <Version>$(ApiMonitorPackageVersion)</Version>

@@ -1,6 +1,6 @@
 ﻿#requires -Version 5.1
 <#
-ApiMonitor v1.0.0 uninstaller
+ApiMonitor v1.1.0 uninstaller
   =============================
   Double-click entry: Uninstall.cmd -> this script (Windows PowerShell 5.1).
 

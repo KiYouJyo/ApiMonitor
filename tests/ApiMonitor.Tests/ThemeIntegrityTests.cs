@@ -4,11 +4,11 @@ using Xunit;
 namespace ApiMonitor.Tests;
 
 /// <summary>
-/// v0.6.0 主题统一测试（文本级解析，避免 XAML 命名空间与 XML 解析冲突）：
-///   1. App.xaml 的 Light/Dark/HighContrast 字典都定义 AppShellBackgroundBrush 等语义资源；
-///   2. 外壳背景与卡片背景使用不同语义资源（层级）；
-///   3. 受版本控制的 Shell XAML 中不存在固定 Black/Gray 背景；
-///   4. NavigationView Pane 覆盖为 AppShellBackgroundBrush；
+/// 主题统一测试（文本级解析，避免 XAML 命名空间与 XML 解析冲突）：
+///   1. App.xaml 的 Light/Dark/HighContrast 字典定义完整语义资源；
+///   2. 外壳、侧栏与卡片使用分层语义资源；
+///   3. Shell XAML 中不存在固定 Black/Gray 背景；
+///   4. NavigationView Pane 覆盖为 AppPaneBackgroundBrush；
 ///   5. 页面根元素不设置独立固定灰色背景；
 ///   6. 主题协调器同步标题栏。
 /// </summary>
@@ -41,7 +41,9 @@ public sealed class ThemeIntegrityTests
         string[] required =
         {
             "AppShellBackgroundBrush",
+            "AppPaneBackgroundBrush",
             "AppCardBackgroundBrush",
+            "AppSubtleSurfaceBrush",
             "AppCardBorderBrush",
             "AppPrimaryTextBrush",
             "AppSecondaryTextBrush",
@@ -50,7 +52,6 @@ public sealed class ThemeIntegrityTests
 
         foreach (var theme in new[] { "Light", "Dark", "HighContrast" })
         {
-            // 找到该主题字典块（x:Key="Light" 到下一个 ResourceDictionary）。
             var match = Regex.Match(app, $@"ResourceDictionary x:Key=""{theme}"">(.*?)</ResourceDictionary>", RegexOptions.Singleline);
             Assert.True(match.Success, $"缺少 {theme} 主题字典。");
             string block = match.Groups[1].Value;
@@ -64,7 +65,7 @@ public sealed class ThemeIntegrityTests
     }
 
     [Fact]
-    public void ShellAndCardBackground_UseDifferentSemanticResources()
+    public void ShellPaneAndCardBackground_UseLayeredSemanticResources()
     {
         string app = ReadText("App.xaml");
         foreach (var theme in new[] { "Light", "Dark" })
@@ -73,10 +74,13 @@ public sealed class ThemeIntegrityTests
             Assert.True(match.Success);
             string block = match.Groups[1].Value;
             string shell = Regex.Match(block, @"x:Key=""AppShellBackgroundBrush""[^>]*Color=""([^""]+)""").Groups[1].Value;
+            string pane = Regex.Match(block, @"x:Key=""AppPaneBackgroundBrush""[^>]*Color=""([^""]+)""").Groups[1].Value;
             string card = Regex.Match(block, @"x:Key=""AppCardBackgroundBrush""[^>]*Color=""([^""]+)""").Groups[1].Value;
             Assert.False(string.IsNullOrEmpty(shell), $"{theme} 缺少外壳颜色。");
+            Assert.False(string.IsNullOrEmpty(pane), $"{theme} 缺少侧栏颜色。");
             Assert.False(string.IsNullOrEmpty(card), $"{theme} 缺少卡片颜色。");
             Assert.NotEqual(shell, card);
+            Assert.NotEqual(pane, card);
         }
     }
 
@@ -94,7 +98,7 @@ public sealed class ThemeIntegrityTests
     }
 
     [Fact]
-    public void MainPage_OverridesNavigationPaneBackground_ToShellBrush()
+    public void MainPage_OverridesNavigationPaneBackground_ToPaneBrush()
     {
         string page = ReadText("Views/MainPage.xaml");
         var overrides = Regex.Matches(
@@ -103,7 +107,7 @@ public sealed class ThemeIntegrityTests
         Assert.True(overrides.Count >= 2, "MainPage 应覆盖 NavigationViewDefaultPaneBackground（Light/Dark）。");
         foreach (Match m in overrides)
         {
-            Assert.Equal("AppShellBackgroundBrush", m.Groups[1].Value);
+            Assert.Equal("AppPaneBackgroundBrush", m.Groups[1].Value);
         }
     }
 
@@ -113,7 +117,6 @@ public sealed class ThemeIntegrityTests
         foreach (var f in new[] { "HomePage", "InsightsPage", "SettingsPage", "AboutPage" })
         {
             string content = ReadText("Views/" + f + ".xaml");
-            // 页面根容器（UserControl 后第一个 Grid/ScrollViewer）不应设置 Background。
             var rootMatch = Regex.Match(
                 content,
                 @"<UserControl[\s\S]*?<(?<el>Grid|ScrollViewer)[^>]*Background=""(?<bg>[^""]+)""");

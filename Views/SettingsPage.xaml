@@ -4,234 +4,115 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:ApiMonitor.Views.Converters"
     xmlns:loc="using:ApiMonitor.Services">
-
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel
-            Padding="28,20,28,24"
-            Spacing="16"
-            MaxWidth="720"
-            HorizontalAlignment="Left">
-
+        <StackPanel Padding="40,30,40,48" Spacing="20" MaxWidth="1080" HorizontalAlignment="Left">
             <TextBlock loc:Loc.Key="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
-            <!-- 1. 通知区域与启动 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Border Style="{StaticResource AppCardStyle}">
+                <StackPanel Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                         <StackPanel Spacing="4">
                             <TextBlock loc:Loc.Key="Settings.TraySection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBlock
-                                loc:Loc.Key="Settings.TrayDescription"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                TextWrapping="Wrap" />
+                            <TextBlock loc:Loc.Key="Settings.TrayDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button
-                            Grid.Column="1"
-                            loc:Loc.Key="Settings.ExitApplication"
-                            Command="{Binding TraySettings.ExitApplicationCommand}"
-                            VerticalAlignment="Top" />
+                        <Button Grid.Column="1" loc:Loc.Key="Settings.ExitApplication" Command="{Binding TraySettings.ExitApplicationCommand}" VerticalAlignment="Top" />
                     </Grid>
-
                     <TextBlock loc:Loc.Key="Settings.CloseBehavior" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <RadioButtons
-                        MaxColumns="2"
-                        SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
-                        <x:String>隐藏到通知区域</x:String>
-                        <x:String>退出 ApiMonitor</x:String>
+                    <RadioButtons MaxColumns="2" SelectedIndex="{Binding TraySettings.CloseBehaviorIndex, Mode=TwoWay}">
+                        <RadioButton loc:Loc.Key="Settings.CloseHide" />
+                        <RadioButton loc:Loc.Key="Settings.CloseExit" />
                     </RadioButtons>
-
-                    <ToggleSwitch
-                        IsOn="{Binding TraySettings.StartWithWindows, Mode=TwoWay}"
-                        IsEnabled="{Binding TraySettings.IsStartupTaskBusy, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}">
+                    <ToggleSwitch IsOn="{Binding TraySettings.StartWithWindows, Mode=TwoWay}" IsEnabled="{Binding TraySettings.IsStartupTaskBusy, Converter={StaticResource InverseBoolConverter}}">
                         <ToggleSwitch.Header>
                             <StackPanel Spacing="2">
                                 <TextBlock loc:Loc.Key="Settings.StartWithWindowsHeader" />
-                                <TextBlock
-                                    loc:Loc.Key="Settings.StartWithWindowsDescription"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    TextWrapping="Wrap" />
+                                <TextBlock loc:Loc.Key="Settings.StartWithWindowsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </ToggleSwitch.Header>
                     </ToggleSwitch>
-
-                    <TextBlock
-                        Text="{Binding TraySettings.StartupTaskStatusText, Mode=OneWay}"
-                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding TraySettings.HasStartupTaskStatusText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding TraySettings.StartupTaskStatusText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap" Visibility="{Binding TraySettings.HasStartupTaskStatusText, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 
-            <!-- 2. 余额提醒 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="14">
-                    <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        Text="{Binding NotificationSettings.LocalOnlyExplanationText, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <ToggleSwitch
-                        loc:Loc.Key="Settings.EnableNotifications"
-                        OnContent="开启"
-                        OffContent="关闭"
-                        IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                        <TextBlock
-                            loc:Loc.Key="Settings.RepeatInterval"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            VerticalAlignment="Center" />
-                        <ComboBox
-                            Grid.Column="1"
-                            MinWidth="160"
-                            HorizontalAlignment="Left"
-                            ItemsSource="{Binding NotificationSettings.RepeatOptions}"
-                            DisplayMemberPath="Label"
-                            SelectedValuePath="Hours"
-                            SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
-                    </Grid>
-                    <ToggleSwitch
-                        loc:Loc.Key="Settings.RecoveryNotifications"
-                        OnContent="开启"
-                        OffContent="关闭"
-                        IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Button
-                            loc:Loc.Key="Settings.SendTestNotification"
-                            Command="{Binding NotificationSettings.SendTestCommand}" />
-                        <Button
-                            loc:Loc.Key="Settings.OpenNotificationSettings"
-                            Command="{Binding NotificationSettings.OpenWindowsNotificationSettingsCommand}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="14">
+                        <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding NotificationSettings.LocalOnlyExplanationText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <ToggleSwitch loc:Loc.Key="Settings.EnableNotifications" loc:Loc.OnContentKey="Settings.On" loc:Loc.OffContentKey="Settings.Off" IsOn="{Binding NotificationSettings.BalanceNotificationsEnabled, Mode=TwoWay}" />
+                        <ComboBox loc:Loc.Key="Settings.RepeatInterval" MinWidth="180" ItemsSource="{Binding NotificationSettings.RepeatOptions}" DisplayMemberPath="Label" SelectedValuePath="Hours" SelectedValue="{Binding NotificationSettings.DefaultRepeatIntervalHours, Mode=TwoWay}" />
+                        <ToggleSwitch loc:Loc.Key="Settings.RecoveryNotifications" loc:Loc.OnContentKey="Settings.On" loc:Loc.OffContentKey="Settings.Off" IsOn="{Binding NotificationSettings.RecoveryNotificationsEnabled, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button loc:Loc.Key="Settings.SendTestNotification" Command="{Binding NotificationSettings.SendTestCommand}" />
+                            <Button loc:Loc.Key="Settings.OpenNotificationSettings" Command="{Binding NotificationSettings.OpenWindowsNotificationSettingsCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding NotificationSettings.StatusText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap" Visibility="{Binding NotificationSettings.HasStatusText, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
-                    <TextBlock
-                        Text="{Binding NotificationSettings.StatusText, Mode=OneWay}"
-                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding NotificationSettings.HasStatusText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
+                </Border>
 
-            <!-- 3. 外观与语言（v0.6.0） -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="14">
-                    <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                        <TextBlock
-                            loc:Loc.Key="Settings.Theme"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            VerticalAlignment="Center" />
-                        <ComboBox
-                            Grid.Column="1"
-                            MinWidth="160"
-                            HorizontalAlignment="Left"
-                            ItemsSource="{Binding AppearanceSettings.ThemeOptions}"
-                            DisplayMemberPath="DisplayName"
-                            SelectedItem="{Binding AppearanceSettings.SelectedTheme, Mode=TwoWay}" />
-                    </Grid>
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                        <TextBlock
-                            loc:Loc.Key="Settings.Language"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            VerticalAlignment="Center" />
-                        <ComboBox
-                            Grid.Column="1"
-                            MinWidth="160"
-                            HorizontalAlignment="Left"
-                            ItemsSource="{Binding AppearanceSettings.LanguageOptions}"
-                            DisplayMemberPath="DisplayName"
-                            SelectedItem="{Binding AppearanceSettings.SelectedLanguage, Mode=TwoWay}" />
-                    </Grid>
-                    <TextBlock
-                        loc:Loc.Key="Settings.AppearanceDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Text="{Binding AppearanceSettings.StatusText, Mode=OneWay}"
-                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding AppearanceSettings.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
+                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="14">
+                        <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <ComboBox loc:Loc.Key="Settings.Theme" MinWidth="180" ItemsSource="{Binding AppearanceSettings.ThemeOptions}" DisplayMemberPath="DisplayName" SelectedItem="{Binding AppearanceSettings.SelectedTheme, Mode=TwoWay}" />
+                        <ComboBox loc:Loc.Key="Settings.Language" MinWidth="180" ItemsSource="{Binding AppearanceSettings.LanguageOptions}" DisplayMemberPath="DisplayName" SelectedItem="{Binding AppearanceSettings.SelectedLanguage, Mode=TwoWay}" />
+                        <TextBlock loc:Loc.Key="Settings.AppearanceDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding AppearanceSettings.StatusText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap" Visibility="{Binding AppearanceSettings.HasStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
 
-            <!-- 4. 数据管理（v0.6.0：便携备份导出/导入） -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="14">
+            <Border Style="{StaticResource AppCardStyle}">
+                <StackPanel Spacing="16">
                     <TextBlock loc:Loc.Key="Settings.DataSection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        Text="{Binding DataManagement.DescriptionText, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding DataManagement.DescriptionText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button
-                            loc:Loc.Key="Settings.ExportBackup"
-                            Command="{Binding DataManagement.ExportBackupCommand}" />
-                        <Button
-                            loc:Loc.Key="Settings.ImportBackup"
-                            Command="{Binding DataManagement.ImportBackupCommand}" />
-                        <Button
-                            loc:Loc.Key="Settings.OpenDataFolder"
-                            Command="{Binding DataManagement.OpenDataFolderCommand}" />
+                        <Button loc:Loc.Key="Settings.ExportBackup" Command="{Binding DataManagement.ExportBackupCommand}" />
+                        <Button loc:Loc.Key="Settings.ImportBackup" Command="{Binding DataManagement.ImportBackupCommand}" />
+                        <Button loc:Loc.Key="Settings.OpenDataFolder" Command="{Binding DataManagement.OpenDataFolderCommand}" />
                     </StackPanel>
-                    <TextBlock
-                        Text="{Binding DataManagement.StatusText, Mode=OneWay}"
-                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding DataManagement.HasStatus, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding DataManagement.StatusText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap" Visibility="{Binding DataManagement.HasStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 
-            <!-- 5. 应用信息（链接迁移到“关于”页） -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="6">
+            <Border Style="{StaticResource AppCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock loc:Loc.Key="Settings.WebDavSection" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock loc:Loc.Key="Settings.WebDavDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBox loc:Loc.Key="Settings.WebDavEndpoint" Text="{Binding DataManagement.WebDavEndpoint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                        <TextBox loc:Loc.Key="Settings.WebDavUsername" Text="{Binding DataManagement.WebDavUserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <PasswordBox Grid.Column="1" loc:Loc.Key="Settings.WebDavPassword" Password="{Binding DataManagement.WebDavPassword, Mode=TwoWay}" />
+                    </Grid>
+                    <TextBox loc:Loc.Key="Settings.WebDavRemoteDirectory" Text="{Binding DataManagement.WebDavRemoteDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ToggleSwitch loc:Loc.Key="Settings.WebDavAutoBackup" loc:Loc.OnContentKey="Settings.On" loc:Loc.OffContentKey="Settings.Off" IsOn="{Binding DataManagement.WebDavAutoBackupEnabled, Mode=TwoWay}" />
+                    <TextBlock loc:Loc.Key="Settings.WebDavHttpsOnly" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button loc:Loc.Key="Settings.WebDavSave" Command="{Binding DataManagement.SaveWebDavSettingsCommand}" />
+                        <Button loc:Loc.Key="Settings.WebDavTest" Command="{Binding DataManagement.TestWebDavCommand}" />
+                        <Button loc:Loc.Key="Settings.WebDavBackupNow" Command="{Binding DataManagement.BackupToWebDavCommand}" Style="{StaticResource AccentButtonStyle}" />
+                        <Button loc:Loc.Key="Settings.WebDavRestoreLatest" Command="{Binding DataManagement.RestoreLatestWebDavCommand}" />
+                    </StackPanel>
+                    <ProgressRing Width="20" Height="20" HorizontalAlignment="Left" IsActive="{Binding DataManagement.IsWebDavBusy}" />
+                    <TextBlock Text="{Binding DataManagement.WebDavLastBackupText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding DataManagement.WebDavStatusText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap" Visibility="{Binding DataManagement.HasWebDavStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource AppCardStyle}">
+                <StackPanel Spacing="8">
                     <TextBlock loc:Loc.Key="Settings.AppInfoSection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        Text="{Binding SubtitleText}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Text="{Binding SupportedProvidersText, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <HyperlinkButton
-                        NavigateUri="https://github.com/KiYouJyo/ApiMonitor"
-                        loc:Loc.Key="Settings.GitHubLink" />
-                    <HyperlinkButton
-                        NavigateUri="https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"
-                        loc:Loc.Key="Settings.PrivacyLink" />
-                    <Button
-                        loc:Loc.Key="Settings.ReopenOnboarding"
-                        Command="{Binding ReopenOnboardingCommand}"
-                        HorizontalAlignment="Left"
-                        Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding SubtitleText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding SupportedProvidersText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <HyperlinkButton NavigateUri="https://github.com/KiYouJyo/ApiMonitor" loc:Loc.Key="Settings.GitHubLink" />
+                        <HyperlinkButton NavigateUri="https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md" loc:Loc.Key="Settings.PrivacyLink" />
+                        <Button loc:Loc.Key="Settings.ReopenOnboarding" Command="{Binding ReopenOnboardingCommand}" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>

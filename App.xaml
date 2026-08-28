@@ -8,37 +8,34 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!--
-              v0.6.0 主题统一：应用外壳语义资源。
-              标题栏、NavigationView Pane 与页面内容共用 AppShellBackgroundBrush，
-              卡片与输入控件在其上形成第二层层级。Light/Dark/HighContrast 三套
-              字典；高对比度优先尊重系统颜色（使用系统高对比度资源）。
-            -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <!-- 外壳背景：与系统浅色 Surface 一致的浅中性色。 -->
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#F3F3F3" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#F7F7F7" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#F2F2F2" />
                     <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#E0E0E0" />
+                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#F9F9F9" />
+                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#E5E5E5" />
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#1A1A1A" />
-                    <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#5C5C5C" />
-                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#E5F1FB" />
+                    <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#666666" />
+                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#E8F2FB" />
                     <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <!-- 外壳背景：与系统深色 Surface 一致的中性深色。 -->
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#202020" />
-                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#2B2B2B" />
-                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#3D3D3D" />
-                    <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#F3F3F3" />
-                    <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#A0A0A0" />
-                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#3D3D3D" />
-                    <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#000000" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#1B1B1B" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#272727" />
+                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#2D2D2D" />
+                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#3A3A3A" />
+                    <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#F5F5F5" />
+                    <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#B0B0B0" />
+                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#12395B" />
+                    <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#202020" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
-                    <!-- 高对比度：尊重系统高对比度资源，不强制自定义灰色。 -->
                     <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="AppCardBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
@@ -46,6 +43,14 @@
                     <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+
+            <Style x:Key="AppCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="20,18" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

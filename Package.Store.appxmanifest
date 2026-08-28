@@ -18,7 +18,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap desktop com">
 
-  <Identity Name="JoKiy.ApiMonitor" Publisher="CN=C4E4B33A-7B77-4121-897C-7D720A5471F8" Version="1.0.0.0" />
+  <Identity Name="JoKiy.ApiMonitor" Publisher="CN=C4E4B33A-7B77-4121-897C-7D720A5471F8" Version="1.1.0.0" />
 
   <Properties>
     <DisplayName>ApiMonitor</DisplayName>

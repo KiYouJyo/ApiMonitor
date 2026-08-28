@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
   Assembles the ApiMonitor sideload release folder and Test.zip:
 
@@ -23,7 +23,7 @@
 
 [CmdletBinding()]
 param(
-  [string]$Version = '0.9.0.0',
+    [string]$Version = '0.9.0.0',
     [Parameter(Mandatory = $true)][string]$MsixPath,
     [string]$CertificateThumbprint = '545198E3BC78BE49BDF861C3EA6863FFD285689F',
     [string]$RuntimeSdkVersion = '2.3.1',
@@ -54,6 +54,43 @@ function Get-Sha256 {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToUpperInvariant()
 }
 
+function Get-MsixManifestInfo {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($Path)
+    try {
+        $entry = $zip.Entries | Where-Object { $_.FullName -eq 'AppxManifest.xml' } | Select-Object -First 1
+        if (-not $entry) {
+            throw "MSIX 缺少 AppxManifest.xml：$Path"
+        }
+
+        $reader = New-Object System.IO.StreamReader($entry.Open(), [System.Text.Encoding]::UTF8)
+        try {
+            [xml]$manifest = $reader.ReadToEnd()
+        }
+        finally {
+            $reader.Dispose()
+        }
+
+        $identity = $manifest.Package.Identity
+        $frameworkNode = @($manifest.Package.Properties.ChildNodes |
+            Where-Object { $_.LocalName -eq 'Framework' } |
+            Select-Object -First 1)[0]
+        [pscustomobject]@{
+            Path = $Path
+            Name = [string]$identity.Name
+            Publisher = [string]$identity.Publisher
+            Architecture = [string]$identity.ProcessorArchitecture
+            Version = [string]$identity.Version
+            IsFramework = ($null -ne $frameworkNode -and [string]$frameworkNode.InnerText -match '^(?i:true)$')
+        }
+    }
+    finally {
+        $zip.Dispose()
+    }
+}
+
 # ---------------------------------------------------------------------------
 # 1. Prepare the stage directory (inside packaging/output, git-ignored).
 # ---------------------------------------------------------------------------
@@ -81,6 +118,17 @@ foreach ($name in @('Install.cmd', 'Install.ps1', 'Uninstall.cmd', 'Uninstall.ps
     }
     Copy-Item -LiteralPath $src -Destination (Join-Path $resolvedStage $name)
 }
+$installCmdPath = Join-Path $resolvedStage 'Install.cmd'
+$installCmd = [IO.File]::ReadAllText($installCmdPath)
+$installCmd = $installCmd.Replace(
+    '-File "%~dp0Install.ps1"',
+    ('-File "%~dp0Install.ps1" -PackageVersion "{0}"' -f $Version))
+[IO.File]::WriteAllText($installCmdPath, $installCmd, [Text.UTF8Encoding]::new($false))
+foreach ($versionedFileName in @('Install.ps1', 'INSTALL.md', 'UNINSTALL.md')) {
+    $versionedPath = Join-Path $resolvedStage $versionedFileName
+    $versionedContent = [IO.File]::ReadAllText($versionedPath).Replace('1.1.0.1', $Version)
+    [IO.File]::WriteAllText($versionedPath, $versionedContent, [Text.UTF8Encoding]::new($false))
+}
 Write-Step '已复制安装器脚本与文档。'
 
 # 备份/恢复函数库（与 Install.ps1 同目录，供其 dot-source）。
@@ -94,6 +142,13 @@ Copy-Item -LiteralPath $backupTool -Destination (Join-Path $resolvedStage 'SafeL
 # 3. Copy the signed MSIX.
 # ---------------------------------------------------------------------------
 $msixDest = Join-Path $resolvedStage $msixName
+$sourceManifest = Get-MsixManifestInfo -Path $MsixPath
+if ($sourceManifest.Name -cne 'ApiMonitor' -or
+    $sourceManifest.Publisher -cne 'CN=ApiMonitorDev' -or
+    $sourceManifest.Version -cne $Version) {
+    throw ('MSIX 身份或版本与候选不一致：Name={0}; Publisher={1}; Version={2}; Expected=ApiMonitor / CN=ApiMonitorDev / {3}' -f `
+        $sourceManifest.Name, $sourceManifest.Publisher, $sourceManifest.Version, $Version)
+}
 Copy-Item -LiteralPath $MsixPath -Destination $msixDest
 Write-Step "MSIX：$msixName ($((Get-Item -LiteralPath $msixDest).Length) bytes)"
 
@@ -119,34 +174,66 @@ Write-Step ('公开证书：CN=ApiMonitorDev  {0}' -f $exported.Thumbprint)
 
 # ---------------------------------------------------------------------------
 # 5. Copy the Windows App Runtime x64 framework package from the NuGet cache.
+#    Do not hard-code the restored MSIX file name: Windows App SDK servicing
+#    releases can change the runtime identity/file name while keeping the NuGet
+#    package version stable for this project.
 # ---------------------------------------------------------------------------
-$depSource = Join-Path $env:USERPROFILE ('.nuget\packages\microsoft.windowsappsdk.runtime\' + $RuntimeSdkVersion + '\tools\MSIX\win10-x64\Microsoft.WindowsAppRuntime.2.msix')
-if (-not (Test-Path -LiteralPath $depSource)) {
-    throw "找不到 Windows App Runtime 依赖：$depSource"
+$nugetPackagesRoot = if (-not [string]::IsNullOrWhiteSpace($env:NUGET_PACKAGES)) {
+    $env:NUGET_PACKAGES
 }
+else {
+    Join-Path $env:USERPROFILE '.nuget\packages'
+}
+$runtimePackageRoot = Join-Path $nugetPackagesRoot ('microsoft.windowsappsdk.runtime\' + $RuntimeSdkVersion)
+if (-not (Test-Path -LiteralPath $runtimePackageRoot)) {
+    throw "找不到 Windows App SDK Runtime NuGet 缓存目录：$runtimePackageRoot"
+}
+
+$runtimeCandidates = @()
+$runtimeFiles = @(Get-ChildItem -LiteralPath $runtimePackageRoot -Recurse -File -Filter '*.msix' |
+    Where-Object { $_.Name -like 'Microsoft.WindowsAppRuntime*.msix' })
+Write-Step ("Windows App Runtime 候选 MSIX：{0}" -f $runtimeFiles.Count)
+foreach ($runtimeFile in $runtimeFiles) {
+    try {
+        $info = Get-MsixManifestInfo -Path $runtimeFile.FullName
+        Write-Host ('  {0} => Name={1}; Arch={2}; Version={3}; Framework={4}' -f `
+            $runtimeFile.FullName, $info.Name, $info.Architecture, $info.Version, $info.IsFramework)
+        if ($info.Architecture -eq 'x64' -and
+            $info.IsFramework -and
+            $info.Name -match '^Microsoft\.WindowsAppRuntime\.\d+(?:\.\d+)*$') {
+            $runtimeCandidates += $info
+        }
+    }
+    catch {
+        Write-Warning ("无法读取 Runtime 候选包清单：{0} ({1})" -f $runtimeFile.FullName, $_.Exception.Message)
+    }
+}
+
+if ($runtimeCandidates.Count -eq 0) {
+    throw "在 $runtimePackageRoot 中未找到 x64 Microsoft.WindowsAppRuntime Framework MSIX。"
+}
+if ($runtimeCandidates.Count -gt 1) {
+    Write-Warning ("发现多个合法 x64 Windows App Runtime Framework MSIX，将按版本与路径稳定选择：{0}" -f `
+        (($runtimeCandidates | ForEach-Object { "[$($_.Name) $($_.Version)] $($_.Path)" }) -join '; '))
+}
+
+$runtime = @($runtimeCandidates |
+    Sort-Object @{ Expression = { try { [version]$_.Version } catch { [version]'0.0.0.0' } }; Descending = $true }, `
+                @{ Expression = { $_.Path }; Descending = $false })[0]
 $depDir = Join-Path $resolvedStage 'Dependencies\x64'
 New-Item -ItemType Directory -Path $depDir | Out-Null
-Copy-Item -LiteralPath $depSource -Destination (Join-Path $depDir 'Microsoft.WindowsAppRuntime.2.msix')
+$depDest = Join-Path $depDir 'Microsoft.WindowsAppRuntime.2.msix'
+Copy-Item -LiteralPath $runtime.Path -Destination $depDest
 
-Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
-$depZip = [System.IO.Compression.ZipFile]::OpenRead((Join-Path $depDir 'Microsoft.WindowsAppRuntime.2.msix'))
-$depManifest = $null
-try {
-    $depEntry = $depZip.Entries | Where-Object { $_.FullName -eq 'AppxManifest.xml' } | Select-Object -First 1
-    if ($depEntry) {
-        $depReader = New-Object System.IO.StreamReader($depEntry.Open(), [System.Text.Encoding]::UTF8)
-        try { $depManifest = $depReader.ReadToEnd() } finally { $depReader.Dispose() }
-    }
-} finally {
-    $depZip.Dispose()
+$copiedRuntime = Get-MsixManifestInfo -Path $depDest
+if ($copiedRuntime.Name -ne $runtime.Name -or
+    $copiedRuntime.Architecture -ne 'x64' -or
+    -not $copiedRuntime.IsFramework) {
+    throw ('依赖包复制后校验失败：Name={0}; Architecture={1}; Framework={2}' -f `
+        $copiedRuntime.Name, $copiedRuntime.Architecture, $copiedRuntime.IsFramework)
 }
-if ($depManifest -notmatch '<Identity Name="Microsoft\.WindowsAppRuntime\.2"') {
-    throw '依赖包 Identity 校验失败（期望 Microsoft.WindowsAppRuntime.2）。'
-}
-if ($depManifest -notmatch 'ProcessorArchitecture="x64"') {
-    throw '依赖包架构校验失败（期望 x64）。'
-}
-Write-Step '依赖：Dependencies\x64\Microsoft.WindowsAppRuntime.2.msix（x64，2.3.x）'
+Write-Step ('依赖：Dependencies\x64\Microsoft.WindowsAppRuntime.2.msix <= {0}（Identity={1}; x64; Version={2}）' -f `
+    $runtime.Path, $runtime.Name, $runtime.Version)
 
 # ---------------------------------------------------------------------------
 # 6. Internal SHA256SUMS.txt (verified by Install.ps1).

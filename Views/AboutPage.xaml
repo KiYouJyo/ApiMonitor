@@ -6,259 +6,130 @@
     xmlns:viewModels="using:ApiMonitor.ViewModels"
     xmlns:converters="using:ApiMonitor.Views.Converters"
     xmlns:loc="using:ApiMonitor.Services">
-
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Padding="28,20,28,24" Spacing="14" MaxWidth="760" HorizontalAlignment="Left">
-
+        <StackPanel Padding="40,30,40,48" Spacing="20" MaxWidth="1080" HorizontalAlignment="Left">
             <TextBlock loc:Loc.Key="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
 
-            <!-- 1. 产品信息 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Image
-                            Source="/Assets/ApiMonitor.ico"
-                            Width="48"
-                            Height="48"
-                            AutomationProperties.Name="ApiMonitor" />
-                        <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding About.ProductName}" Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBlock
-                                loc:Loc.Key="About.Tagline"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="14">
+                            <Image Source="/Assets/ApiMonitor.ico" Width="48" Height="48" AutomationProperties.Name="ApiMonitor" />
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding About.ProductName}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                <TextBlock loc:Loc.Key="About.Tagline" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
                         </StackPanel>
+                        <TextBlock Text="{Binding About.DisplayVersionText}" />
+                        <TextBlock Text="{Binding About.PackageVersionText}" />
+                        <TextBlock Text="{Binding About.DistributionChannelText}" />
+                        <TextBlock Text="{Binding About.UpdateSourceText}" />
+                        <TextBlock Text="{Binding About.ArchitectureText}" />
+                        <TextBlock Text="{Binding About.PackageIdentityText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding About.PublisherText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding About.PackageFamilyText}" TextWrapping="Wrap" />
+                        <TextBlock loc:Loc.Key="About.License" />
+                        <TextBlock loc:Loc.Key="About.Copyright" />
                     </StackPanel>
-                    <TextBlock Text="{Binding About.DisplayVersionText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.PackageVersionText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.DistributionChannelText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.UpdateSourceText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.ArchitectureText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.PackageIdentityText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.PublisherText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.PackageFamilyText, Mode=OneWay}" />
-                    <TextBlock loc:Loc.Key="About.License" />
-                    <TextBlock loc:Loc.Key="About.Copyright" />
-                </StackPanel>
-            </Border>
+                </Border>
 
-            <!-- 2. 当前能力 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock Text="{Binding About.ProviderCountText, Mode=OneWay}" />
-                    <ItemsControl ItemsSource="{Binding About.Providers}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:AboutProviderRow">
-                                <TextBlock Text="{x:Bind DisplayName}" TextWrapping="Wrap" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock
-                        loc:Loc.Key="About.CapabilitiesSummary"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding About.CurrentLanguageText, Mode=OneWay}" />
-                    <TextBlock Text="{Binding About.CurrentThemeText, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
-
-            <!-- 3. 隐私与安全摘要 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="6">
-                    <TextBlock loc:Loc.Key="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <ItemsControl ItemsSource="{Binding About.PrivacyItems}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-
-            <!-- 4. 项目链接 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <ItemsControl ItemsSource="{Binding About.Links}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:AboutLinkRow">
-                                <Button
-                                    Content="{x:Bind Title}"
-                                    Command="{Binding ElementName=Root, Path=DataContext.OpenLinkCommand}"
-                                    CommandParameter="{x:Bind}"
-                                    Margin="0,2"
-                                    HorizontalAlignment="Left" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-
-            <!-- 5. 本地文档 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.OpenLocalDocuments" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        loc:Loc.Key="About.LocalDocsDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button loc:Loc.Key="About.DocsPrivacy" Tag="privacy" Click="OnLocalDocClicked" />
-                        <Button loc:Loc.Key="About.DocsLicense" Tag="license" Click="OnLocalDocClicked" />
-                        <Button loc:Loc.Key="About.DocsThirdParty" Tag="third-party" Click="OnLocalDocClicked" />
+                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock loc:Loc.Key="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding About.ProviderCountText}" />
+                        <ItemsControl ItemsSource="{Binding About.Providers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:AboutProviderRow">
+                                    <TextBlock Text="{x:Bind DisplayName}" TextWrapping="Wrap" Margin="0,2" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock loc:Loc.Key="About.CapabilitiesSummary" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding About.CurrentLanguageText}" />
+                        <TextBlock Text="{Binding About.CurrentThemeText}" />
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
+            </Grid>
 
-            <!-- 6. 手动检查更新 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        loc:Loc.Key="About.UpdateDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
+            <Border Style="{StaticResource AppCardStyle}">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="4">
+                            <TextBlock loc:Loc.Key="About.UpdateSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock loc:Loc.Key="About.UpdateDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding About.DistributionChannelText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Top" />
+                    </Grid>
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Button loc:Loc.Key="About.CheckUpdates" Command="{Binding About.CheckUpdatesCommand}" />
-                        <Button
-                            loc:Loc.Key="About.OpenReleasePage"
-                            Command="{Binding About.OpenReleasePageCommand}"
-                            Visibility="{Binding About.HasUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}" />
-                        <Button
-                            loc:Loc.Key="About.InstallStoreUpdate"
-                            Command="{Binding About.InstallStoreUpdateCommand}"
-                            Visibility="{Binding About.HasStoreInstallAvailable, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <Button loc:Loc.Key="About.InstallUpdate" Command="{Binding About.InstallAvailableUpdateCommand}" Visibility="{Binding About.HasUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource AccentButtonStyle}" />
+                        <Button loc:Loc.Key="About.OpenReleasePage" Command="{Binding About.OpenReleasePageCommand}" Visibility="{Binding About.HasUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </StackPanel>
-                    <ProgressRing
-                        Width="20"
-                        Height="20"
-                        IsActive="{Binding About.IsCheckingUpdates}"
-                        HorizontalAlignment="Left" />
-                    <TextBlock
-                        Text="{Binding About.UpdateStatusText, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding About.HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <ProgressRing Width="20" Height="20" IsActive="{Binding About.IsCheckingUpdates}" HorizontalAlignment="Left" />
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding About.UpdateInstallProgress}" Visibility="{Binding About.HasUpdateInstallProgress, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding About.UpdateStatusText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Visibility="{Binding About.HasUpdateStatus, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Border>
 
-            <!-- 7. 诊断信息 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        loc:Loc.Key="About.DiagnosticsDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <Button loc:Loc.Key="About.CopyDiagnostics" Command="{Binding About.CopyDiagnosticsCommand}" />
-                </StackPanel>
-            </Border>
-
-            <!-- 8. 应用运行状况（v1.0.0） -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.HealthSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        loc:Loc.Key="About.HealthDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button
-                            loc:Loc.Key="About.RunHealthChecks"
-                            Command="{Binding About.RunHealthChecksCommand}" />
-                        <Button
-                            loc:Loc.Key="About.OpenSupport"
-                            Command="{Binding About.OpenSupportCommand}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock loc:Loc.Key="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <ItemsControl ItemsSource="{Binding About.PrivacyItems}">
+                            <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" /></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
-                    <ProgressRing
-                        Width="20"
-                        Height="20"
-                        IsActive="{Binding About.IsRunningHealthChecks}"
-                        HorizontalAlignment="Left" />
-                    <TextBlock
-                        Text="{Binding About.OverallHealthText, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding About.HasHealthResults, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <ItemsControl ItemsSource="{Binding About.HealthChecks}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:HealthCheckRow">
-                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
-                                    <TextBlock
-                                        Text="{x:Bind StatusText}"
-                                        FontWeight="SemiBold"
-                                        MinWidth="64" />
-                                    <TextBlock Text="{x:Bind Message}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock loc:Loc.Key="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <ItemsControl ItemsSource="{Binding About.Links}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:AboutLinkRow">
+                                    <Button Content="{x:Bind Title}" Command="{Binding ElementName=Root, Path=DataContext.OpenLinkCommand}" CommandParameter="{x:Bind}" Margin="0,2" HorizontalAlignment="Left" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
-            <!-- 9. 本地数据入口 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}">
-                <StackPanel Spacing="8">
-                    <TextBlock loc:Loc.Key="About.LocalDataTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock
-                        loc:Loc.Key="About.LocalDataDescription"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap" />
-                    <Button loc:Loc.Key="About.OpenDataFolder" Command="{Binding About.OpenDataFolderCommand}" />
-                </StackPanel>
-            </Border>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <Border Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock loc:Loc.Key="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock loc:Loc.Key="About.DiagnosticsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <Button loc:Loc.Key="About.CopyDiagnostics" Command="{Binding About.CopyDiagnosticsCommand}" HorizontalAlignment="Left" />
+                        <Button loc:Loc.Key="About.OpenDataFolder" Command="{Binding About.OpenDataFolderCommand}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock loc:Loc.Key="About.HealthSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock loc:Loc.Key="About.HealthDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button loc:Loc.Key="About.RunHealthChecks" Command="{Binding About.RunHealthChecksCommand}" />
+                            <Button loc:Loc.Key="About.OpenSupport" Command="{Binding About.OpenSupportCommand}" />
+                        </StackPanel>
+                        <ProgressRing Width="20" Height="20" IsActive="{Binding About.IsRunningHealthChecks}" HorizontalAlignment="Left" />
+                        <TextBlock Text="{Binding About.OverallHealthText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Visibility="{Binding About.HasHealthResults, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <ItemsControl ItemsSource="{Binding About.HealthChecks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:HealthCheckRow">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                        <TextBlock Text="{x:Bind StatusText}" FontWeight="SemiBold" MinWidth="64" />
+                                        <TextBlock Text="{x:Bind Message}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

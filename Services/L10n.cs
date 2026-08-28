@@ -1,48 +1,62 @@
 namespace ApiMonitor.Services;
 
 /// <summary>
-/// v0.6.0 静态本地化入口：VM/服务直接 L10n.Get("Key") 取当前语言文本。
-/// 无 WinRT 依赖（测试项目可链接）：解析器由 App 启动时通过
-/// Initialize(Func) 注入（ResourceLoader 斜杠键）；未初始化时返回
-/// "[Missing: 键名]"，绝不静默返回空字符串。
+/// 统一本地化入口。支持多个资源图（Resources + 功能增量资源），并对常见 UI 属性
+/// 后缀做一致回退。缺失资源始终显示 [Missing: key]，避免静默空白。
 /// </summary>
 public static class L10n
 {
-    private static Func<string, string?>? _resolver;
-    private static volatile bool _initialized;
+    private static readonly object Gate = new();
+    private static Func<string, string?>[] _resolvers = Array.Empty<Func<string, string?>>();
 
-    /// <summary>注入解析器（App 启动时用 ResourceLoader 实现）。</summary>
+    public static bool IsInitialized => _resolvers.Length > 0;
+
+    /// <summary>设置主资源解析器，并清空此前解析器。</summary>
     public static void Initialize(Func<string, string?> resolver)
     {
-        _resolver = resolver;
-        _initialized = true;
+        ArgumentNullException.ThrowIfNull(resolver);
+        lock (Gate)
+        {
+            _resolvers = new[] { resolver };
+        }
     }
 
-    /// <summary>是否已初始化（测试可查询）。</summary>
-    public static bool IsInitialized => _initialized;
-
-    /// <summary>测试或调试用：直接指定键→值映射。</summary>
-    public static void InitializeWithMap(IReadOnlyDictionary<string, string> map)
+    /// <summary>追加资源解析器。用于独立功能资源图，保持既有 Resources.resw 稳定。</summary>
+    public static void AddResolver(Func<string, string?> resolver)
     {
-        _resolver = key => map.TryGetValue(key, out var v) ? v : null;
-        _initialized = true;
+        ArgumentNullException.ThrowIfNull(resolver);
+        lock (Gate)
+        {
+            var next = new Func<string, string?>[_resolvers.Length + 1];
+            Array.Copy(_resolvers, next, _resolvers.Length);
+            next[^1] = resolver;
+            _resolvers = next;
+        }
     }
 
     public static void Reset()
     {
-        _resolver = null;
-        _initialized = false;
+        lock (Gate)
+        {
+            _resolvers = Array.Empty<Func<string, string?>>();
+        }
+    }
+
+    public static void InitializeWithMap(IReadOnlyDictionary<string, string> map)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        Initialize(key => map.TryGetValue(key, out var value) ? value : null);
     }
 
     public static string Get(string key)
     {
-        string resolved = TryResolve(key);
+        string? resolved = TryResolve(key);
         return string.IsNullOrEmpty(resolved) ? $"[Missing: {key}]" : resolved;
     }
 
     public static string Format(string key, params object[] args)
     {
-        string resolved = TryResolve(key);
+        string? resolved = TryResolve(key);
         if (string.IsNullOrEmpty(resolved))
         {
             return $"[Missing: {key}]";
@@ -52,45 +66,58 @@ public static class L10n
         {
             return string.Format(resolved, args);
         }
-        catch
+        catch (FormatException)
         {
             return resolved;
         }
     }
 
-    /// <summary>完整键或常见属性后缀（.Text/.Content/.Header）解析。</summary>
-    private static string TryResolve(string key)
+    internal static IEnumerable<string> BuildCandidates(string key)
     {
-        if (string.IsNullOrEmpty(key) || _resolver is null)
+        if (string.IsNullOrWhiteSpace(key))
         {
-            return string.Empty;
+            yield break;
         }
 
-        string? TryGet(string k)
+        yield return key;
+        foreach (string suffix in new[]
         {
-            try
+            ".Text", ".Content", ".Header", ".Title", ".Message", ".Description",
+            ".PlaceholderText", ".ToolTip", ".AutomationName", ".OnContent", ".OffContent",
+            ".PrimaryButtonText", ".SecondaryButtonText", ".CloseButtonText",
+        })
+        {
+            yield return key + suffix;
+        }
+    }
+
+    private static string? TryResolve(string key)
+    {
+        var resolvers = _resolvers;
+        if (resolvers.Length == 0)
+        {
+            return null;
+        }
+
+        foreach (string candidate in BuildCandidates(key))
+        {
+            foreach (var resolver in resolvers)
             {
-                return _resolver is null ? null : _resolver(k);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        if (TryGet(key) is { } direct)
-        {
-            return direct;
-        }
-
-        foreach (string suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message" })
-        {
-            if (TryGet(key + suffix) is { } withSuffix)
-            {
-                return withSuffix;
+                try
+                {
+                    string? value = resolver(candidate);
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        return value;
+                    }
+                }
+                catch
+                {
+                    // 单一资源图异常不阻断其它资源图与后缀回退。
+                }
             }
         }
 
-        return string.Empty;
+        return null;
     }
 }
