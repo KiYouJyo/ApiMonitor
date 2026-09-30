@@ -1,16 +1,27 @@
-日本語 | [简体中文](README.md) | [English](README.en.md)
-
-# ApiMonitor
-
-開発者向けのローカル優先 Windows API 残高・枠・サービス健全性モニタリングツール。
-
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![CI](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml) [![GitHub Release](https://img.shields.io/github/v/release/KiYouJyo/ApiMonitor?display_name=tag&sort=semver)](https://github.com/KiYouJyo/ApiMonitor/releases/latest) ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20WinUI%203-0078D4?logo=windows) ![x64](https://img.shields.io/badge/arch-x64-0078D4)
+<p align="center">
+  <img src="docs/assets/app-icon.png" width="128" height="128" alt="ApiMonitor">
+</p>
+<h1 align="center">ApiMonitor</h1>
+<p align="center">開発者向けのローカル優先 Windows API 残高・枠・サービス健全性モニター。</p>
+<p align="center">
+  <a href="https://github.com/KiYouJyo/ApiMonitor/releases/latest"><img src="https://img.shields.io/github/v/release/KiYouJyo/ApiMonitor?display_name=tag&amp;sort=semver" alt="GitHub Release"></a>
+  <a href="https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml"><img src="https://github.com/KiYouJyo/ApiMonitor/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/KiYouJyo/ApiMonitor"><img src="https://img.shields.io/badge/Windows-WinUI%203-0078D4?logo=windows" alt="Windows"></a>
+  <a href="https://github.com/KiYouJyo/ApiMonitor"><img src="https://img.shields.io/badge/Languages-中文%20%7C%20日本語%20%7C%20English-6F42C1" alt="Languages"></a>
+  <a href="https://github.com/KiYouJyo/ApiMonitor"><img src="https://img.shields.io/badge/Design-Local--first-2EA043" alt="Local First"></a>
+  <a href="https://github.com/KiYouJyo/ApiMonitor/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-D4A72C" alt="MIT License"></a>
+  <a href="https://kiyoujyo.github.io/ApiMonitor/"><img src="https://img.shields.io/badge/Website-ApiMonitor-0078D4" alt="Website"></a>
+</p>
+<p align="center">
+  <a href="https://get.microsoft.com/installer/download/9N6KR2XFMKQ2?referrer=appbadge"><img src="https://get.microsoft.com/images/ja%20dark.svg" width="240" alt="Get ApiMonitor from Microsoft Store"></a>
+</p>
+<p align="center"><a href="README.md">简体中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.en.md">English</a></p>
 
 ## アプリを入手
 
 **GitHub サイドロード版（現在利用可能）**：現在のバージョンは **v1.0.0**（PackageVersion `1.0.0.2`）、x64、自己署名です。[最新の GitHub Release](https://github.com/KiYouJyo/ApiMonitor/releases/latest) から完全な `ApiMonitor_1.0.0.2_x64_Test.zip` をダウンロードし、解凍して `Install.cmd` を実行してください。更新確認は GitHub Releases を使用します。
 
-**Microsoft Store 版**：PackageVersion は `1.0.0.0` で、Store 専用の ID（`JoKiy.ApiMonitor`）を使用します。Store パッケージは Partner Center にアップロード済みで、初回リリースの手続きを進めています。まだ公開されていないため、ダウンロードリンクは提供しません。
+**Microsoft Store**: [Store から入手](https://apps.microsoft.com/detail/9N6KR2XFMKQ2)。インストールと更新は Store が管理します。利用可能な版は商品ページをご確認ください。
 
 両チャネルの Package Family は異なり、**相互にその場でアップグレードすることはできません**。Store 版は新規インストールとして扱われ、GitHub サイドロード版のデータは**移行されません**。両チャネルを同時にインストールすることは推奨しません。
 
