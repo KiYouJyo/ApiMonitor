@@ -9,9 +9,35 @@
         <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Padding="40,30,40,48" Spacing="20" MaxWidth="1080" HorizontalAlignment="Left">
-            <TextBlock loc:Loc.Key="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
+        <Grid Padding="24,18,24,36" HorizontalAlignment="Stretch">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="CompactSettings">
+                        <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0" /></VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="NotificationsCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="AppearanceCard.(Grid.Row)" Value="1" />
+                            <Setter Target="AppearanceCard.(Grid.Column)" Value="0" />
+                            <Setter Target="AppearanceCard.(Grid.ColumnSpan)" Value="2" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="WideSettings">
+                        <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="920" /></VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="NotificationsCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="AppearanceCard.(Grid.Row)" Value="0" />
+                            <Setter Target="AppearanceCard.(Grid.Column)" Value="1" />
+                            <Setter Target="AppearanceCard.(Grid.ColumnSpan)" Value="1" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        <StackPanel Spacing="18" MaxWidth="1080" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" Margin="0,0,0,8">
+                <TextBlock loc:Loc.Key="Settings.Title" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock loc:Loc.Key="Settings.AppearanceDescription" Foreground="{ThemeResource AppSecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
 
             <Border Style="{StaticResource AppCardStyle}">
                 <StackPanel Spacing="16">
@@ -39,8 +65,8 @@
                 </StackPanel>
             </Border>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
-                <Border Style="{StaticResource AppCardStyle}">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                <Border x:Name="NotificationsCard" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="14">
                         <TextBlock loc:Loc.Key="Settings.NotificationSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock Text="{Binding NotificationSettings.LocalOnlyExplanationText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -55,7 +81,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                <Border x:Name="AppearanceCard" Grid.Column="1" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="14">
                         <TextBlock loc:Loc.Key="Settings.AppearanceSection" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <ComboBox loc:Loc.Key="Settings.Theme" MinWidth="180" ItemsSource="{Binding AppearanceSettings.ThemeOptions}" DisplayMemberPath="DisplayName" SelectedItem="{Binding AppearanceSettings.SelectedTheme, Mode=TwoWay}" />
@@ -116,5 +142,6 @@
                 </StackPanel>
             </Border>
         </StackPanel>
+        </Grid>
     </ScrollViewer>
 </UserControl>
