@@ -86,7 +86,7 @@ jobs:
             $cert = New-SelfSignedCertificate `
               -Type Custom `
               -Subject 'CN=ApiMonitorDev' `
-              -FriendlyName 'ApiMonitor PR12 acceptance signing' `
+              -FriendlyName 'ApiMonitor acceptance signing' `
               -CertStoreLocation 'Cert:\CurrentUser\My' `
               -KeyAlgorithm RSA `
               -KeyLength 2048 `
@@ -207,14 +207,14 @@ jobs:
             -OutputDirectory $assets
           $sourceZip = Join-Path $assets "ApiMonitor_$($env:PACKAGE_VERSION)_x64_Test.zip"
           if (-not (Test-Path -LiteralPath $sourceZip)) { throw 'Acceptance ZIP was not generated.' }
-          $reviewZip = Join-Path $assets 'ApiMonitor-v1.1.0-PR12-signed-review-x64.zip'
+          $reviewZip = Join-Path $assets 'ApiMonitor-v${{ steps.version.outputs.display_version }}-signed-review-x64.zip'
           Copy-Item -LiteralPath $sourceZip -Destination $reviewZip -Force
-          $msixCopy = Join-Path $assets 'ApiMonitor-v1.1.0-PR12-signed-review-x64.msix'
+          $msixCopy = Join-Path $assets 'ApiMonitor-v${{ steps.version.outputs.display_version }}-signed-review-x64.msix'
           Copy-Item -LiteralPath $env:MSIX_PATH -Destination $msixCopy -Force
 
           $reviewInfo = Join-Path $assets 'REVIEW-INFO.txt'
           @(
-            'ApiMonitor v1.1.0 PR #12 signed review package',
+            'ApiMonitor signed review package',
             "Package version: $env:PACKAGE_VERSION",
             'Package identity: ApiMonitor / CN=ApiMonitorDev',
             "Certificate source: $env:CERT_SOURCE",
@@ -234,7 +234,7 @@ jobs:
       - name: Upload signed review artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ApiMonitor-v1.1.0-PR12-signed-review
+          name: ApiMonitor-v${{ steps.version.outputs.display_version }}-signed-review
           path: |
             ${{ steps.assets.outputs.review_zip }}
             ${{ steps.assets.outputs.review_msix }}
