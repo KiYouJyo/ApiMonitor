@@ -32,6 +32,8 @@ public sealed partial class OnboardingViewModel : ObservableObject
 
     public int StepCount => 4;
 
+    public int StepIndexForProgress => CurrentStep + 1;
+
     public bool IsFirstStep => CurrentStep == 0;
 
     public bool IsLastStep => CurrentStep == StepCount - 1;
@@ -49,7 +51,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
     public string StepProgressText => L10n.Format("Onboarding.StepProgress", CurrentStep + 1, StepCount);
 
     /// <summary>第一步：隐私要点。</summary>
-    public IReadOnlyList<string> PrivacyHighlights { get; } = new[]
+    public IReadOnlyList<string> PrivacyHighlights { get; private set; } = new[]
     {
         L10n.Get("Onboarding.Privacy.LocalPurpose"),
         L10n.Get("Onboarding.Privacy.LocalStorage"),
@@ -60,7 +62,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
     };
 
     /// <summary>第二步：可添加的 Provider（DeepSeek / OpenRouter 普通 Key / Management Key）。</summary>
-    public IReadOnlyList<OnboardingProviderRow> Providers { get; } = new[]
+    public IReadOnlyList<OnboardingProviderRow> Providers { get; private set; } = new[]
     {
         new OnboardingProviderRow(
             "deepseek",
@@ -77,7 +79,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
     };
 
     /// <summary>第三步：运行方式选项（默认保持安全默认值，不自动开启）。</summary>
-    public IReadOnlyList<OnboardingRunOption> RunOptions { get; } = new[]
+    public IReadOnlyList<OnboardingRunOption> RunOptions { get; private set; } = new[]
     {
         new OnboardingRunOption(
             L10n.Get("Onboarding.Run.AutoRefresh.Title"),
@@ -98,7 +100,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
     };
 
     /// <summary>第四步：主要功能入口。</summary>
-    public IReadOnlyList<OnboardingEntry> Entries { get; } = new[]
+    public IReadOnlyList<OnboardingEntry> Entries { get; private set; } = new[]
     {
         new OnboardingEntry(
             L10n.Get("Onboarding.Entry.AddAccount.Title"),
@@ -116,6 +118,86 @@ public sealed partial class OnboardingViewModel : ObservableObject
             L10n.Get("Onboarding.Entry.Settings.Title"),
             L10n.Get("Onboarding.Entry.Settings.Description")),
     };
+
+    public void RefreshLocalization()
+    {
+        PrivacyHighlights = new[]
+    {
+        L10n.Get("Onboarding.Privacy.LocalPurpose"),
+        L10n.Get("Onboarding.Privacy.LocalStorage"),
+        L10n.Get("Onboarding.Privacy.CredentialLocker"),
+        L10n.Get("Onboarding.Privacy.ProviderOnly"),
+        L10n.Get("Onboarding.Privacy.NoCloud"),
+        L10n.Get("Onboarding.Privacy.NoTelemetry"),
+    };
+
+    /// <summary>第二步：可添加的 Provider（DeepSeek / OpenRouter 普通 Key / Management Key）。</summary>
+        Providers = new[]
+    {
+        new OnboardingProviderRow(
+            "deepseek",
+            L10n.Get("Onboarding.Provider.DeepSeek.Title"),
+            L10n.Get("Onboarding.Provider.DeepSeek.Description")),
+        new OnboardingProviderRow(
+            "openrouter",
+            L10n.Get("Onboarding.Provider.OpenRouterApiKey.Title"),
+            L10n.Get("Onboarding.Provider.OpenRouterApiKey.Description")),
+        new OnboardingProviderRow(
+            "openrouter-management",
+            L10n.Get("Onboarding.Provider.OpenRouterManagementKey.Title"),
+            L10n.Get("Onboarding.Provider.OpenRouterManagementKey.Description")),
+    };
+
+    /// <summary>第三步：运行方式选项（默认保持安全默认值，不自动开启）。</summary>
+        RunOptions = new[]
+    {
+        new OnboardingRunOption(
+            L10n.Get("Onboarding.Run.AutoRefresh.Title"),
+            L10n.Get("Onboarding.Run.AutoRefresh.Description"),
+            L10n.Get("Onboarding.Run.DefaultOff")),
+        new OnboardingRunOption(
+            L10n.Get("Onboarding.Run.BalanceAlerts.Title"),
+            L10n.Get("Onboarding.Run.BalanceAlerts.Description"),
+            L10n.Get("Onboarding.Run.DefaultOff")),
+        new OnboardingRunOption(
+            L10n.Get("Onboarding.Run.CloseToTray.Title"),
+            L10n.Get("Onboarding.Run.CloseToTray.Description"),
+            L10n.Get("Onboarding.Run.DefaultOff")),
+        new OnboardingRunOption(
+            L10n.Get("Onboarding.Run.StartAtLogin.Title"),
+            L10n.Get("Onboarding.Run.StartAtLogin.Description"),
+            L10n.Get("Onboarding.Run.DefaultOff")),
+    };
+
+    /// <summary>第四步：主要功能入口。</summary>
+        Entries = new[]
+    {
+        new OnboardingEntry(
+            L10n.Get("Onboarding.Entry.AddAccount.Title"),
+            L10n.Get("Onboarding.Entry.AddAccount.Description")),
+        new OnboardingEntry(
+            L10n.Get("Onboarding.Entry.Tray.Title"),
+            L10n.Get("Onboarding.Entry.Tray.Description")),
+        new OnboardingEntry(
+            L10n.Get("Onboarding.Entry.FloatingWindow.Title"),
+            L10n.Get("Onboarding.Entry.FloatingWindow.Description")),
+        new OnboardingEntry(
+            L10n.Get("Onboarding.Entry.Insights.Title"),
+            L10n.Get("Onboarding.Entry.Insights.Description")),
+        new OnboardingEntry(
+            L10n.Get("Onboarding.Entry.Settings.Title"),
+            L10n.Get("Onboarding.Entry.Settings.Description")),
+    };
+
+
+        OnPropertyChanged(nameof(StepTitleText));
+        OnPropertyChanged(nameof(StepBodyText));
+        OnPropertyChanged(nameof(StepProgressText));
+        OnPropertyChanged(nameof(PrivacyHighlights));
+        OnPropertyChanged(nameof(Providers));
+        OnPropertyChanged(nameof(RunOptions));
+        OnPropertyChanged(nameof(Entries));
+    }
 
     public IAsyncRelayCommand NextCommand { get; }
 
@@ -173,6 +255,7 @@ public sealed partial class OnboardingViewModel : ObservableObject
 
     partial void OnCurrentStepChanged(int value)
     {
+        OnPropertyChanged(nameof(StepIndexForProgress));
         OnPropertyChanged(nameof(IsFirstStep));
         OnPropertyChanged(nameof(IsLastStep));
         OnPropertyChanged(nameof(ShowBackButton));
