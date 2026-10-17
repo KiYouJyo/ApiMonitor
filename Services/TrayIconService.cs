@@ -31,6 +31,9 @@ public sealed class TrayIconService : ITrayIconService
     private readonly Action _exitApplication;
     private readonly AppLog _log;
     private readonly Action _showMainWindow;
+    private readonly Func<AppThemePreference> _themePreference;
+    private readonly Func<IReadOnlyList<TrayMenuItem>, TrayContextMenuRequest, Action<uint>, AppThemePreference, bool>? _showFluentMenu;
+    private readonly Action? _closeFluentMenu;
     private readonly CancellationTokenSource _lifetime = new();
 
     private LifecycleState _state = LifecycleState.Inactive;
@@ -56,7 +59,10 @@ public sealed class TrayIconService : ITrayIconService
         ITraySettingsStore settingsStore,
         Action exitApplication,
         AppLog log,
-        Action showMainWindow)
+        Action showMainWindow,
+        Func<AppThemePreference>? themePreference = null,
+        Func<IReadOnlyList<TrayMenuItem>, TrayContextMenuRequest, Action<uint>, AppThemePreference, bool>? showFluentMenu = null,
+        Action? closeFluentMenu = null)
     {
         _host = host;
         _statusProvider = statusProvider;
@@ -68,6 +74,9 @@ public sealed class TrayIconService : ITrayIconService
         _exitApplication = exitApplication;
         _log = log;
         _showMainWindow = showMainWindow;
+        _themePreference = themePreference ?? (() => AppThemePreference.System);
+        _showFluentMenu = showFluentMenu;
+        _closeFluentMenu = closeFluentMenu;
     }
 
     public bool IsActive => _state == LifecycleState.Active;
@@ -149,6 +158,7 @@ public sealed class TrayIconService : ITrayIconService
             _host.DeleteIcon();
         }
 
+        _closeFluentMenu?.Invoke();
         _host.Dispose();
         _log.Info("托盘图标已删除。");
     }
@@ -207,6 +217,24 @@ public sealed class TrayIconService : ITrayIconService
         }
 
         var items = _menuService.BuildMenu(BuildMenuContext());
+        // The concrete presenter is injected by CompositionRoot. Pure service tests
+        // do not reference WinUI runtime classes and continue to use the native fake.
+        if (_showFluentMenu is not null)
+        {
+            try
+            {
+                if (_showFluentMenu(items, request,
+                    id => RouteCommand((TrayCommand)id), _themePreference()))
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"WinUI 托盘菜单不可用，回退系统菜单: {ex.GetType().Name}");
+            }
+        }
+
         uint? command = _host.ShowContextMenu(items, request);
         if (command is null)
         {

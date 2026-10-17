@@ -71,54 +71,53 @@ public sealed class AppearanceSettingsTests
     }
 
     [Fact]
-    public async Task LanguageSwitch_RequestsRestartWhenConfirmed()
+    public async Task LanguageSwitch_AppliesLiveAndNeverRequestsRestart()
     {
         using var temp = new TempDirectory();
         var store = new JsonAppearanceSettingsStore(temp.Path);
-        var appearance = new AppearanceService();
         var adapter = new FakeLanguageAdapter();
         var language = new LanguageService(adapter);
         bool restartRequested = false;
+        int changed = 0;
+        language.LanguageChanged += () => changed++;
 
         var vm = new AppearanceSettingsViewModel(
             store,
-            appearance,
+            new AppearanceService(),
             language,
             requestRestart: () =>
             {
                 restartRequested = true;
                 return true;
             },
-            confirmRestartAsync: () => Task.FromResult(true));
-        await vm.InitializeAsync();
-
-        vm.SelectedLanguage = vm.LanguageOptions.First(o => o.Language == AppLanguagePreference.EnUs);
-        await Task.Delay(100);
-
-        Assert.True(restartRequested);
-        Assert.Equal("en-US", adapter.Override);
-    }
-
-    [Fact]
-    public async Task LanguageSwitch_RestartFailure_ShowsManualHint()
-    {
-        using var temp = new TempDirectory();
-        var store = new JsonAppearanceSettingsStore(temp.Path);
-        var appearance = new AppearanceService();
-        var language = new LanguageService(new FakeLanguageAdapter());
-
-        var vm = new AppearanceSettingsViewModel(
-            store,
-            appearance,
-            language,
-            requestRestart: () => false,
-            confirmRestartAsync: () => Task.FromResult(true));
+            confirmRestartAsync: () => throw new InvalidOperationException("Restart dialog must not open"));
         await vm.InitializeAsync();
 
         vm.SelectedLanguage = vm.LanguageOptions.First(o => o.Language == AppLanguagePreference.JaJp);
-        await Task.Delay(100);
+        for (int attempt = 0; attempt < 30 && vm.IsLanguageBusy; attempt++)
+            await Task.Delay(15);
+        await Task.Delay(60);
 
-        Assert.True(vm.HasStatus);
-        Assert.Contains("重启", vm.StatusText);
+        Assert.False(restartRequested);
+        Assert.Equal("ja-JP", adapter.Override);
+        Assert.Equal(1, changed);
+        Assert.False(vm.HasStatus);
+        Assert.Equal(nameof(AppLanguagePreference.JaJp),
+            (await store.LoadAsync(CancellationToken.None)).Language);
+        Assert.Equal(AppLanguagePreference.JaJp, vm.SelectedLanguage.Language);
+    }
+
+    [Fact]
+    public void LanguageService_OnlyNotifiesOnActualPreferenceChanges()
+    {
+        var service = new LanguageService(new FakeLanguageAdapter());
+        int notifications = 0;
+        service.LanguageChanged += () => notifications++;
+
+        service.ApplyLanguage(AppLanguagePreference.EnUs);
+        service.ApplyLanguage(AppLanguagePreference.EnUs);
+        service.ApplyLanguage(AppLanguagePreference.System);
+
+        Assert.Equal(2, notifications);
     }
 }

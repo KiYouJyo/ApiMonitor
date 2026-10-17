@@ -32,6 +32,11 @@ public sealed partial class DataManagementViewModel : ObservableObject
     public IAsyncRelayCommand ImportBackupCommand { get; }
     public IAsyncRelayCommand OpenDataFolderCommand { get; }
 
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(DescriptionText));
+    }
+
     public DataManagementViewModel(
         IPortableBackupService backup,
         IFilePickerService filePicker,

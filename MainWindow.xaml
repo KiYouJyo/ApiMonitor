@@ -4,5 +4,32 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="using:ApiMonitor.Views"
     Title="ApiMonitor">
-    <views:MainPage x:Name="RootPageControl" />
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid x:Name="RootLayout" Background="Transparent"
+          Loaded="OnStartupRootLoaded"
+          ActualThemeChanged="OnStartupThemeChanged">
+        <views:MainPage x:Name="RootPageControl"
+                        Opacity="0" IsHitTestVisible="False" />
+        <!-- UrbanPlanToolbox-style logo-only splash, above a fully initialized shell. -->
+        <Grid x:Name="StartupOverlay"
+              Background="Transparent"
+              Canvas.ZIndex="100"
+              AutomationProperties.Name="ApiMonitor startup">
+            <Image x:Name="StartupDarkLogo"
+                   Source="ms-appx:///Assets/Square310x310Logo.scale-200.png"
+                   Width="183" Height="183" Stretch="Uniform"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Visibility="Collapsed"
+                   ImageOpened="OnStartupLogoImageOpened"
+                   ImageFailed="OnStartupLogoImageFailed" />
+            <Image x:Name="StartupLightLogo"
+                   Source="ms-appx:///Assets/Square310x310Logo.scale-200_altform-colorful_theme-light.png"
+                   Width="183" Height="183" Stretch="Uniform"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   ImageOpened="OnStartupLogoImageOpened"
+                   ImageFailed="OnStartupLogoImageFailed" />
+        </Grid>
+    </Grid>
 </Window>

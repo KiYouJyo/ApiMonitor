@@ -10,25 +10,25 @@
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#F7F7F7" />
-                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#F2F2F2" />
-                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#F9F9F9" />
-                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#E5E5E5" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#F4F7F9" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#DCEAF0F4" />
+                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#EEFFFFFF" />
+                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#B8F5F9FC" />
+                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#CCD8E2E9" />
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#1A1A1A" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#666666" />
-                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#E8F2FB" />
+                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#D8DCEFF9" />
                     <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#1B1B1B" />
-                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#202020" />
-                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#272727" />
-                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#2D2D2D" />
-                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#3A3A3A" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#162027" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#DD202D35" />
+                    <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#D12C3943" />
+                    <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#B532414B" />
+                    <SolidColorBrush x:Key="AppCardBorderBrush" Color="#72556975" />
                     <SolidColorBrush x:Key="AppPrimaryTextBrush" Color="#F5F5F5" />
                     <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#B0B0B0" />
-                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#12395B" />
+                    <SolidColorBrush x:Key="AppNavigationSelectedBrush" Color="#BF204F65" />
                     <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#202020" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
@@ -48,8 +48,15 @@
                 <Setter Property="Background" Value="{ThemeResource AppCardBackgroundBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="8" />
-                <Setter Property="Padding" Value="20,18" />
+                <Setter Property="CornerRadius" Value="14" />
+                <Setter Property="Padding" Value="24,22" />
+            </Style>
+            <Style x:Key="AppSettingsInnerCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource AppSubtleSurfaceBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource AppCardBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="16" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

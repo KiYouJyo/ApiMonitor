@@ -121,6 +121,9 @@ public sealed class CompositionRoot
     /// <summary>v0.6.0 主题统一协调器：窗口根元素主题 + 原生标题栏颜色同步。</summary>
     private readonly WindowThemeCoordinator _themeCoordinator;
 
+    /// <summary>Notifies the visible shell to reapply Loc properties in-place.</summary>
+    public event Action? LanguageChanged;
+
     public CompositionRoot(
         DispatcherQueue dispatcherQueue,
         ISingleInstanceService singleInstanceService,
@@ -315,6 +318,7 @@ public sealed class CompositionRoot
             },
             Log);
 
+        FluentTrayMenuWindow? fluentTrayMenu = null;
         trayRef = new TrayIconService(
             trayHost,
             statusProvider,
@@ -325,7 +329,20 @@ public sealed class CompositionRoot
             TraySettingsStore,
             ExitCoordinator.BeginExit,
             Log,
-            () => _showMainWindow());
+            () => _showMainWindow(),
+            () => _appearanceService.Theme,
+            showFluentMenu: (items, request, dispatch, theme) =>
+            {
+                if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+                    return false;
+                fluentTrayMenu ??= new FluentTrayMenuWindow();
+                return fluentTrayMenu.ShowMenu(items, request, trayHost, dispatch, theme);
+            },
+            closeFluentMenu: () =>
+            {
+                fluentTrayMenu?.Close();
+                fluentTrayMenu = null;
+            });
 
         TrayIconService = trayRef;
 
@@ -350,6 +367,14 @@ public sealed class CompositionRoot
         // ------------------------------------------------------------------
         var appearanceStore = new JsonAppearanceSettingsStore(dataDirectory);
         var languageService = new LanguageService();
+
+        languageService.LanguageChanged += () =>
+        {
+            MainViewModel.RefreshLocalization();
+            AboutViewModel?.RefreshLocalization(languageService.CurrentLanguageCode, _appearanceService.Theme.ToString());
+            TrayIconService.UpdateTooltip();
+            LanguageChanged?.Invoke();
+        };
 
         AppearanceSettings = new AppearanceSettingsViewModel(
             appearanceStore,

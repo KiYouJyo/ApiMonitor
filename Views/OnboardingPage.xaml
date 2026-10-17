@@ -17,12 +17,24 @@
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Disabled"
         AutomationProperties.Name="{Binding Onboarding.StepTitleText, Mode=OneWay}">
-        <StackPanel Padding="28,20,28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+        <StackPanel Padding="24,28,24,36" Spacing="20" MaxWidth="840" HorizontalAlignment="Center">
 
-            <TextBlock loc:Loc.Key="Onboarding.Title" Style="{StaticResource TitleTextBlockStyle}" />
+            <StackPanel Spacing="12">
+                <Border Width="72" Height="72" CornerRadius="18"
+                        Background="{ThemeResource AppCardBackgroundBrush}"
+                        BorderBrush="{ThemeResource AppCardBorderBrush}"
+                        BorderThickness="1" HorizontalAlignment="Left">
+                    <Image Source="ms-appx:///Assets/Square71x71Logo.scale-200.png"
+                           Width="56" Height="56" Stretch="Uniform" />
+                </Border>
+                <TextBlock loc:Loc.Key="Onboarding.Title" Style="{StaticResource TitleTextBlockStyle}" />
+            </StackPanel>
             <TextBlock
                 Text="{Binding Onboarding.StepProgressText, Mode=OneWay}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <ProgressBar Minimum="0" Maximum="4" Height="4"
+                         Value="{Binding Onboarding.StepIndexForProgress, Mode=OneWay}"
+                         AutomationProperties.Name="Onboarding progress" />
             <TextBlock
                 Text="{Binding Onboarding.StepTitleText, Mode=OneWay}"
                 Style="{StaticResource SubtitleTextBlockStyle}"
@@ -33,12 +45,7 @@
                 TextWrapping="Wrap" />
 
             <!-- 第一步：欢迎与隐私 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}"
+            <Border Style="{StaticResource AppCardStyle}" Padding="26,24"
                 Visibility="{Binding Onboarding.CurrentStep, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=0}">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Onboarding.PrivacyHighlights}">
@@ -56,12 +63,7 @@
             </Border>
 
             <!-- 第二步：添加第一个账户 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}"
+            <Border Style="{StaticResource AppCardStyle}" Padding="26,24"
                 Visibility="{Binding Onboarding.CurrentStep, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=1}">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Onboarding.Providers}">
@@ -89,12 +91,7 @@
             </Border>
 
             <!-- 第三步：运行方式 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}"
+            <Border Style="{StaticResource AppCardStyle}" Padding="26,24"
                 Visibility="{Binding Onboarding.CurrentStep, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=2}">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Onboarding.RunOptions}">
@@ -122,12 +119,7 @@
             </Border>
 
             <!-- 第四步：完成 -->
-            <Border
-                Padding="18,14"
-                CornerRadius="8"
-                BorderThickness="1"
-                BorderBrush="{ThemeResource AppCardBorderBrush}"
-                Background="{ThemeResource AppCardBackgroundBrush}"
+            <Border Style="{StaticResource AppCardStyle}" Padding="26,24"
                 Visibility="{Binding Onboarding.CurrentStep, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=3}">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Onboarding.Entries}">
@@ -147,7 +139,7 @@
             </Border>
 
             <!-- 底部操作 -->
-            <StackPanel Orientation="Horizontal" Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
                 <Button
                     loc:Loc.Key="Onboarding.Back"
                     Command="{Binding Onboarding.BackCommand}"

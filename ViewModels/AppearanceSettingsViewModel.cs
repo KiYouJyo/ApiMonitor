@@ -13,7 +13,7 @@ public sealed record LanguageOption(AppLanguagePreference Language, string Displ
 /// <summary>
 /// v0.6.0：设置页“外观与语言”区 ViewModel。
 /// 主题选择立即生效（AppearanceService 应用到所有窗口根元素）并持久化；
-/// 语言切换保存 PrimaryLanguageOverride 后提示重启（立即重启或稍后）。
+/// 语言切换保存覆盖值与全局资源语言限定，原位刷新视图与选项，无需重启。
 /// </summary>
 public sealed partial class AppearanceSettingsViewModel : ObservableObject
 {
@@ -24,14 +24,14 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     private readonly Func<Task<bool>>? _confirmRestartAsync;
     private readonly AppLog? _log;
 
-    public IReadOnlyList<ThemeOption> ThemeOptions { get; } = new[]
+    public IReadOnlyList<ThemeOption> ThemeOptions { get; private set; } = new[]
     {
         new ThemeOption(AppThemePreference.System, L10n.Get("Settings.ThemeSystem")),
         new ThemeOption(AppThemePreference.Light, L10n.Get("Settings.ThemeLight")),
         new ThemeOption(AppThemePreference.Dark, L10n.Get("Settings.ThemeDark")),
     };
 
-    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = new[]
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; private set; } = new[]
     {
         new LanguageOption(AppLanguagePreference.System, L10n.Get("Settings.LanguageSystem")),
         new LanguageOption(AppLanguagePreference.ZhCn, L10n.Get("Settings.LanguageZhCn")),
@@ -136,29 +136,16 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
 
     private async Task HandleLanguageChangeAsync(LanguageOption value)
     {
-        if (IsLanguageBusy)
-        {
-            return;
-        }
-
+        // Persist then re-translate the existing visual tree; do not tear down the
+        // single-instance/tray process or lose a monitoring refresh in progress.
+        if (IsLanguageBusy) return;
         IsLanguageBusy = true;
         try
         {
-            // 先安全保存设置与语言，再询问重启。
             await SaveAsync();
-
-            bool restart = _confirmRestartAsync is not null
-                ? await _confirmRestartAsync()
-                : true;
-            if (restart)
-            {
-                bool restarted = _requestRestart();
-                if (!restarted)
-                {
-                    StatusText = L10n.Get("Settings.RestartFailed");
-                    HasStatus = true;
-                }
-            }
+            HasStatus = false;
+            StatusText = string.Empty;
+            RefreshLocalizedOptions();
         }
         catch (Exception ex)
         {
@@ -169,6 +156,38 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         finally
         {
             IsLanguageBusy = false;
+        }
+    }
+
+    public void RefreshLocalizedOptions()
+    {
+        var selectedTheme = SelectedTheme.Theme;
+        var selectedLanguage = SelectedLanguage.Language;
+        bool wasInitializing = _isInitializing;
+        _isInitializing = true;
+        try
+        {
+            ThemeOptions = new[]
+            {
+                new ThemeOption(AppThemePreference.System, L10n.Get("Settings.ThemeSystem")),
+                new ThemeOption(AppThemePreference.Light, L10n.Get("Settings.ThemeLight")),
+                new ThemeOption(AppThemePreference.Dark, L10n.Get("Settings.ThemeDark")),
+            };
+            LanguageOptions = new[]
+            {
+                new LanguageOption(AppLanguagePreference.System, L10n.Get("Settings.LanguageSystem")),
+                new LanguageOption(AppLanguagePreference.ZhCn, L10n.Get("Settings.LanguageZhCn")),
+                new LanguageOption(AppLanguagePreference.EnUs, L10n.Get("Settings.LanguageEnUs")),
+                new LanguageOption(AppLanguagePreference.JaJp, L10n.Get("Settings.LanguageJaJp")),
+            };
+            OnPropertyChanged(nameof(ThemeOptions));
+            OnPropertyChanged(nameof(LanguageOptions));
+            SelectedTheme = ThemeOptions.First(x => x.Theme == selectedTheme);
+            SelectedLanguage = LanguageOptions.First(x => x.Language == selectedLanguage);
+        }
+        finally
+        {
+            _isInitializing = wasInitializing;
         }
     }
 

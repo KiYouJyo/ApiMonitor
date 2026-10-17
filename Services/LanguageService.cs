@@ -47,6 +47,9 @@ public interface ILanguageService
     /// <summary>当前语言偏好（跟随系统/简体中文/English/日本語）。</summary>
     AppLanguagePreference Preference { get; }
 
+    /// <summary>Raised on the UI thread when an interactive language selection changes.</summary>
+    event Action? LanguageChanged;
+
     /// <summary>把语言偏好应用到系统（保存 PrimaryLanguageOverride）。</summary>
     void ApplyLanguage(AppLanguagePreference preference);
 
@@ -68,6 +71,8 @@ public sealed class LanguageService : ILanguageService
     }
 
     public AppLanguagePreference Preference => _preference;
+
+    public event Action? LanguageChanged;
 
     public string CurrentLanguageCode
     {
@@ -93,20 +98,37 @@ public sealed class LanguageService : ILanguageService
 
     public void ApplyLanguage(AppLanguagePreference preference)
     {
+        bool changed = _preference != preference;
         _preference = preference;
+        string? requested = preference switch
+        {
+            AppLanguagePreference.ZhCn => "zh-CN",
+            AppLanguagePreference.EnUs => "en-US",
+            AppLanguagePreference.JaJp => "ja-JP",
+            _ => null,
+        };
         try
         {
-            _adapter.WriteOverride(preference switch
+            _adapter.WriteOverride(requested);
+            // ResourceLoader.GetForViewIndependentUse resolves against this qualifier.
+            // Updating only PrimaryLanguageOverride would leave current WinUI controls stale.
+            // Headless xUnit builds inject a fake adapter. Never activate the
+            // process-global WinRT resource manager from that test context.
+            if (_adapter is WindowsLanguageSystemAdapter)
             {
-                AppLanguagePreference.ZhCn => "zh-CN",
-                AppLanguagePreference.EnUs => "en-US",
-                AppLanguagePreference.JaJp => "ja-JP",
-                _ => null, // 跟随系统：清空覆盖。
-            });
+                Windows.ApplicationModel.Resources.Core.ResourceContext.SetGlobalQualifierValue(
+                    "Language", NormalizeCode(requested
+                        ?? Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault()));
+            }
         }
         catch
         {
-            // 设置失败不影响应用。
+            // An unavailable language API must never interrupt monitoring.
+        }
+
+        if (changed)
+        {
+            LanguageChanged?.Invoke();
         }
     }
 

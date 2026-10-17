@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 
 namespace ApiMonitor.Services;
 
@@ -39,6 +40,28 @@ public static class Loc
     public static void SetOffContentKey(DependencyObject obj, string value) => obj.SetValue(OffContentKeyProperty, value);
 
     private static void OnAnyKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => Apply(d);
+
+    /// <summary>
+    /// Re-apply live translated properties without replacing controls, data bindings,
+    /// or the current navigation/page state. Must be called on the UI thread.
+    /// </summary>
+    public static void RefreshTree(DependencyObject root)
+    {
+        var pending = new Stack<DependencyObject>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            var current = pending.Pop();
+            Apply(current);
+            int count = VisualTreeHelper.GetChildrenCount(current);
+            for (int index = 0; index < count; index++)
+            {
+                pending.Push(VisualTreeHelper.GetChild(current, index));
+            }
+        }
+    }
+
+    public static void RefreshElement(DependencyObject element) => Apply(element);
 
     private static void Apply(DependencyObject d)
     {
@@ -139,16 +162,16 @@ public static class Loc
                 case TextBox textBox: textBox.Header = text; break;
                 case PasswordBox passwordBox: passwordBox.Header = text; break;
                 case NumberBox numberBox: numberBox.Header = text; break;
-                case Button button when button.Content is null: button.Content = text; break;
-                case ToggleButton toggle when toggle.Content is null: toggle.Content = text; break;
+                case Button button when button.Content is null or string: button.Content = text; break;
+                case ToggleButton toggle when toggle.Content is null or string: toggle.Content = text; break;
                 case ToggleSwitch toggleSwitch: toggleSwitch.Header = text; break;
                 case ComboBox comboBox: comboBox.Header = text; break;
                 case RadioButtons radioButtons: radioButtons.Header = text; break;
-                case NavigationViewItem navItem when navItem.Content is null: navItem.Content = text; break;
-                case HyperlinkButton hyperlink when hyperlink.Content is null: hyperlink.Content = text; break;
+                case NavigationViewItem navItem when navItem.Content is null or string: navItem.Content = text; break;
+                case HyperlinkButton hyperlink when hyperlink.Content is null or string: hyperlink.Content = text; break;
                 case InfoBar infoBar: infoBar.Title = text; break;
                 case ContentDialog dialog: dialog.Title = text; break;
-                case ContentControl contentControl when contentControl.Content is null: contentControl.Content = text; break;
+                case ContentControl contentControl when contentControl.Content is null or string: contentControl.Content = text; break;
             }
         }
         catch

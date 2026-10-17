@@ -33,14 +33,29 @@
         IsSettingsVisible="False"
         IsPaneToggleButtonVisible="True"
         PaneDisplayMode="Auto"
-        OpenPaneLength="270"
-        CompactPaneLength="48"
-        CompactModeThresholdWidth="920"
-        ExpandedModeThresholdWidth="1280"
+        OpenPaneLength="252"
+        CompactPaneLength="52"
+        CompactModeThresholdWidth="760"
+        ExpandedModeThresholdWidth="1120"
         AlwaysShowHeader="False"
         SelectionChanged="OnNavigationSelectionChanged"
         Loaded="OnRootNavigationLoaded"
-        Background="{ThemeResource AppShellBackgroundBrush}">
+        Background="Transparent">
+        <NavigationView.Resources>
+            <Thickness x:Key="NavigationViewBorderThickness">0</Thickness>
+            <Thickness x:Key="NavigationViewContentGridBorderThickness">0</Thickness>
+            <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0</Thickness>
+        </NavigationView.Resources>
+        <NavigationView.PaneHeader>
+            <StackPanel Orientation="Horizontal" Margin="8,12,8,20" Spacing="12">
+                <Image Source="ms-appx:///Assets/Square44x44Logo.scale-200.png"
+                       Width="36" Height="36" Stretch="Uniform" />
+                <StackPanel VerticalAlignment="Center" Spacing="1">
+                    <TextBlock Text="ApiMonitor" FontWeight="SemiBold" FontSize="17" />
+                    <TextBlock Text="API · GIS" FontSize="11" Foreground="{ThemeResource AppSecondaryTextBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </NavigationView.PaneHeader>
         <NavigationView.MenuItems>
             <NavigationViewItem loc:Loc.Key="Nav.Home" Tag="Home">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>

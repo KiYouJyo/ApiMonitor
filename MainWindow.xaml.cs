@@ -1,6 +1,8 @@
 using ApiMonitor.Services;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace ApiMonitor;
 
@@ -9,6 +11,12 @@ public sealed partial class MainWindow : Window, IMainWindowController
     private readonly CompositionRoot _compositionRoot;
     private bool _allowClose;
     private bool _isVisible;
+
+    private bool _startupInitialized;
+    private bool _startupLogoReady;
+    private bool _startupFirstFrameRendered;
+    private bool _startupMinimumElapsed;
+    private bool _startupDismissStarted;
 
     public MainWindow(CompositionRoot compositionRoot)
     {
@@ -23,6 +31,127 @@ public sealed partial class MainWindow : Window, IMainWindowController
     public Views.MainPage RootPage => RootPageControl;
 
     public bool IsVisible => _isVisible;
+
+    /// <summary>Synchronize the logo with the persisted application theme.</summary>
+    public void ApplyStartupTheme(AppThemePreference preference)
+    {
+        RootLayout.RequestedTheme = preference switch
+        {
+            AppThemePreference.Light => ElementTheme.Light,
+            AppThemePreference.Dark => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
+        UpdateStartupLogoForTheme();
+    }
+
+    /// <summary>Release the splash only when the real initialization and logo gate finish.</summary>
+    public void CompleteStartupPresentation()
+    {
+        _startupInitialized = true;
+        TryCompleteStartupPresentation();
+    }
+
+    private void OnStartupThemeChanged(FrameworkElement sender, object args) =>
+        UpdateStartupLogoForTheme();
+
+    private void UpdateStartupLogoForTheme()
+    {
+        bool dark = RootLayout.ActualTheme == ElementTheme.Dark;
+        StartupDarkLogo.Visibility = dark ? Visibility.Visible : Visibility.Collapsed;
+        StartupLightLogo.Visibility = dark ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void OnStartupRootLoaded(object sender, RoutedEventArgs e)
+    {
+        UpdateStartupLogoForTheme();
+        CompositionTarget.Rendering += OnStartupFirstFrameRendered;
+        _ = EnsureStartupLogoGateAsync();
+    }
+
+    private void OnStartupLogoImageOpened(object sender, RoutedEventArgs e)
+    {
+        if ((RootLayout.ActualTheme == ElementTheme.Dark && ReferenceEquals(sender, StartupDarkLogo))
+            || (RootLayout.ActualTheme != ElementTheme.Dark && ReferenceEquals(sender, StartupLightLogo)))
+        {
+            _startupLogoReady = true;
+            TryCompleteStartupPresentation();
+        }
+    }
+
+    private void OnStartupLogoImageFailed(object sender, ExceptionRoutedEventArgs e)
+    {
+        // A missing image must not strand the user behind the splash.
+        _startupLogoReady = true;
+        TryCompleteStartupPresentation();
+    }
+
+    private async Task EnsureStartupLogoGateAsync()
+    {
+        await Task.Delay(1000);
+        _startupLogoReady = true;
+        TryCompleteStartupPresentation();
+    }
+
+    private void OnStartupFirstFrameRendered(object? sender, object args)
+    {
+        CompositionTarget.Rendering -= OnStartupFirstFrameRendered;
+        if (_startupFirstFrameRendered) return;
+        _startupFirstFrameRendered = true;
+        _ = FinishMinimumStartupDurationAsync();
+    }
+
+    private async Task FinishMinimumStartupDurationAsync()
+    {
+        // Same visual timing contract as UrbanPlanToolbox: at least 500 ms
+        // after the splash is first rendered, followed by a 200 ms fade.
+        await Task.Delay(500);
+        _startupMinimumElapsed = true;
+        TryCompleteStartupPresentation();
+    }
+
+    private void TryCompleteStartupPresentation()
+    {
+        if (!_startupInitialized || !_startupLogoReady || !_startupMinimumElapsed
+            || _startupDismissStarted)
+            return;
+
+        _startupDismissStarted = true;
+        RootPageControl.Opacity = 1;
+        _ = FadeOutStartupOverlayAsync();
+    }
+
+    private async Task FadeOutStartupOverlayAsync()
+    {
+        try
+        {
+            var completion = new TaskCompletionSource<bool>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            var fade = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            var storyboard = new Storyboard();
+            Storyboard.SetTarget(fade, StartupOverlay);
+            Storyboard.SetTargetProperty(fade, nameof(UIElement.Opacity));
+            storyboard.Children.Add(fade);
+            storyboard.Completed += (_, _) => completion.TrySetResult(true);
+            storyboard.Begin();
+            await Task.WhenAny(completion.Task, Task.Delay(350));
+        }
+        catch
+        {
+            // Animation errors never prevent the app becoming usable.
+        }
+        finally
+        {
+            StartupOverlay.Visibility = Visibility.Collapsed;
+            StartupOverlay.Opacity = 1;
+            RootPageControl.IsHitTestVisible = true;
+        }
+    }
 
     public void Show()
     {

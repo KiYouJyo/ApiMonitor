@@ -1,4 +1,5 @@
 using ApiMonitor.ViewModels;
+using ApiMonitor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -13,6 +14,20 @@ namespace ApiMonitor.Views;
 public sealed partial class MainPage : UserControl
 {
     private bool _insightsInitialized;
+
+    /// <summary>Update visible and cached navigation strings without recreating any page.</summary>
+    public void RefreshLocalizedContent()
+    {
+        Loc.RefreshTree(this);
+        foreach (var item in RootNavigation.MenuItems.OfType<NavigationViewItem>())
+        {
+            Loc.RefreshElement(item);
+        }
+        foreach (var item in RootNavigation.FooterMenuItems.OfType<NavigationViewItem>())
+        {
+            Loc.RefreshElement(item);
+        }
+    }
 
     public MainPage()
     {
@@ -53,6 +68,17 @@ public sealed partial class MainPage : UserControl
 
     private void SyncNavigationSelection(AppPageKind page)
     {
+        bool onboarding = page == AppPageKind.Onboarding;
+        RootNavigation.IsPaneVisible = !onboarding;
+        RootNavigation.IsPaneToggleButtonVisible = !onboarding;
+        if (onboarding)
+        {
+            // No menu selection while the first-run experience owns the content.
+            // Keeping Home selected could route SelectionChanged back to Home.
+            RootNavigation.SelectedItem = null;
+            return;
+        }
+
         string target = page switch
         {
             AppPageKind.Insights => "Insights",

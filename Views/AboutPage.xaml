@@ -10,15 +10,57 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Padding="40,30,40,48" Spacing="20" MaxWidth="1080" HorizontalAlignment="Left">
-            <TextBlock loc:Loc.Key="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch">
+        <Grid Padding="24,18,24,36" HorizontalAlignment="Stretch">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="CompactAbout">
+                        <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0" /></VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="ProductCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="CapabilityCard.(Grid.Row)" Value="1" />
+                            <Setter Target="CapabilityCard.(Grid.Column)" Value="0" />
+                            <Setter Target="CapabilityCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="PrivacyCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="LinksCard.(Grid.Row)" Value="1" />
+                            <Setter Target="LinksCard.(Grid.Column)" Value="0" />
+                            <Setter Target="LinksCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="DiagnosticsCard.(Grid.ColumnSpan)" Value="2" />
+                            <Setter Target="HealthCard.(Grid.Row)" Value="1" />
+                            <Setter Target="HealthCard.(Grid.Column)" Value="0" />
+                            <Setter Target="HealthCard.(Grid.ColumnSpan)" Value="2" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="WideAbout">
+                        <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="1000" /></VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="ProductCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="CapabilityCard.(Grid.Row)" Value="0" />
+                            <Setter Target="CapabilityCard.(Grid.Column)" Value="1" />
+                            <Setter Target="CapabilityCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="PrivacyCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="LinksCard.(Grid.Row)" Value="0" />
+                            <Setter Target="LinksCard.(Grid.Column)" Value="1" />
+                            <Setter Target="LinksCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="DiagnosticsCard.(Grid.ColumnSpan)" Value="1" />
+                            <Setter Target="HealthCard.(Grid.Row)" Value="0" />
+                            <Setter Target="HealthCard.(Grid.Column)" Value="1" />
+                            <Setter Target="HealthCard.(Grid.ColumnSpan)" Value="1" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        <StackPanel Spacing="18" MaxWidth="1080" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" Margin="0,0,0,8">
+                <TextBlock loc:Loc.Key="About.Title" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock loc:Loc.Key="About.Tagline" Foreground="{ThemeResource AppSecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
-                <Border Style="{StaticResource AppCardStyle}">
+            <Grid x:Name="AboutSectionGrid1" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                <Border x:Name="ProductCard" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="14">
-                            <Image Source="/Assets/ApiMonitor.ico" Width="48" Height="48" AutomationProperties.Name="ApiMonitor" />
+                            <Image Source="ms-appx:///Assets/Square71x71Logo.scale-200.png" Width="64" Height="64" AutomationProperties.Name="ApiMonitor" />
                             <StackPanel Spacing="2" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding About.ProductName}" Style="{StaticResource SubtitleTextBlockStyle}" />
                                 <TextBlock loc:Loc.Key="About.Tagline" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -37,7 +79,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                <Border x:Name="CapabilityCard" Grid.Column="1" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="8">
                         <TextBlock loc:Loc.Key="About.CapabilitiesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock Text="{Binding About.ProviderCountText}" />
@@ -75,8 +117,8 @@
                 </StackPanel>
             </Border>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
-                <Border Style="{StaticResource AppCardStyle}">
+            <Grid x:Name="AboutSectionGrid2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                <Border x:Name="PrivacyCard" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="8">
                         <TextBlock loc:Loc.Key="About.PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <ItemsControl ItemsSource="{Binding About.PrivacyItems}">
@@ -84,7 +126,7 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                <Border x:Name="LinksCard" Grid.Column="1" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="8">
                         <TextBlock loc:Loc.Key="About.LinksTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <ItemsControl ItemsSource="{Binding About.Links}">
@@ -98,8 +140,8 @@
                 </Border>
             </Grid>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
-                <Border Style="{StaticResource AppCardStyle}">
+            <Grid x:Name="AboutSectionGrid3" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                <Border x:Name="DiagnosticsCard" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="10">
                         <TextBlock loc:Loc.Key="About.DiagnosticsTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock loc:Loc.Key="About.DiagnosticsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -107,7 +149,7 @@
                         <Button loc:Loc.Key="About.OpenDataFolder" Command="{Binding About.OpenDataFolderCommand}" HorizontalAlignment="Left" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource AppCardStyle}">
+                <Border x:Name="HealthCard" Grid.Column="1" Style="{StaticResource AppCardStyle}">
                     <StackPanel Spacing="10">
                         <TextBlock loc:Loc.Key="About.HealthSectionTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock loc:Loc.Key="About.HealthDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
@@ -131,5 +173,6 @@
                 </Border>
             </Grid>
         </StackPanel>
+        </Grid>
     </ScrollViewer>
 </UserControl>
