@@ -136,6 +136,7 @@ public partial class App : Application
             if (_compositionRoot.AppearanceSettings is { } appearanceSettings)
             {
                 await appearanceSettings.InitializeAsync(_lifetime.Token);
+                _window?.ApplyStartupTheme(appearanceSettings.SelectedTheme.Theme);
             }
 
             _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);
