@@ -328,7 +328,8 @@ public sealed class CompositionRoot
             TraySettingsStore,
             ExitCoordinator.BeginExit,
             Log,
-            () => _showMainWindow());
+            () => _showMainWindow(),
+            () => _appearanceService.Theme);
 
         TrayIconService = trayRef;
 
@@ -358,6 +359,7 @@ public sealed class CompositionRoot
         {
             MainViewModel.RefreshLocalization();
             AboutViewModel?.RefreshLocalization(languageService.CurrentLanguageCode, _appearanceService.Theme.ToString());
+            TrayIconService.UpdateTooltip();
             LanguageChanged?.Invoke();
         };
 
