@@ -45,9 +45,15 @@ public sealed partial class TraySettingsViewModel : ObservableObject
     }
 
     /// <summary>当前托盘驻留状态摘要（设置区展示）。</summary>
-    public string TrayResidencyText { get; } = L10n.Get("Tray.ResidencyEnabled");
+    public string TrayResidencyText { get; private set; } = L10n.Get("Tray.ResidencyEnabled");
 
     public RelayCommand ExitApplicationCommand { get; }
+
+    public void RefreshLocalization()
+    {
+        TrayResidencyText = L10n.Get("Tray.ResidencyEnabled");
+        OnPropertyChanged(nameof(TrayResidencyText));
+    }
 
     public TraySettingsViewModel(
         ITraySettingsStore settingsStore,
