@@ -53,7 +53,7 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<ProviderFilterOption> ProviderFilterOptions { get; private set; } =
         new[] { new ProviderFilterOption(string.Empty, L10n.Get("Home.FilterAllProviders")) };
 
-    public IReadOnlyList<StatusFilterOption> StatusFilterOptions { get; } = new[]
+    public IReadOnlyList<StatusFilterOption> StatusFilterOptions { get; private set; } = new[]
     {
         new StatusFilterOption(AccountStatusFilter.All, L10n.Get("Home.FilterAllStatus")),
         new StatusFilterOption(AccountStatusFilter.Normal, L10n.Get("Home.StatusNormal")),
@@ -139,7 +139,7 @@ public sealed partial class MainViewModel : ObservableObject
     public IAsyncRelayCommand ReopenOnboardingCommand { get; }
 
     /// <summary>主页空状态隐私说明（v0.6.0 起从资源取，避免硬编码）。</summary>
-    public string HomePrivacyMessage { get; } =
+    public string HomePrivacyMessage { get; private set; } =
         L10n.Get("Home.PrivacyMessageText");
 
     [ObservableProperty]
@@ -220,6 +220,42 @@ public sealed partial class MainViewModel : ObservableObject
         HasActiveFilters = SelectedStatusFilter != AccountStatusFilter.All
             || !string.IsNullOrEmpty(SelectedProviderFilter);
         ApplyFilters();
+    }
+
+    /// <summary>Refresh localized labels without recreating monitoring services or accounts.</summary>
+    public void RefreshLocalization()
+    {
+        StatusFilterOptions = new[]
+        {
+            new StatusFilterOption(AccountStatusFilter.All, L10n.Get("Home.FilterAllStatus")),
+            new StatusFilterOption(AccountStatusFilter.Normal, L10n.Get("Home.StatusNormal")),
+            new StatusFilterOption(AccountStatusFilter.Low, L10n.Get("Home.StatusLow")),
+            new StatusFilterOption(AccountStatusFilter.Unknown, L10n.Get("Home.StatusUnknown")),
+            new StatusFilterOption(AccountStatusFilter.Failed, L10n.Get("Home.StatusFailed")),
+        };
+        ProviderFilterOptions = new[]
+        {
+            new ProviderFilterOption(string.Empty, L10n.Get("Home.FilterAllProviders")),
+            new ProviderFilterOption(ProviderCategoryFilters.Ai, L10n.Get("Home.FilterAiProviders")),
+            new ProviderFilterOption(ProviderCategoryFilters.Geospatial, L10n.Get("Home.FilterGeospatialProviders")),
+            new ProviderFilterOption(ProviderCategoryFilters.GisServer, L10n.Get("Home.FilterGisServerProviders")),
+        }.Concat(_accountManager.Providers.Select(p =>
+            new ProviderFilterOption(p.ProviderId, p.DisplayName))).ToArray();
+        HomePrivacyMessage = L10n.Get("Home.PrivacyMessageText");
+        OnPropertyChanged(nameof(StatusFilterOptions));
+        OnPropertyChanged(nameof(ProviderFilterOptions));
+        OnPropertyChanged(nameof(HomePrivacyMessage));
+        OnPropertyChanged(nameof(AccountSummaryText));
+        OnPropertyChanged(nameof(ServiceSummaryText));
+        OnPropertyChanged(nameof(SupportedProvidersText));
+
+        foreach (var account in Accounts) account.RefreshLocalization();
+        AppearanceSettings?.RefreshLocalizedOptions();
+        Onboarding?.RefreshLocalization();
+        NotificationSettings?.RefreshLocalization();
+        TraySettings?.RefreshLocalization();
+        DataManagement?.RefreshLocalization();
+        Insights?.RefreshLocalization();
     }
 
     /// <summary>切换到指定导航页面（不会重建账户状态，不重启调度器）。</summary>
