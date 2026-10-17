@@ -13,7 +13,7 @@ public sealed record LanguageOption(AppLanguagePreference Language, string Displ
 /// <summary>
 /// v0.6.0：设置页“外观与语言”区 ViewModel。
 /// 主题选择立即生效（AppearanceService 应用到所有窗口根元素）并持久化；
-/// 语言切换保存 PrimaryLanguageOverride 后提示重启（立即重启或稍后）。
+/// 语言切换保存覆盖值与全局资源语言限定，原位刷新视图与选项，无需重启。
 /// </summary>
 public sealed partial class AppearanceSettingsViewModel : ObservableObject
 {
@@ -163,6 +163,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
     {
         var selectedTheme = SelectedTheme.Theme;
         var selectedLanguage = SelectedLanguage.Language;
+        bool wasInitializing = _isInitializing;
         _isInitializing = true;
         try
         {
@@ -186,7 +187,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject
         }
         finally
         {
-            _isInitializing = false;
+            _isInitializing = wasInitializing;
         }
     }
 
