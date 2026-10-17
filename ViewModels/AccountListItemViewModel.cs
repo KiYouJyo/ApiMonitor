@@ -321,6 +321,22 @@ public sealed partial class AccountListItemViewModel : ObservableObject
         RecomputeStatusKind();
     }
 
+    public void RefreshLocalization()
+    {
+        AvailabilityText = HasSnapshot && IsAvailable
+            ? L10n.Get("Card.Available")
+            : L10n.Get("Card.Unavailable");
+        RefreshDisplay();
+        OnPropertyChanged(nameof(ProbeConsumesQuotaText));
+        OnPropertyChanged(nameof(ServiceStatusText));
+        OnPropertyChanged(nameof(ServiceStatusKindText));
+        OnPropertyChanged(nameof(StatusKindText));
+        OnPropertyChanged(nameof(CredentialModeText));
+        OnPropertyChanged(nameof(NotificationsEnabledText));
+        OnPropertyChanged(nameof(LastSuccessLine));
+        OnPropertyChanged(nameof(LastSuccessText));
+    }
+
     /// <summary>查询完成后从最新账户/记录状态刷新卡片显示（含监控与阈值）。</summary>
     public void RefreshDisplay()
     {
