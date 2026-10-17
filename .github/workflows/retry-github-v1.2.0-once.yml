@@ -32,6 +32,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh workflow run publish-github-release.yml --ref main \
+          gh workflow run --repo KiYouJyo/ApiMonitor publish-github-release.yml --ref main \
             --field version='1.2.0' \
             --field dry_run='false'
