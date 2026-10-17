@@ -1,5 +1,6 @@
 name: Resume ApiMonitor v1.2.0 GitHub Release
 
+# Retries the GitHub release after correcting its win-x64 runtime pack restore.
 # The Store submission is a separate one-time operation and is not repeated.
 on:
   push:
