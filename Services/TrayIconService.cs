@@ -32,7 +32,8 @@ public sealed class TrayIconService : ITrayIconService
     private readonly AppLog _log;
     private readonly Action _showMainWindow;
     private readonly Func<AppThemePreference> _themePreference;
-    private FluentTrayMenuWindow? _fluentMenu;
+    private readonly Func<IReadOnlyList<TrayMenuItem>, TrayContextMenuRequest, Action<uint>, AppThemePreference, bool>? _showFluentMenu;
+    private readonly Action? _closeFluentMenu;
     private readonly CancellationTokenSource _lifetime = new();
 
     private LifecycleState _state = LifecycleState.Inactive;
@@ -59,7 +60,9 @@ public sealed class TrayIconService : ITrayIconService
         Action exitApplication,
         AppLog log,
         Action showMainWindow,
-        Func<AppThemePreference>? themePreference = null)
+        Func<AppThemePreference>? themePreference = null,
+        Func<IReadOnlyList<TrayMenuItem>, TrayContextMenuRequest, Action<uint>, AppThemePreference, bool>? showFluentMenu = null,
+        Action? closeFluentMenu = null)
     {
         _host = host;
         _statusProvider = statusProvider;
@@ -72,6 +75,8 @@ public sealed class TrayIconService : ITrayIconService
         _log = log;
         _showMainWindow = showMainWindow;
         _themePreference = themePreference ?? (() => AppThemePreference.System);
+        _showFluentMenu = showFluentMenu;
+        _closeFluentMenu = closeFluentMenu;
     }
 
     public bool IsActive => _state == LifecycleState.Active;
@@ -153,8 +158,7 @@ public sealed class TrayIconService : ITrayIconService
             _host.DeleteIcon();
         }
 
-        _fluentMenu?.Close();
-        _fluentMenu = null;
+        _closeFluentMenu?.Invoke();
         _host.Dispose();
         _log.Info("托盘图标已删除。");
     }
@@ -213,22 +217,16 @@ public sealed class TrayIconService : ITrayIconService
         }
 
         var items = _menuService.BuildMenu(BuildMenuContext());
-        // WinUI 3 flyout is only used with the real native Shell host. Test
-        // doubles retain the original deterministic command-return contract.
-        // High contrast falls back to the OS-native menu for accessibility.
-        if (_host is TrayNativeHost native)
+        // The concrete presenter is injected by CompositionRoot. Pure service tests
+        // do not reference WinUI runtime classes and continue to use the native fake.
+        if (_showFluentMenu is not null)
         {
             try
             {
-                bool highContrast = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
-                if (!highContrast)
+                if (_showFluentMenu(items, request,
+                    id => RouteCommand((TrayCommand)id), _themePreference()))
                 {
-                    _fluentMenu ??= new FluentTrayMenuWindow();
-                    if (_fluentMenu.ShowMenu(items, request, native,
-                        id => RouteCommand((TrayCommand)id), _themePreference()))
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
             catch (Exception ex)
