@@ -115,31 +115,44 @@ public partial class App : Application
 
     private async Task InitializeAndStartAsync()
     {
-        await _compositionRoot!.MainViewModel.InitializeAsync();
-        await _compositionRoot.NotificationCoordinator.InitializeAsync(_lifetime.Token);
-
-        if (_compositionRoot.MainViewModel.TraySettings is { } traySettings)
+        try
         {
-            await traySettings.InitializeAsync();
+
+            await _compositionRoot!.MainViewModel.InitializeAsync();
+            await _compositionRoot.NotificationCoordinator.InitializeAsync(_lifetime.Token);
+
+            if (_compositionRoot.MainViewModel.TraySettings is { } traySettings)
+            {
+                await traySettings.InitializeAsync();
+            }
+
+            if (_compositionRoot.MainViewModel.NotificationSettings is { } notificationSettings)
+            {
+                await notificationSettings.InitializeAsync();
+            }
+
+            // v0.6.0：外观与语言（主题/语言）在调度器启动前应用，重启后恢复。
+            if (_compositionRoot.AppearanceSettings is { } appearanceSettings)
+            {
+                await appearanceSettings.InitializeAsync(_lifetime.Token);
+            }
+
+            _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);
+
+            // 冷启动通知点击：主窗口已就绪后再处理初始激活参数。
+            if (_notificationService.DrainInitialPayload() is { } initialPayload)
+            {
+                _ = _compositionRoot.NotificationActivationRouter.HandleAsync(initialPayload, _lifetime.Token);
+            }
         }
-
-        if (_compositionRoot.MainViewModel.NotificationSettings is { } notificationSettings)
+        catch (Exception ex)
         {
-            await notificationSettings.InitializeAsync();
+            WriteCrashDiagnostics("InitializeAndStartAsync", ex);
         }
-
-        // v0.6.0：外观与语言（主题/语言）在调度器启动前应用，重启后恢复。
-        if (_compositionRoot.AppearanceSettings is { } appearanceSettings)
+        finally
         {
-            await appearanceSettings.InitializeAsync(_lifetime.Token);
-        }
-
-        _compositionRoot.MonitoringScheduler.Start(_lifetime.Token);
-
-        // 冷启动通知点击：主窗口已就绪后再处理初始激活参数。
-        if (_notificationService.DrainInitialPayload() is { } initialPayload)
-        {
-            _ = _compositionRoot.NotificationActivationRouter.HandleAsync(initialPayload, _lifetime.Token);
+            // Login-start remains hidden; its overlay is cleared for later tray activation.
+            _window?.CompleteStartupPresentation();
         }
     }
 
