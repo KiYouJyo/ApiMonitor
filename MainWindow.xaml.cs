@@ -24,6 +24,14 @@ public sealed partial class MainWindow : Window, IMainWindowController
 
     public bool IsVisible => _isVisible;
 
+    /// <summary>Reveal the already-created shell once startup initialization finishes.</summary>
+    public void CompleteStartupPresentation()
+    {
+        RootPageControl.Opacity = 1;
+        RootPageControl.IsHitTestVisible = true;
+        StartupOverlay.Visibility = Visibility.Collapsed;
+    }
+
     public void Show()
     {
         try
