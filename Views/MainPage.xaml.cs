@@ -68,6 +68,9 @@ public sealed partial class MainPage : UserControl
 
     private void SyncNavigationSelection(AppPageKind page)
     {
+        bool onboarding = page == AppPageKind.Onboarding;
+        RootNavigation.IsPaneVisible = !onboarding;
+        RootNavigation.IsPaneToggleButtonVisible = !onboarding;
         string target = page switch
         {
             AppPageKind.Insights => "Insights",
