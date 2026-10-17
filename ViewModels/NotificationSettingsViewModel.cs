@@ -21,7 +21,7 @@ public sealed partial class NotificationSettingsViewModel : ObservableObject
     private readonly AppLog? _log;
     private readonly CancellationTokenSource _lifetime = new();
 
-    public IReadOnlyList<NotificationRepeatOption> RepeatOptions { get; } = new[]
+    public IReadOnlyList<NotificationRepeatOption> RepeatOptions { get; private set; } = new[]
     {
         new NotificationRepeatOption(L10n.Get("Notification.NoRepeat"), NotificationRepeatIntervals.None),
         new NotificationRepeatOption(L10n.Get("Notification.Hours6"), NotificationRepeatIntervals.SixHours),
@@ -55,6 +55,20 @@ public sealed partial class NotificationSettingsViewModel : ObservableObject
     public RelayCommand SendTestCommand { get; }
 
     public RelayCommand OpenWindowsNotificationSettingsCommand { get; }
+
+    public void RefreshLocalization()
+    {
+        RepeatOptions = new[]
+        {
+            new NotificationRepeatOption(L10n.Get("Notification.NoRepeat"), NotificationRepeatIntervals.None),
+            new NotificationRepeatOption(L10n.Get("Notification.Hours6"), NotificationRepeatIntervals.SixHours),
+            new NotificationRepeatOption(L10n.Get("Notification.Hours12"), NotificationRepeatIntervals.TwelveHours),
+            new NotificationRepeatOption(L10n.Get("Notification.Hours24"), NotificationRepeatIntervals.DefaultHours),
+            new NotificationRepeatOption(L10n.Get("Notification.Days3"), NotificationRepeatIntervals.ThreeDays),
+        };
+        OnPropertyChanged(nameof(RepeatOptions));
+        OnPropertyChanged(nameof(LocalOnlyExplanationText));
+    }
 
     public NotificationSettingsViewModel(
         INotificationSettingsStore settingsStore,
