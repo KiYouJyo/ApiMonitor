@@ -112,9 +112,14 @@ public sealed class LanguageService : ILanguageService
             _adapter.WriteOverride(requested);
             // ResourceLoader.GetForViewIndependentUse resolves against this qualifier.
             // Updating only PrimaryLanguageOverride would leave current WinUI controls stale.
-            Windows.ApplicationModel.Resources.Core.ResourceContext.SetGlobalQualifierValue(
-                "Language", NormalizeCode(requested
-                    ?? Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault()));
+            // Headless xUnit builds inject a fake adapter. Never activate the
+            // process-global WinRT resource manager from that test context.
+            if (_adapter is WindowsLanguageSystemAdapter)
+            {
+                Windows.ApplicationModel.Resources.Core.ResourceContext.SetGlobalQualifierValue(
+                    "Language", NormalizeCode(requested
+                        ?? Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault()));
+            }
         }
         catch
         {
