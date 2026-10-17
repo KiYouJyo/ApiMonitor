@@ -78,7 +78,7 @@ public sealed partial class AboutViewModel : ObservableObject
     public string ProviderCountText => L10n.Format("About.ProviderCountFormat", Providers.Count);
 
     // ---- 隐私与安全摘要 ----
-    public IReadOnlyList<string> PrivacyItems { get; } = new[]
+    public IReadOnlyList<string> PrivacyItems { get; private set; } = new[]
     {
         L10n.Get("About.PrivacyItemCredentialLocker"),
         L10n.Get("About.PrivacyItemLocalData"),
@@ -89,7 +89,7 @@ public sealed partial class AboutViewModel : ObservableObject
     };
 
     // ---- 项目链接 ----
-    public IReadOnlyList<AboutLinkRow> Links { get; } = new[]
+    public IReadOnlyList<AboutLinkRow> Links { get; private set; } = new[]
     {
         new AboutLinkRow("Repository", L10n.Get("About.LinkRepositoryTitle"), "https://github.com/KiYouJyo/ApiMonitor"),
         new AboutLinkRow("Releases", L10n.Get("About.LinkReleasesTitle"), "https://github.com/KiYouJyo/ApiMonitor/releases"),
@@ -213,6 +213,40 @@ public sealed partial class AboutViewModel : ObservableObject
         InstallStoreUpdateCommand = new AsyncRelayCommand(InstallStoreUpdateAsync, () => HasStoreInstallAvailable);
         RunHealthChecksCommand = new AsyncRelayCommand(RunHealthChecksAsync, () => !IsRunningHealthChecks);
         OpenSupportCommand = new AsyncRelayCommand(OpenSupportAsync);
+    }
+
+    public void RefreshLocalization(string languageCode, string themeName)
+    {
+        PrivacyItems = new[]
+        {
+            L10n.Get("About.PrivacyItemCredentialLocker"),
+            L10n.Get("About.PrivacyItemLocalData"),
+            L10n.Get("About.PrivacyItemNoCloud"),
+            L10n.Get("About.PrivacyItemNoTelemetry"),
+            L10n.Get("About.PrivacyItemLocalNotifications"),
+            L10n.Get("About.PrivacyItemBackupNoSecrets"),
+        };
+        Links = new[]
+        {
+            new AboutLinkRow("Repository", L10n.Get("About.LinkRepositoryTitle"), "https://github.com/KiYouJyo/ApiMonitor"),
+            new AboutLinkRow("Releases", L10n.Get("About.LinkReleasesTitle"), "https://github.com/KiYouJyo/ApiMonitor/releases"),
+            new AboutLinkRow("Issues", L10n.Get("About.LinkIssuesTitle"), "https://github.com/KiYouJyo/ApiMonitor/issues"),
+            new AboutLinkRow("Privacy", L10n.Get("About.LinkPrivacyTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/PRIVACY.md"),
+            new AboutLinkRow("Security", L10n.Get("About.LinkSecurityTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/SECURITY.md"),
+            new AboutLinkRow("Support", L10n.Get("About.LinkSupportTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/SUPPORT.md"),
+            new AboutLinkRow("License", L10n.Get("About.LinkLicenseTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/LICENSE"),
+            new AboutLinkRow("ThirdParty", L10n.Get("About.LinkThirdPartyTitle"), "https://github.com/KiYouJyo/ApiMonitor/blob/main/THIRD-PARTY-NOTICES.md"),
+        };
+        OnPropertyChanged(nameof(PrivacyItems));
+        OnPropertyChanged(nameof(Links));
+        foreach (var name in new[]
+        {
+            nameof(Tagline), nameof(DisplayVersionText), nameof(PackageVersionText),
+            nameof(ArchitectureText), nameof(DistributionChannelText), nameof(UpdateSourceText),
+            nameof(PackageFamilyText), nameof(PackageIdentityText), nameof(PublisherText),
+            nameof(ProviderCountText)
+        }) OnPropertyChanged(name);
+        SetEnvironmentTexts(languageCode, themeName);
     }
 
     /// <summary>设置当前语言与主题文本（由视图层或注入方调用）。</summary>
