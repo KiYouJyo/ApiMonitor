@@ -71,6 +71,14 @@ public sealed partial class MainPage : UserControl
         bool onboarding = page == AppPageKind.Onboarding;
         RootNavigation.IsPaneVisible = !onboarding;
         RootNavigation.IsPaneToggleButtonVisible = !onboarding;
+        if (onboarding)
+        {
+            // No menu selection while the first-run experience owns the content.
+            // Keeping Home selected could route SelectionChanged back to Home.
+            RootNavigation.SelectedItem = null;
+            return;
+        }
+
         string target = page switch
         {
             AppPageKind.Insights => "Insights",
