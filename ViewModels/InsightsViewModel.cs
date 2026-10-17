@@ -174,6 +174,17 @@ public sealed partial class InsightsViewModel : ObservableObject
         ExportCsvCommand = new AsyncRelayCommand(ExportCsvAsync, () => !IsExporting && HasData && SelectedAccount is not null);
     }
 
+    public void RefreshLocalization()
+    {
+        var range = SelectedRange?.Range ?? InsightsTimeRange.Days30;
+        Ranges.Clear();
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days7, L10n.Get("Insights.Range7Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days30, L10n.Get("Insights.Range30Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.Days90, L10n.Get("Insights.Range90Days")));
+        Ranges.Add(new InsightsRangeOption(InsightsTimeRange.All, L10n.Get("Insights.RangeAll")));
+        SelectedRange = Ranges.First(x => x.Range == range);
+    }
+
     partial void OnIsExportingChanged(bool value) => ExportCsvCommand.NotifyCanExecuteChanged();
 
     partial void OnHasDataChanged(bool value) => ExportCsvCommand.NotifyCanExecuteChanged();
