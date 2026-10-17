@@ -31,6 +31,8 @@ public sealed class TrayIconService : ITrayIconService
     private readonly Action _exitApplication;
     private readonly AppLog _log;
     private readonly Action _showMainWindow;
+    private readonly Func<AppThemePreference> _themePreference;
+    private FluentTrayMenuWindow? _fluentMenu;
     private readonly CancellationTokenSource _lifetime = new();
 
     private LifecycleState _state = LifecycleState.Inactive;
@@ -56,7 +58,8 @@ public sealed class TrayIconService : ITrayIconService
         ITraySettingsStore settingsStore,
         Action exitApplication,
         AppLog log,
-        Action showMainWindow)
+        Action showMainWindow,
+        Func<AppThemePreference>? themePreference = null)
     {
         _host = host;
         _statusProvider = statusProvider;
@@ -68,6 +71,7 @@ public sealed class TrayIconService : ITrayIconService
         _exitApplication = exitApplication;
         _log = log;
         _showMainWindow = showMainWindow;
+        _themePreference = themePreference ?? (() => AppThemePreference.System);
     }
 
     public bool IsActive => _state == LifecycleState.Active;
@@ -149,6 +153,8 @@ public sealed class TrayIconService : ITrayIconService
             _host.DeleteIcon();
         }
 
+        _fluentMenu?.Close();
+        _fluentMenu = null;
         _host.Dispose();
         _log.Info("托盘图标已删除。");
     }
@@ -207,6 +213,30 @@ public sealed class TrayIconService : ITrayIconService
         }
 
         var items = _menuService.BuildMenu(BuildMenuContext());
+        // WinUI 3 flyout is only used with the real native Shell host. Test
+        // doubles retain the original deterministic command-return contract.
+        // High contrast falls back to the OS-native menu for accessibility.
+        if (_host is TrayNativeHost native)
+        {
+            try
+            {
+                bool highContrast = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+                if (!highContrast)
+                {
+                    _fluentMenu ??= new FluentTrayMenuWindow();
+                    if (_fluentMenu.ShowMenu(items, request, native,
+                        id => RouteCommand((TrayCommand)id), _themePreference()))
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"WinUI 托盘菜单不可用，回退系统菜单: {ex.GetType().Name}");
+            }
+        }
+
         uint? command = _host.ShowContextMenu(items, request);
         if (command is null)
         {
