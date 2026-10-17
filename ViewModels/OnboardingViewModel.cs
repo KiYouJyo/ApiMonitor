@@ -130,8 +130,6 @@ public sealed partial class OnboardingViewModel : ObservableObject
         L10n.Get("Onboarding.Privacy.NoCloud"),
         L10n.Get("Onboarding.Privacy.NoTelemetry"),
     };
-
-    /// <summary>第二步：可添加的 Provider（DeepSeek / OpenRouter 普通 Key / Management Key）。</summary>
         Providers = new[]
     {
         new OnboardingProviderRow(
@@ -147,8 +145,6 @@ public sealed partial class OnboardingViewModel : ObservableObject
             L10n.Get("Onboarding.Provider.OpenRouterManagementKey.Title"),
             L10n.Get("Onboarding.Provider.OpenRouterManagementKey.Description")),
     };
-
-    /// <summary>第三步：运行方式选项（默认保持安全默认值，不自动开启）。</summary>
         RunOptions = new[]
     {
         new OnboardingRunOption(
@@ -168,8 +164,6 @@ public sealed partial class OnboardingViewModel : ObservableObject
             L10n.Get("Onboarding.Run.StartAtLogin.Description"),
             L10n.Get("Onboarding.Run.DefaultOff")),
     };
-
-    /// <summary>第四步：主要功能入口。</summary>
         Entries = new[]
     {
         new OnboardingEntry(
