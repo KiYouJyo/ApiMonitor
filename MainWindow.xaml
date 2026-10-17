@@ -4,5 +4,32 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="using:ApiMonitor.Views"
     Title="ApiMonitor">
-    <views:MainPage x:Name="RootPageControl" />
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid Background="Transparent">
+        <views:MainPage x:Name="RootPageControl" Opacity="0" IsHitTestVisible="False" />
+        <!-- Kept above the shell until account, language and tray initialization completes. -->
+        <Grid x:Name="StartupOverlay"
+              Background="{ThemeResource AppShellBackgroundBrush}"
+              Canvas.ZIndex="100"
+              AutomationProperties.Name="ApiMonitor startup">
+            <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border Width="112" Height="112" CornerRadius="24"
+                        Background="{ThemeResource AppCardBackgroundBrush}"
+                        BorderBrush="{ThemeResource AppCardBorderBrush}" BorderThickness="1">
+                    <Image Source="ms-appx:///Assets/Square150x150Logo.scale-200.png"
+                           Width="88" Height="88" Stretch="Uniform" />
+                </Border>
+                <TextBlock Text="ApiMonitor" FontSize="26" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" />
+                <TextBlock loc:Loc.Key="About.Tagline"
+                           xmlns:loc="using:ApiMonitor.Services"
+                           Foreground="{ThemeResource AppSecondaryTextBrush}"
+                           HorizontalAlignment="Center" />
+                <ProgressBar IsIndeterminate="True" Width="220" MinHeight="4"
+                             AutomationProperties.Name="Loading application data" />
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>
