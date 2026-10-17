@@ -318,6 +318,7 @@ public sealed class CompositionRoot
             },
             Log);
 
+        FluentTrayMenuWindow? fluentTrayMenu = null;
         trayRef = new TrayIconService(
             trayHost,
             statusProvider,
@@ -329,7 +330,19 @@ public sealed class CompositionRoot
             ExitCoordinator.BeginExit,
             Log,
             () => _showMainWindow(),
-            () => _appearanceService.Theme);
+            () => _appearanceService.Theme,
+            showFluentMenu: (items, request, dispatch, theme) =>
+            {
+                if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+                    return false;
+                fluentTrayMenu ??= new FluentTrayMenuWindow();
+                return fluentTrayMenu.ShowMenu(items, request, trayHost, dispatch, theme);
+            },
+            closeFluentMenu: () =>
+            {
+                fluentTrayMenu?.Close();
+                fluentTrayMenu = null;
+            });
 
         TrayIconService = trayRef;
 
