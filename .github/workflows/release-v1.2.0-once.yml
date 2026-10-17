@@ -43,7 +43,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.2.0" --jq '.object.sha' 2>/dev/null || true)"
+          existing="$(git ls-remote origin refs/tags/v1.2.0 | cut -f1)"
           if [[ -z "$existing" ]]; then
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
               --field ref='refs/tags/v1.2.0' \
