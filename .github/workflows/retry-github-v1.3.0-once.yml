@@ -1,6 +1,7 @@
 name: Resume ApiMonitor v1.3.0 GitHub publication (only)
 
-# On merging the signing-verification fix, dispatch the GitHub channel once.
+# On merging the corrected trustless verification, dispatch the GitHub channel again.
+# This workflow must not dispatch Microsoft Store (already successfully submitted).
 # The Microsoft Store submission has already succeeded; never resubmit it.
 on:
   push:
