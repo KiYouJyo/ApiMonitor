@@ -9,6 +9,7 @@ namespace ApiMonitor;
 public sealed partial class MainWindow : Window, IMainWindowController
 {
     private readonly CompositionRoot _compositionRoot;
+    private Views.MainPage? _liveRootPage;
     private bool _allowClose;
     private bool _isVisible;
 
@@ -21,6 +22,9 @@ public sealed partial class MainWindow : Window, IMainWindowController
     public MainWindow(CompositionRoot compositionRoot)
     {
         InitializeComponent();
+        _liveRootPage = RootPageControl;
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
         Title = "ApiMonitor";
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "ApiMonitor.ico"));
         _compositionRoot = compositionRoot;
@@ -28,7 +32,26 @@ public sealed partial class MainWindow : Window, IMainWindowController
     }
 
     /// <summary>页面根元素（x:Name 字段为私有，通过此属性公开给 App）。</summary>
-    public Views.MainPage RootPage => RootPageControl;
+    public Views.MainPage RootPage => _liveRootPage ?? RootPageControl;
+
+    /// <summary>
+    /// Like UrbanPlanToolbox: preserve the shared navigation ViewModel, but replace
+    /// the entire localized visual shell and its page instances on language changes.
+    /// The monitoring scheduler, accounts and single-instance process stay alive.
+    /// </summary>
+    public void RebuildLocalizedShell()
+    {
+        var previous = RootPage;
+        var model = previous.ViewModel;
+        if (model is null) return;
+
+        var replacement = new Views.MainPage { ViewModel = model };
+        previous.DetachShellEvents();
+        ShellHost.Children.Clear();
+        ShellHost.Children.Add(replacement);
+        _liveRootPage = replacement;
+        replacement.RefreshLocalizedContent();
+    }
 
     public bool IsVisible => _isVisible;
 
@@ -116,7 +139,7 @@ public sealed partial class MainWindow : Window, IMainWindowController
             return;
 
         _startupDismissStarted = true;
-        RootPageControl.Opacity = 1;
+        ShellHost.Opacity = 1;
         _ = FadeOutStartupOverlayAsync();
     }
 
@@ -149,7 +172,7 @@ public sealed partial class MainWindow : Window, IMainWindowController
         {
             StartupOverlay.Visibility = Visibility.Collapsed;
             StartupOverlay.Opacity = 1;
-            RootPageControl.IsHitTestVisible = true;
+            ShellHost.IsHitTestVisible = true;
         }
     }
 
