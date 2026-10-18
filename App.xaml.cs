@@ -7,6 +7,7 @@ namespace ApiMonitor;
 public partial class App : Application
 {
     private MainWindow? _window;
+    internal MainWindow? MainWindow => _window;
     private CompositionRoot? _compositionRoot;
     private readonly ISingleInstanceService _singleInstance;
     private readonly IAppNotificationService _notificationService;
