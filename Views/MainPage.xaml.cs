@@ -71,6 +71,9 @@ public sealed partial class MainPage : UserControl
     {
         if (DataContext is MainViewModel model)
             model.PropertyChanged -= OnViewModelPropertyChanged;
+        // HomePage independently observes MainViewModel; detach before replacing
+        // the shell or each language change would retain another hidden page.
+        HomePageControl.ViewModel = null;
         if (_parentWindow is not null)
             _parentWindow.Activated -= OnParentWindowActivated;
         RootNavigation.PaneOpening -= OnPaneOpening;
