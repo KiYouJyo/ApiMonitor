@@ -43,8 +43,8 @@ try {
     # before our encoding-repair test has a chance to run.
     $phrase = [string]::Concat(([char[]]@(0x4EC5,0x652F,0x6301,0x20,0x36,0x34,0x20,0x4F4D,0xFF08,0x78,0x36,0x34,0xFF09,0x57,0x69,0x6E,0x64,0x6F,0x77,0x73,0x20,0x7CFB,0x7EDF,0x3002)))
     $cnScript = "#requires -Version 5.1`r`n" +
-        ('function Test-InstallerChinese { return @{ Ok = $false; Reason = ''{0}'' } }' -f $phrase) +
-        "`r`n"
+        'function Test-InstallerChinese { return @{ Ok = $false; Reason = ' +
+        "'" + $phrase + "'" + ' } }' + "`r`n"
     foreach ($name in @('Install.ps1','Uninstall.ps1','SafeLocalStateBackup.ps1')) {
         [IO.File]::WriteAllText((Join-Path $encodedFixture $name), $cnScript, [Text.UTF8Encoding]::new($false))
     }
