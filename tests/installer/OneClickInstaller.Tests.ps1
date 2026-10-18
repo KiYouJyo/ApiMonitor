@@ -119,8 +119,8 @@ function Test-InstallerChinese { return @{ Ok = $false; Reason = '仅支持 64 �
     $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToUpperInvariant()
     $builder=Join-Path $base 'New-OneClickPackage.ps1'
     & $builder -DisplayVersion '1.3.0' -PackageVersion $version -PublishedOfflineZipPath $zip -PublishedOfflineZipSha256 $sha -OutputDirectory $output | Out-Null
-    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2'
-    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
+    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r3'
+    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r3.zip'
     Assert-True (Test-Path -LiteralPath $bootstrap) 'one-click package created'
     Assert-True ((Get-Item -LiteralPath $bootstrap).Length -lt 2MB) 'online ZIP remains lightweight'
     foreach ($name in @('1-Install-ApiMonitor.cmd','2-Uninstall-ApiMonitor.cmd','README.txt')) {
