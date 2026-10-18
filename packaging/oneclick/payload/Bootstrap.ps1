@@ -165,6 +165,14 @@ function Install-VerifiedOfflinePackageForCurrentUser {
     # A standard Windows user can supply a different admin's credentials; a
     # full elevated Add-AppxPackage would then install to the WRONG account.
     . $installFile -PackageVersion $PackageVersion -NoLaunch -Quiet
+    # The original installer is dot-sourced INSIDE this function, whereas
+    # the standalone installer normally runs at top-level script scope.
+    # Its dependency resolver explicitly reads $script:RuntimePackageName;
+    # the dot-sourced param alone is local to this function. Set the
+    # script-scope values expected by the original validated functions.
+    $script:RuntimePackageName = 'Microsoft.WindowsAppRuntime.2'
+    $script:PackageIdentity = 'ApiMonitor'
+
 
     $ops = Get-DefaultOps
     $pre = Assert-Prerequisites $OfflineRoot $ops
