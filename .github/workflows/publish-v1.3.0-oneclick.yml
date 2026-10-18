@@ -72,6 +72,15 @@ jobs:
           "offline_zip=$zip" >> $env:GITHUB_OUTPUT
           "offline_sha256=$hash" >> $env:GITHUB_OUTPUT
 
+      - name: Verify original signed ZIP scripts can be repaired and parsed by Windows PowerShell 5.1
+        shell: pwsh
+        env:
+          OFFLINE_ZIP: ${{ steps.source.outputs.offline_zip }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File tests\installer\PublishedOneClick.Tests.ps1 -PublishedOfflineZipPath $env:OFFLINE_ZIP -PackageVersion 1.3.0.1
+          if ($LASTEXITCODE -ne 0) { throw 'Real published ZIP failed Windows PowerShell 5.1 encoding/parse acceptance tests.' }
+
       - name: Validate one-click builder tests
         shell: pwsh
         run: |
@@ -93,7 +102,7 @@ jobs:
             -PublishedOfflineZipPath $env:OFFLINE_ZIP `
             -PublishedOfflineZipSha256 $env:OFFLINE_SHA -OutputDirectory $output
           if ($LASTEXITCODE -ne 0) { throw 'Unable to build the GitHub one-click bootstrap.' }
-          $zip = Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
+          $zip = Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r3.zip'
           if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
             throw 'Expected one-click asset was not generated.'
           }
@@ -145,25 +154,31 @@ jobs:
           if ([string]$replacement[0].digest -cne $expectedDigest) {
             throw 'Replacement installer does not match the verified local artifact.'
           }
-          $oldName = 'ApiMonitor-v1.3.0-x64-one-click.zip'
-          $old = @($assets.assets | Where-Object name -eq $oldName)
-          if ($old.Count -eq 1) {
-            # The first one-click package has a confirmed bug: it installs as
-            # the elevated account and downloads the ZIP even to uninstall.
-            # Do not leave the known-defective installer publicly selectable.
-            & gh release delete-asset v1.3.0 $oldName --repo KiYouJyo/ApiMonitor --yes
-            if ($LASTEXITCODE -ne 0) { throw 'Failed to retire the defective one-click installer.' }
-            Write-Output "Retired broken asset: $oldName"
+          foreach ($badName in @(
+            'ApiMonitor-v1.3.0-x64-one-click.zip',
+            'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
+          )) {
+            $bad = @($assets.assets | Where-Object { $_.name -ceq $badName })
+            if ($bad.Count -gt 1) { throw "Ambiguous obsolete installer: $badName" }
+            if ($bad.Count -eq 1) {
+              # Both prior one-click versions have confirmed deployment defects.
+              # Retire them ONLY after matching the published r3 SHA-256.
+              & gh release delete-asset v1.3.0 $badName --repo KiYouJyo/ApiMonitor --yes
+              if ($LASTEXITCODE -ne 0) { throw "Failed to retire broken asset $badName" }
+              Write-Output "Retired incompatible installer: $badName"
+            }
           }
-          elseif ($old.Count -gt 1) { throw 'Ambiguous original asset.' }
 
           $releaseInfo = & gh release view v1.3.0 --repo KiYouJyo/ApiMonitor --json body | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) { throw 'Cannot read published release notes.' }
-          $headline = 'Recommended GitHub installer (fixed): ApiMonitor-v1.3.0-x64-one-click-r2.zip'
+          $headline = 'Recommended GitHub installer (PS5.1 UTF-8 fixed): ApiMonitor-v1.3.0-x64-one-click-r3.zip'
           if (-not ([string]$releaseInfo.body).Contains($headline)) {
+            $priorNotes = [string]$releaseInfo.body
+            $priorNotes = $priorNotes -replace '(?m)^Recommended GitHub installer \(fixed\): ApiMonitor-v1\.3\.0-x64-one-click-r2\.zip\r?\n?', ''
+            $priorNotes = $priorNotes -replace '(?m)^Extract the ZIP and run 1-Install-ApiMonitor\.cmd\. The fixed installer installs in the current Windows user session, only elevates certificate trust, and uninstalls entirely offline\. The old one-click ZIP has been withdrawn\.\r?\n?', ''
             $newNotes = $headline + "`n" +
-              'Extract the ZIP and run 1-Install-ApiMonitor.cmd. The fixed installer installs in the current Windows user session, only elevates certificate trust, and uninstalls entirely offline. The old one-click ZIP has been withdrawn.' +
-              "`n`n" + [string]$releaseInfo.body
+              'Fixed Windows PowerShell 5.1 decoding of Chinese UTF-8 scripts in the immutable signed Test.zip; validated by parsing the REAL downloaded Release ZIP on Windows PowerShell 5.1. Extract and run 1-Install-ApiMonitor.cmd. Offline uninstall remains available. Old r1/r2 installers were withdrawn.' +
+              "`n`n" + $priorNotes
             & gh release edit v1.3.0 --repo KiYouJyo/ApiMonitor --notes $newNotes
             if ($LASTEXITCODE -ne 0) { throw 'Unable to update release notes with fixed installer instructions.' }
           }
