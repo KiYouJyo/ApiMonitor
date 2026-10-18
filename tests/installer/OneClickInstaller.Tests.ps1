@@ -38,7 +38,10 @@ try {
     # so verify normalization to UTF-8 BOM *before* dot-source/parse.
     $encodedFixture = Join-Path $work 'Chinese script encoding regression'
     New-Item -ItemType Directory -Path $encodedFixture -Force | Out-Null
-    $cnScript = "#requires -Version 5.1`r`nfunction Test-InstallerChinese { return @{ Ok = \$false; Reason = '仅支持 64 位（x64）Windows 系统。' } }`r`n"
+    $cnScript = @'
+#requires -Version 5.1
+function Test-InstallerChinese { return @{ Ok = $false; Reason = '仅支持 64 位（x64）Windows 系统。' } }
+'@
     foreach ($name in @('Install.ps1','Uninstall.ps1','SafeLocalStateBackup.ps1')) {
         [IO.File]::WriteAllText((Join-Path $encodedFixture $name), $cnScript, [Text.UTF8Encoding]::new($false))
     }
