@@ -58,6 +58,12 @@ try {
     finally { $archive.Dispose() }
     Assert-Rejected { Assert-OneClickZipLayout -ZipPath $unsafe -PackageVersion $version } 'ZIP path traversal'
 
+    # Explicitly simulate a disconnected machine and ensure offline
+    # uninstall returns without ever calling GitHub or touching packages.
+    function Get-AppxPackage { param([string]$Name,[string]$ErrorAction) return $null }
+    function Invoke-RestMethod { throw 'Network must NOT be invoked during uninstall.' }
+    Assert-True ((Invoke-OneClickBootstrap -Operation Uninstall) -eq 0) 'offline uninstall does not query Release API'
+
     $output=Join-Path $work 'publish'
     New-Item -ItemType Directory -Path $output | Out-Null
     $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToUpperInvariant()
@@ -72,10 +78,10 @@ try {
     }
     Assert-True (Test-Path -LiteralPath (Join-Path $root 'payload\TrustCertificate.ps1')) 'certificate-only UAC helper included'
     $bootstrapContent = Get-Content -LiteralPath (Join-Path $root 'payload\Bootstrap.ps1') -Raw
-    Assert-True ($bootstrapContent.Contains("if ($Operation -eq 'Uninstall')")) 'offline uninstall branches before network'
+    Assert-True ($bootstrapContent.Contains('if ($Operation -eq ''Uninstall'')')) 'offline uninstall branches before network'
     Assert-True ($bootstrapContent.Contains('return Invoke-OfflineUninstall')) 'offline uninstall never delegates to downloaded scripts'
     Assert-True ($bootstrapContent.Contains('Install-VerifiedOfflinePackageForCurrentUser')) 'MSIX installer executes for current user'
-    Assert-True (-not $bootstrapContent.Contains("-NoLaunch -Quiet' -f $scriptPath")) 'no hidden original elevated installer process'
+    Assert-True (-not $bootstrapContent.Contains(' -NoLaunch -Quiet')) 'no hidden original elevated installer process'
     $generated=Get-Content -LiteralPath (Join-Path $root 'payload\InstallerMetadata.json') -Raw | ConvertFrom-Json
     Assert-True ([string]$generated.offlineZipSha256 -ceq $sha) 'generated manifest pins exact published offline SHA'
     Assert-True (@(Get-ChildItem $root -Recurse -File | Where-Object { $_.Extension -in @('.msix','.pfx','.p12','.cer') }).Count -eq 0) 'online ZIP carries no binary installers or private certificates'
