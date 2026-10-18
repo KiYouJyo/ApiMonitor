@@ -20,6 +20,9 @@
                         <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#1F000000" />
                     </ResourceDictionary>
                 </ResourceDictionary.ThemeDictionaries>
+                <Style x:Key="TraySeparatorStyle" TargetType="Border">
+                    <Setter Property="Background" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                </Style>
             </ResourceDictionary>
         </Border.Resources>
         <StackPanel x:Name="ItemsHost" Spacing="0" />
