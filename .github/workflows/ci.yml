@@ -27,6 +27,9 @@ jobs:
       - name: Run installer tooling tests (isolated temp directory)
         run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\Installer.Tests.ps1
 
+      - name: Test lightweight GitHub one-click installer (no Windows trust mutations)
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer\OneClickInstaller.Tests.ps1
+
       - name: Build Debug x64
         run: dotnet build ApiMonitor.slnx -c Debug -p:Platform=x64 --no-restore
 
