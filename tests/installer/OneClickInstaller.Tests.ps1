@@ -63,13 +63,19 @@ try {
     $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToUpperInvariant()
     $builder=Join-Path $base 'New-OneClickPackage.ps1'
     & $builder -DisplayVersion '1.3.0' -PackageVersion $version -PublishedOfflineZipPath $zip -PublishedOfflineZipSha256 $sha -OutputDirectory $output | Out-Null
-    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click'
-    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click.zip'
+    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2'
+    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
     Assert-True (Test-Path -LiteralPath $bootstrap) 'one-click package created'
     Assert-True ((Get-Item -LiteralPath $bootstrap).Length -lt 2MB) 'online ZIP remains lightweight'
     foreach ($name in @('1-Install-ApiMonitor.cmd','2-Uninstall-ApiMonitor.cmd','README.txt')) {
         Assert-True (Test-Path -LiteralPath (Join-Path $root $name)) "root has $name"
     }
+    Assert-True (Test-Path -LiteralPath (Join-Path $root 'payload\TrustCertificate.ps1')) 'certificate-only UAC helper included'
+    $bootstrapContent = Get-Content -LiteralPath (Join-Path $root 'payload\Bootstrap.ps1') -Raw
+    Assert-True ($bootstrapContent.Contains("if ($Operation -eq 'Uninstall')")) 'offline uninstall branches before network'
+    Assert-True ($bootstrapContent.Contains('return Invoke-OfflineUninstall')) 'offline uninstall never delegates to downloaded scripts'
+    Assert-True ($bootstrapContent.Contains('Install-VerifiedOfflinePackageForCurrentUser')) 'MSIX installer executes for current user'
+    Assert-True (-not $bootstrapContent.Contains("-NoLaunch -Quiet' -f $scriptPath")) 'no hidden original elevated installer process'
     $generated=Get-Content -LiteralPath (Join-Path $root 'payload\InstallerMetadata.json') -Raw | ConvertFrom-Json
     Assert-True ([string]$generated.offlineZipSha256 -ceq $sha) 'generated manifest pins exact published offline SHA'
     Assert-True (@(Get-ChildItem $root -Recurse -File | Where-Object { $_.Extension -in @('.msix','.pfx','.p12','.cer') }).Count -eq 0) 'online ZIP carries no binary installers or private certificates'
