@@ -1,0 +1,138 @@
+name: Publish v1.3.0 GitHub one-click installer
+
+# Adds only a new lightweight installation asset to the EXISTING signed v1.3.0
+# Release. No tag moves, MSIX repackaging or Microsoft Store submission.
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-v1.3.0-oneclick.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: api-monitor-v1.3.0-oneclick-asset
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'KiYouJyo/ApiMonitor' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 20
+    steps:
+      - name: Checkout one-click installer sources
+        uses: actions/checkout@v7
+
+      - name: Verify existing immutable Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tagSha = (& gh api 'repos/KiYouJyo/ApiMonitor/git/ref/tags/v1.3.0' --jq '.object.sha').Trim()
+          if ($LASTEXITCODE -ne 0 -or $tagSha -cne '308e81b4d3b6e1feedaba040b756ac52a037a5d9') {
+            throw 'v1.3.0 tag must point to the immutable, already released source commit.'
+          }
+          $release = & gh release view v1.3.0 --repo KiYouJyo/ApiMonitor --json isDraft,isPrerelease | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $release.isDraft -or $release.isPrerelease) {
+            throw 'The original stable v1.3.0 GitHub release is unavailable.'
+          }
+
+      - name: Download original offline ZIP and its published SHA-256
+        id: source
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'ApiMonitor-OneClick-PublishedInputs'
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          & gh release download v1.3.0 --repo KiYouJyo/ApiMonitor --dir $output --pattern 'ApiMonitor_1.3.0.1_x64_Test.zip' --pattern 'SHA256SUMS.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to retrieve published v1.3.0 release assets.' }
+          $zip = Join-Path $output 'ApiMonitor_1.3.0.1_x64_Test.zip'
+          $checksums = Join-Path $output 'SHA256SUMS.txt'
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf) -or -not (Test-Path -LiteralPath $checksums -PathType Leaf)) {
+            throw 'Original signed Release assets are incomplete.'
+          }
+          $hash = $null
+          foreach ($line in Get-Content -LiteralPath $checksums -Encoding UTF8) {
+            if ($line.Trim([char]0xFEFF) -match '^(?<sha>[0-9A-Fa-f]{64})\s+\*?(?<file>[^\r\n]+?)\s*$') {
+              if ($Matches.file -ceq 'ApiMonitor_1.3.0.1_x64_Test.zip') {
+                if ($hash) { throw 'Ambiguous offline archive checksums.' }
+                $hash = $Matches.sha.ToUpperInvariant()
+              }
+            }
+          }
+          $calculated = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToUpperInvariant()
+          if (-not $hash -or $hash -cne $calculated) {
+            throw 'The existing published offline package does not match SHA256SUMS.txt.'
+          }
+          "offline_zip=$zip" >> $env:GITHUB_OUTPUT
+          "offline_sha256=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Validate one-click builder tests
+        shell: pwsh
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File tests\installer\OneClickInstaller.Tests.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'One-click packaging tests failed.' }
+
+      - name: Create tiny SHA-256 pinned one-click bootstrap
+        id: bootstrap
+        shell: pwsh
+        env:
+          OFFLINE_ZIP: ${{ steps.source.outputs.offline_zip }}
+          OFFLINE_SHA: ${{ steps.source.outputs.offline_sha256 }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'ApiMonitor-OneClick-ReleaseAssets'
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File packaging\oneclick\New-OneClickPackage.ps1 `
+            -DisplayVersion 1.3.0 -PackageVersion 1.3.0.1 `
+            -PublishedOfflineZipPath $env:OFFLINE_ZIP `
+            -PublishedOfflineZipSha256 $env:OFFLINE_SHA -OutputDirectory $output
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to build the GitHub one-click bootstrap.' }
+          $zip = Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click.zip'
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
+            throw 'Expected one-click asset was not generated.'
+          }
+          "oneclick_path=$zip" >> $env:GITHUB_OUTPUT
+
+      - name: Publish or verify the one-click asset on the existing Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONECLICK_ZIP: ${{ steps.bootstrap.outputs.oneclick_path }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $name = Split-Path -Leaf $env:ONECLICK_ZIP
+          $assets = & gh release view v1.3.0 --repo KiYouJyo/ApiMonitor --json assets | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect existing Release assets.' }
+          $existing = @($assets.assets | Where-Object { $_.name -ceq $name })
+          if ($existing.Count -gt 0) {
+            # Never replace a public asset with different content.
+            $testDir = Join-Path $env:RUNNER_TEMP 'ApiMonitor-OneClick-RemoteCompare'
+            New-Item -ItemType Directory -Path $testDir -Force | Out-Null
+            & gh release download v1.3.0 --repo KiYouJyo/ApiMonitor --dir $testDir --pattern $name
+            if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect existing one-click ZIP.' }
+            $remote = Join-Path $testDir $name
+            if ((Get-FileHash -LiteralPath $remote -Algorithm SHA256).Hash -cne
+                (Get-FileHash -LiteralPath $env:ONECLICK_ZIP -Algorithm SHA256).Hash) {
+              throw 'An existing one-click asset has a different checksum; never silently overwrite it.'
+            }
+            Write-Output "One-click asset already published and matches: $name"
+          }
+          else {
+            & gh release upload v1.3.0 $env:ONECLICK_ZIP --repo KiYouJyo/ApiMonitor
+            if ($LASTEXITCODE -ne 0) { throw 'GitHub one-click Release asset upload failed.' }
+            Write-Output "One-click installer published: $name"
+          }
+
+      - name: Archive bootstrap validation artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ApiMonitor-v1.3.0-one-click
+          path: ${{ steps.bootstrap.outputs.oneclick_path }}
+          if-no-files-found: error
+          retention-days: 30
