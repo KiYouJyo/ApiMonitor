@@ -60,9 +60,33 @@ try {
 
     # Explicitly simulate a disconnected machine and ensure offline
     # uninstall returns without ever calling GitHub or touching packages.
-    function Get-AppxPackage { param([string]$Name,[string]$ErrorAction) return $null }
+    function Get-AppxPackage { param([string]$Name,[string]$ErrorAction) return }
     function Invoke-RestMethod { throw 'Network must NOT be invoked during uninstall.' }
     Assert-True ((Invoke-OneClickBootstrap -Operation Uninstall) -eq 0) 'offline uninstall does not query Release API'
+
+    # Parser regression protects three Windows PowerShell 5.1 scripts.
+    foreach ($scriptFile in @(
+        (Join-Path $base 'payload\Bootstrap.ps1'),
+        (Join-Path $base 'payload\TrustCertificate.ps1'),
+        (Join-Path $base 'New-OneClickPackage.ps1')
+    )) {
+        $tokens = $null
+        $parseErrors = $null
+        [void][Management.Automation.Language.Parser]::ParseFile($scriptFile, [ref]$tokens, [ref]$parseErrors)
+        Assert-True (@($parseErrors).Count -eq 0) "PowerShell syntax valid: $scriptFile"
+    }
+    # Even when a GitHub package is installed, refusing confirmation must
+    # never trigger Remove-AppxPackage.
+    function Get-AppxPackage {
+        param([string]$Name,[string]$ErrorAction)
+        [pscustomobject]@{
+            Name='ApiMonitor'; Publisher='CN=ApiMonitorDev';
+            Version=[version]'1.3.0.1'; PackageFullName='ApiMonitor_1.3.0.1_x64__fixture'
+        }
+    }
+    function Read-Host { param([string]$Prompt) return 'NO' }
+    function Remove-AppxPackage { throw 'Unexpected destructive removal' }
+    Assert-True ((Invoke-OneClickBootstrap -Operation Uninstall) -eq 0) 'offline uninstall refusal keeps installed package'
 
     $output=Join-Path $work 'publish'
     New-Item -ItemType Directory -Path $output | Out-Null
