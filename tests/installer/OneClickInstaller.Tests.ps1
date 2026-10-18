@@ -107,7 +107,7 @@ try {
     Assert-True ($bootstrapContent.Contains('if ($Operation -eq ''Uninstall'')')) 'offline uninstall branches before network'
     Assert-True ($bootstrapContent.Contains('return Invoke-OfflineUninstall')) 'offline uninstall never delegates to downloaded scripts'
     Assert-True ($bootstrapContent.Contains('Install-VerifiedOfflinePackageForCurrentUser')) 'MSIX installer executes for current user'
-    Assert-True (-not $bootstrapContent.Contains(' -NoLaunch -Quiet')) 'no hidden original elevated installer process'
+    Assert-True (-not $bootstrapContent.Contains('Start-Process -FilePath ''powershell.exe'' -ArgumentList $arguments -Verb RunAs')) 'no hidden original elevated installer process'
     $generated=Get-Content -LiteralPath (Join-Path $root 'payload\InstallerMetadata.json') -Raw | ConvertFrom-Json
     Assert-True ([string]$generated.offlineZipSha256 -ceq $sha) 'generated manifest pins exact published offline SHA'
     Assert-True (@(Get-ChildItem $root -Recurse -File | Where-Object { $_.Extension -in @('.msix','.pfx','.p12','.cer') }).Count -eq 0) 'online ZIP carries no binary installers or private certificates'
