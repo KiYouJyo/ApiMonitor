@@ -92,6 +92,26 @@ public sealed class LocalizationIntegrityTests
     }
 
     [Fact]
+    public void AllThreeLanguages_UseIdenticalCompositeFormatPlaceholders()
+    {
+        var resources = LoadAllLangs();
+        var placeholder = new Regex(@"(?<!\{)\{[0-9]+(?::[^}]*)?\}", RegexOptions.Compiled);
+        static string Canonicalize(MatchCollection matches) =>
+            string.Join(",", matches.Cast<Match>().Select(m =>
+                Regex.Match(m.Value, @"\{[0-9]+").Value).OrderBy(x => x, StringComparer.Ordinal));
+
+        foreach (string key in resources["zh-CN"].Keys)
+        {
+            string expected = Canonicalize(placeholder.Matches(resources["zh-CN"][key]));
+            foreach (string language in Languages)
+            {
+                string actual = Canonicalize(placeholder.Matches(resources[language][key]));
+                Assert.Equal(expected, actual);
+            }
+        }
+    }
+
+    [Fact]
     public void NoKeyIsBothLeafAndPropertyParent()
     {
         foreach (var (language, dict) in LoadAllLangs())
