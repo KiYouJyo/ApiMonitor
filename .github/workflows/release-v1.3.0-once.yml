@@ -1,0 +1,73 @@
+name: Bootstrap ApiMonitor v1.3.0 dual-channel publication
+
+# One-off orchestrator: the v1.3.0 release workflow is invoked on its first merge.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/release-v1.3.0-once.yml
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: apimonitor-v1.3.0-release-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.repository == 'KiYouJyo/ApiMonitor' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact publication source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate source versions and immutable main HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq '<ApiMonitorDisplayVersion>1.3.0</ApiMonitorDisplayVersion>' Directory.Build.props
+          grep -Fq 'Version="1.3.0.1"' Package.appxmanifest
+          grep -Fq 'Version="1.3.0.0"' Package.Store.appxmanifest
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
+
+      - name: Create v1.3.0 tag if missing, verify if already present
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag_sha="$(git ls-remote origin refs/tags/v1.3.0 | cut -f1)"
+          if [[ -z "$tag_sha" ]]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              --field ref='refs/tags/v1.3.0' \
+              --field sha="$GITHUB_SHA"
+          elif [[ "$tag_sha" != "$GITHUB_SHA" ]]; then
+            echo "::error::The existing v1.3.0 tag points to another source: $tag_sha"
+            exit 1
+          fi
+
+      - name: Publish signed GitHub sideload v1.3.0
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run --repo KiYouJyo/ApiMonitor publish-github-release.yml \
+            --ref main --field version='1.3.0' --field dry_run='false'
+
+      - name: Submit Microsoft Store 1.3.0.0 for certification
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run --repo KiYouJyo/ApiMonitor publish-microsoft-store.yml \
+            --ref main --field source_ref='main' \
+            --field publication_confirmation='PUBLISH 1.3.0'
