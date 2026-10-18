@@ -1,0 +1,84 @@
+name: Check ApiMonitor v1.3.0 Store certification
+
+# Read-only Partner Center submission status. NEVER creates, edits or submits
+# a Microsoft Store package. Checks every six hours until certification ends.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/check-store-v1.3.0-status.yml
+  schedule:
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apimonitor-v1.3.0-store-certification-status
+  cancel-in-progress: false
+
+env:
+  STORE_PRODUCT_ID: 9N6KR2XFMKQ2
+
+jobs:
+  check-certification:
+    if: github.repository == 'KiYouJyo/ApiMonitor'
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+    steps:
+      - name: Install Microsoft Store Developer CLI
+        uses: microsoft/microsoft-store-apppublisher@v1.1
+        with:
+          version: v0.3.9
+
+      - name: Configure read-only submission access
+        shell: pwsh
+        env:
+          TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          SELLER_ID: ${{ secrets.SELLER_ID }}
+          CLIENT_ID: ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($name in @('TENANT_ID','SELLER_ID','CLIENT_ID','CLIENT_SECRET')) {
+            if ([string]::IsNullOrWhiteSpace((Get-Item "env:$name").Value)) {
+              throw "Missing Store credential configuration: $name"
+            }
+          }
+          & msstore reconfigure `
+            --tenantId $env:TENANT_ID.Trim() `
+            --sellerId $env:SELLER_ID.Trim() `
+            --clientId $env:CLIENT_ID.Trim() `
+            --clientSecret $env:CLIENT_SECRET
+          if ($LASTEXITCODE -ne 0) { throw 'Store CLI credentials failed.' }
+          & msstore settings --enableTelemetry false
+          if ($LASTEXITCODE -ne 0) { throw 'Store CLI telemetry setup failed.' }
+
+      - name: Read current submission status (never publish)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $result = @(& msstore submission status $env:STORE_PRODUCT_ID 2>&1)
+          $code = $LASTEXITCODE
+          $status = ($result | Out-String).Trim()
+          if ($code -ne 0) {
+            throw "Partner Center submission status lookup failed ($code): $status"
+          }
+          if ([string]::IsNullOrWhiteSpace($status)) {
+            throw 'Partner Center did not return a submission status.'
+          }
+          Write-Output "Partner Center submission status for ApiMonitor v1.3.0.0:"
+          Write-Output $status
+          @(
+            '## ApiMonitor v1.3.0.0 Microsoft Store status',
+            '',
+            ('Product: ' + $env:STORE_PRODUCT_ID),
+            '',
+            '```text',
+            $status,
+            '```',
+            '',
+            'This job only reads status and does not modify the submission.'
+          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
