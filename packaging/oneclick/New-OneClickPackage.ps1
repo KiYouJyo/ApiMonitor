@@ -31,7 +31,7 @@ if ($destination.StartsWith($sourcePrefix, [StringComparison]::OrdinalIgnoreCase
     $destination -ceq $builderRoot) {
     throw 'Generated installers cannot overwrite their own source templates.'
 }
-$rootName = "ApiMonitor-v$DisplayVersion-x64-one-click-r2"
+$rootName = "ApiMonitor-v$DisplayVersion-x64-one-click-r3"
 $root = Join-Path $destination $rootName
 $payload = Join-Path $root 'payload'
 $archivePath = Join-Path $destination ($rootName + '.zip')
