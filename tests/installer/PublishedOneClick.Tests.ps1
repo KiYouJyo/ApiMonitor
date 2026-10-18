@@ -62,6 +62,37 @@ try {
         }
     }
     Write-Output 'PASS: all real published script functions loaded successfully in Windows PowerShell 5.1.'
+    # Non-mutating live preflight of the EXACT signed MSIX shipped by GitHub.
+    # This catches missing functions, parameter mismatches, signature/CER
+    # extraction issues and checksum omissions before the end user sees them.
+    $ops = Get-DefaultOps
+    $preflight = Assert-Prerequisites $offline $ops
+    if (-not $preflight.Ok) { throw "Real offline preflight failed: $($preflight.Reason)" }
+    $manifest = Get-MsixManifestInfo $preflight.MsixPath
+    $identity = Assert-ManifestIdentity $manifest 'ApiMonitor' 'CN=ApiMonitorDev' $PackageVersion
+    if (-not $identity.Ok) { throw "Real package identity check failed: $($identity.Reason)" }
+    $publisher = Get-MsixSignerCertificate $preflight.MsixPath
+    $certFile = Join-Path $offline 'ApiMonitorDev.cer'
+    $publicCert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($certFile)
+    if (-not (Test-ThumbprintMatch $publisher $publicCert)) {
+        throw 'Real signed MSIX and bundled CER have different publisher fingerprints.'
+    }
+    foreach ($cert in @($publisher, $publicCert)) {
+        $policy = Assert-CertificatePolicy $cert
+        if (-not $policy.Ok) { throw "Real signed certificate policy check failed: $($policy.Reason)" }
+    }
+    $publisherMatch = Assert-ManifestPublisherMatchesCert $manifest $publicCert
+    if (-not $publisherMatch.Ok) { throw 'Real signed publisher identity differs from the certificate.' }
+    $hashes = Read-Checksums (Join-Path $offline 'SHA256SUMS.txt')
+    $integrity = Assert-FileHashes $hashes @(
+        @{ Path = $preflight.MsixPath; Name = $preflight.MsixName },
+        @{ Path = $certFile; Name = 'ApiMonitorDev.cer' }
+    ) $ops
+    if (-not $integrity.Ok) { throw "Real offline MSIX/CER checksum validation failed: $($integrity.Reason)" }
+    $dependencies = Resolve-DependencyPlan $offline $ops
+    if (-not $dependencies.Ok) { throw "Real bundled Windows App Runtime dependency failed: $($dependencies.Reason)" }
+    Write-Output 'PASS: real GitHub Test.zip identity, signing certificate, SHA256 and runtime dependency preflight succeeded.'
+
 }
 finally {
     Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
