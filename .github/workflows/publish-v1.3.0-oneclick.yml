@@ -93,7 +93,7 @@ jobs:
             -PublishedOfflineZipPath $env:OFFLINE_ZIP `
             -PublishedOfflineZipSha256 $env:OFFLINE_SHA -OutputDirectory $output
           if ($LASTEXITCODE -ne 0) { throw 'Unable to build the GitHub one-click bootstrap.' }
-          $zip = Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click.zip'
+          $zip = Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
           if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
             throw 'Expected one-click asset was not generated.'
           }
@@ -129,10 +129,49 @@ jobs:
             Write-Output "One-click installer published: $name"
           }
 
+      - name: Retire the faulty original bootstrap after checking the replacement asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONECLICK_ZIP: ${{ steps.bootstrap.outputs.oneclick_path }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = & gh release view v1.3.0 --repo KiYouJyo/ApiMonitor --json assets | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot verify the new public installer.' }
+          $replacementName = Split-Path -Leaf $env:ONECLICK_ZIP
+          $replacement = @($assets.assets | Where-Object name -eq $replacementName)
+          if ($replacement.Count -ne 1) { throw 'Replacement installer is not published.' }
+          $expectedDigest = 'sha256:' + (Get-FileHash -LiteralPath $env:ONECLICK_ZIP -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ([string]$replacement[0].digest -cne $expectedDigest) {
+            throw 'Replacement installer does not match the verified local artifact.'
+          }
+          $oldName = 'ApiMonitor-v1.3.0-x64-one-click.zip'
+          $old = @($assets.assets | Where-Object name -eq $oldName)
+          if ($old.Count -eq 1) {
+            # The first one-click package has a confirmed bug: it installs as
+            # the elevated account and downloads the ZIP even to uninstall.
+            # Do not leave the known-defective installer publicly selectable.
+            & gh release delete-asset v1.3.0 $oldName --repo KiYouJyo/ApiMonitor --yes
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to retire the defective one-click installer.' }
+            Write-Output "Retired broken asset: $oldName"
+          }
+          elseif ($old.Count -gt 1) { throw 'Ambiguous original asset.' }
+
+          $releaseInfo = & gh release view v1.3.0 --repo KiYouJyo/ApiMonitor --json body | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot read published release notes.' }
+          $headline = 'Recommended GitHub installer (fixed): ApiMonitor-v1.3.0-x64-one-click-r2.zip'
+          if (-not ([string]$releaseInfo.body).Contains($headline)) {
+            $newNotes = $headline + "`n" +
+              'Extract the ZIP and run 1-Install-ApiMonitor.cmd. The fixed installer installs in the current Windows user session, only elevates certificate trust, and uninstalls entirely offline. The old one-click ZIP has been withdrawn.' +
+              "`n`n" + [string]$releaseInfo.body
+            & gh release edit v1.3.0 --repo KiYouJyo/ApiMonitor --notes $newNotes
+            if ($LASTEXITCODE -ne 0) { throw 'Unable to update release notes with fixed installer instructions.' }
+          }
+
       - name: Archive bootstrap validation artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ApiMonitor-v1.3.0-one-click
+          name: ApiMonitor-v1.3.0-one-click-r2
           path: ${{ steps.bootstrap.outputs.oneclick_path }}
           if-no-files-found: error
           retention-days: 30
