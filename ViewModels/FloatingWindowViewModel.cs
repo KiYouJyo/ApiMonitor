@@ -100,6 +100,25 @@ public sealed partial class FloatingWindowViewModel : ObservableObject
         await ReloadAsync(accountId, cancellationToken);
     }
 
+    /// <summary>
+    /// Rebuild derived, localized floating-window texts after the process MRT
+    /// language changes, without hiding the always-on-top window.
+    /// </summary>
+    public async Task RefreshLocalizationAsync()
+    {
+        if (_isShutdown || !_isInitialized) return;
+        try
+        {
+            var settings = await _settingsStore.LoadAsync(_lifetime.Token);
+            await ReloadAsync(settings.SelectedAccountId, _lifetime.Token);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _log.Error($"刷新悬浮窗本地化失败: {ex.GetType().Name}");
+        }
+    }
+
     /// <summary>取消订阅并取消在途操作（窗口关闭/应用退出时调用）。</summary>
     public void Shutdown()
     {
