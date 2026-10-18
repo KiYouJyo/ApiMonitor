@@ -67,6 +67,45 @@ function Assert-OneClickZipLayout {
     return $true
 }
 
+function Repair-ExtractedPowerShellEncoding {
+    <#
+      The v1.3.0.1 offline ZIP contains UTF-8 (without BOM) .ps1 scripts.
+      Windows PowerShell 5.1 reads those scripts using the active ANSI codepage
+      when no BOM exists. Chinese punctuation is corrupted and causes syntax
+      errors before any installer code can run. Preserve the immutable ZIP's
+      hash/signature; normalize only extracted, private temp script copies.
+    #>
+    param([Parameter(Mandatory)][string]$OfflineRoot)
+    $strictUtf8 = [Text.UTF8Encoding]::new($false, $true)
+    $utf8Bom = [Text.UTF8Encoding]::new($true, $true)
+    foreach ($name in @('Install.ps1', 'Uninstall.ps1', 'SafeLocalStateBackup.ps1')) {
+        $path = Join-Path $OfflineRoot $name
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Required PowerShell installer script is missing: $name"
+        }
+        $rawBytes = [IO.File]::ReadAllBytes($path)
+        # Fail closed on invalid UTF-8. Do not rely on the local ANSI codepage
+        # or silently replace undecodable characters.
+        $unicode = $strictUtf8.GetString($rawBytes).TrimStart([char]0xFEFF)
+        if ([string]::IsNullOrWhiteSpace($unicode)) {
+            throw "Installer script is empty: $name"
+        }
+        [IO.File]::WriteAllText($path, $unicode, $utf8Bom)
+
+        # This is executed under Windows PowerShell 5.1 in the published .cmd
+        # launcher, so ParseFile validates the exact file decoding/runtime.
+        $tokens = $null
+        $errors = $null
+        [void][Management.Automation.Language.Parser]::ParseFile(
+            $path, [ref]$tokens, [ref]$errors)
+        if ($errors -and $errors.Count -gt 0) {
+            $first = $errors[0]
+            throw "Installer script '$name' failed Windows PowerShell parsing at line $($first.Extent.StartLineNumber): $($first.Message)"
+        }
+    }
+    Write-Host 'PowerShell 5.1 UTF-8/BOM compatibility and script syntax verified.'
+}
+
 function Invoke-ReliableOneClickDownload {
     param([Parameter(Mandatory)][string]$Uri,
           [Parameter(Mandatory)][string]$Destination)
@@ -126,6 +165,14 @@ function Install-VerifiedOfflinePackageForCurrentUser {
     # A standard Windows user can supply a different admin's credentials; a
     # full elevated Add-AppxPackage would then install to the WRONG account.
     . $installFile -PackageVersion $PackageVersion -NoLaunch -Quiet
+    # The original installer is dot-sourced INSIDE this function, whereas
+    # the standalone installer normally runs at top-level script scope.
+    # Its dependency resolver explicitly reads $script:RuntimePackageName;
+    # the dot-sourced param alone is local to this function. Set the
+    # script-scope values expected by the original validated functions.
+    $script:RuntimePackageName = 'Microsoft.WindowsAppRuntime.2'
+    $script:PackageIdentity = 'ApiMonitor'
+
 
     $ops = Get-DefaultOps
     $pre = Assert-Prerequisites $OfflineRoot $ops
@@ -291,6 +338,9 @@ function Invoke-OneClickBootstrap {
         $extracted = Join-Path $work 'expanded'
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, $extracted)
         $root = Join-Path $extracted ('ApiMonitor_' + [string]$meta.packageVersion + '_x64_Test')
+        # Must precede dot-sourcing Install.ps1 or any helper library:
+        # Windows PowerShell 5.1 cannot parse Chinese UTF-8 without BOM.
+        Repair-ExtractedPowerShellEncoding -OfflineRoot $root
         $installed = Install-VerifiedOfflinePackageForCurrentUser -OfflineRoot $root -PackageVersion ([string]$meta.packageVersion)
         Write-Output "ApiMonitor $($meta.displayVersion) installation verified."
         if (-not $SuppressLaunch) {

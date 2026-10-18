@@ -127,7 +127,9 @@ $installCmd = $installCmd.Replace(
 foreach ($versionedFileName in @('Install.ps1', 'INSTALL.md', 'UNINSTALL.md')) {
     $versionedPath = Join-Path $resolvedStage $versionedFileName
     $versionedContent = [IO.File]::ReadAllText($versionedPath).Replace('1.1.0.1', $Version)
-    [IO.File]::WriteAllText($versionedPath, $versionedContent, [Text.UTF8Encoding]::new($false))
+    # Windows PowerShell 5.1 requires a UTF-8 BOM for Chinese scripts.
+    # Keep versioned offline installer scripts readable on Chinese/English/Japanese Windows.
+    [IO.File]::WriteAllText($versionedPath, $versionedContent, [Text.UTF8Encoding]::new($true))
 }
 Write-Step '已复制安装器脚本与文档。'
 
@@ -137,6 +139,9 @@ if (-not (Test-Path -LiteralPath $backupTool)) {
     throw '缺少 SafeLocalStateBackup.ps1 备份工具。'
 }
 Copy-Item -LiteralPath $backupTool -Destination (Join-Path $resolvedStage 'SafeLocalStateBackup.ps1')
+$backupPath = Join-Path $resolvedStage 'SafeLocalStateBackup.ps1'
+$backupText = [IO.File]::ReadAllText($backupPath, [Text.UTF8Encoding]::new($false, $true))
+[IO.File]::WriteAllText($backupPath, $backupText.TrimStart([char]0xFEFF), [Text.UTF8Encoding]::new($true))
 
 # ---------------------------------------------------------------------------
 # 3. Copy the signed MSIX.

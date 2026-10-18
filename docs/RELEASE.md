@@ -21,7 +21,7 @@
 2. `packaging/New-GitHubCandidatePackage.ps1 -PackageVersion <修订号>` 构建签名 MSIX 并组装 `Test.zip`（含 Install/Uninstall、公开 CER、依赖、SHA256SUMS）。
 3. 验证 `signtool verify /pa`、包身份/版本/架构、Test.zip 内 SHA256SUMS 与内容一致。
 4. 创建普通 latest Release，上传 `Test.zip`、`.msix` 与 `SHA256SUMS.txt`。
-5. GitHub 正式发布完成后，运行 `publish-v1.3.0-oneclick.yml`，给**已有** `v1.3.0` 发布追加轻量的 `ApiMonitor-v1.3.0-x64-one-click-r2.zip`。版本和原有三项资产不变。
+5. GitHub 正式发布完成后，运行 `publish-v1.3.0-oneclick.yml`，给**已有** `v1.3.0` 发布追加轻量的 `ApiMonitor-v1.3.0-x64-one-click-r3.zip`。版本和原有三项资产不变。
 6. 用户解压后双击 `1-Install-ApiMonitor.cmd`，会自动下载原有签名离线 ZIP，检查版本、官方域名、固定 SHA-256、ZIP 路径及必需文件，再用原来的经过测试的安装脚本处理 UAC、签名证书和 Windows App Runtime。证书只导入 `LocalMachine\\TrustedPeople`，无需手动导入；不关闭系统安全校验。离线包依旧提供给断网环境使用。
 5. GitHub 更新检查只在用户点击时访问 Releases API。
 
