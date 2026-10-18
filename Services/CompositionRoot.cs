@@ -559,8 +559,9 @@ public sealed class CompositionRoot
         // v0.6.0：主窗口根元素注册到主题协调器（切换主题立即生效，含标题栏）。
         try
         {
-            if (window.RootPage is { } rootPage)
+            if (window.ThemeRoot is { } rootPage)
             {
+                // RootLayout survives language-driven page reconstruction.
                 _themeCoordinator.RegisterWindow(window.AppWindow, rootPage, isMainWindow: true);
             }
         }
