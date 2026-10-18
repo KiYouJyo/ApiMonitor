@@ -224,22 +224,47 @@ jobs:
           CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
         run: |
           $ErrorActionPreference = 'Stop'
-          & $env:SIGNTOOL_PATH sign /fd SHA256 /sha1 $env:CERT_THUMBPRINT /tr http://timestamp.digicert.com /td SHA256 $env:MSIX_PATH
-          if ($LASTEXITCODE -ne 0) { throw "signtool sign failed: $LASTEXITCODE" }
-          & $env:SIGNTOOL_PATH verify /pa /v $env:MSIX_PATH
-          $verifyCode = $LASTEXITCODE
-          $sig = Get-AuthenticodeSignature -FilePath $env:MSIX_PATH
-          if (-not $sig.SignerCertificate) { throw 'Signed MSIX has no signer certificate.' }
-          if ($sig.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or [string]$sig.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
-            throw "Signed MSIX signer mismatch. Subject=$($sig.SignerCertificate.Subject) Thumbprint=$($sig.SignerCertificate.Thumbprint)"
+          # Verify that only the expected CN=ApiMonitorDev signer can be trusted.
+          $signer = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($env:CERT_THUMBPRINT)" -ErrorAction Stop
+          if (-not $signer.HasPrivateKey -or [string]$signer.Subject -cne 'CN=ApiMonitorDev') {
+            throw 'The resolved GitHub signing certificate has an invalid identity or no private key.'
           }
-          # A self-signed sideload certificate is intentionally not in the runner trust root.
-          # Accept that trust limitation only when signer identity is an exact match.
-          if ($verifyCode -ne 0 -and $sig.Status -notin @('Valid','UnknownError')) {
-            throw "Signed MSIX verification failed: $($sig.Status) / $($sig.StatusMessage)"
+          $rootPath = "Cert:\CurrentUser\Root\$($signer.Thumbprint)"
+          $addedTemporaryTrust = $false
+          $publicCert = Join-Path $env:RUNNER_TEMP 'apimonitor-publish-verify-only.cer'
+          try {
+            # This is an ephemeral hosted Windows runner. An exact self-signed
+            # certificate must be trusted for *verification*, never shipped as
+            # a private key or silently installed on the user's machine.
+            if ([string]$signer.Subject -ceq [string]$signer.Issuer -and
+                -not (Test-Path -LiteralPath $rootPath)) {
+              Export-Certificate -Cert $signer -FilePath $publicCert -Force | Out-Null
+              $imported = Import-Certificate -FilePath $publicCert -CertStoreLocation 'Cert:\CurrentUser\Root'
+              if (-not $imported -or $imported.Thumbprint -cne $signer.Thumbprint) {
+                throw 'Unable to install the exact signing public certificate for runner-only trust validation.'
+              }
+              $addedTemporaryTrust = $true
+            }
+
+            & $env:SIGNTOOL_PATH sign /fd SHA256 /sha1 $env:CERT_THUMBPRINT /tr http://timestamp.digicert.com /td SHA256 $env:MSIX_PATH
+            if ($LASTEXITCODE -ne 0) { throw "signtool sign failed: $LASTEXITCODE" }
+            & $env:SIGNTOOL_PATH verify /pa /v $env:MSIX_PATH
+            if ($LASTEXITCODE -ne 0) { throw "signtool verification failed: $LASTEXITCODE" }
+            $verifiedSignature = Get-AuthenticodeSignature -FilePath $env:MSIX_PATH
+            if (-not $verifiedSignature.SignerCertificate -or
+                $verifiedSignature.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or
+                [string]$verifiedSignature.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
+              throw 'Signed GitHub MSIX has a different signer certificate than expected.'
+            }
+            if ($verifiedSignature.Status -ne 'Valid') {
+              throw "Authenticode validation failed: $($verifiedSignature.Status) / $($verifiedSignature.StatusMessage)"
+            }
           }
-          if ($sig.Status -eq 'UnknownError' -and $sig.StatusMessage -notmatch '(?i)not trusted|trust provider|untrusted|self-signed') {
-            throw "Unexpected Authenticode error: $($sig.StatusMessage)"
+          finally {
+            if ($addedTemporaryTrust) {
+              Remove-Item -LiteralPath $rootPath -Force -ErrorAction Stop
+            }
+            Remove-Item -LiteralPath $publicCert -Force -ErrorAction SilentlyContinue
           }
 
       - name: Assemble one-click sideload package and checksums
