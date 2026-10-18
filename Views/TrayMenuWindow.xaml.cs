@@ -38,7 +38,7 @@ public sealed partial class TrayMenuWindow : Window
         Activated += OnActivated;
     }
 
-    public bool ShowMenu(IReadOnlyList<TrayMenuItem> entries,
+    internal bool ShowMenu(IReadOnlyList<TrayMenuItem> entries,
         TrayContextMenuRequest request, TrayNativeHost host,
         Action<uint> dispatch, AppThemePreference theme)
     {
