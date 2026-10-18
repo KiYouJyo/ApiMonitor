@@ -63,7 +63,7 @@ public sealed partial class TrayMenuWindow : Window
                 {
                     Height = 1,
                     Margin = new Thickness(8, 4, 8, 4),
-                    Background = (Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"],
+                    Style = (Style)RootLayout.Resources["TraySeparatorStyle"],
                 });
                 heightDip += 9;
                 continue;
