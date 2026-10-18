@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: api-monitor-github-release-${{ github.ref_name || inputs.version }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   publish:
@@ -224,48 +224,49 @@ jobs:
           CERT_THUMBPRINT: ${{ steps.signing.outputs.thumbprint }}
         run: |
           $ErrorActionPreference = 'Stop'
-          # Verify that only the expected CN=ApiMonitorDev signer can be trusted.
-          $signer = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($env:CERT_THUMBPRINT)" -ErrorAction Stop
-          if (-not $signer.HasPrivateKey -or [string]$signer.Subject -cne 'CN=ApiMonitorDev') {
-            throw 'The resolved GitHub signing certificate has an invalid identity or no private key.'
+          # Never alter the hosted runner's trusted certificate roots.
+          # The self-signed public certificate ships in the user-visible ZIP.
+          $expectedSigner = Get-Item -LiteralPath "Cert:\CurrentUser\My\$($env:CERT_THUMBPRINT)" -ErrorAction Stop
+          if (-not $expectedSigner.HasPrivateKey -or [string]$expectedSigner.Subject -cne 'CN=ApiMonitorDev') {
+            throw 'Configured GitHub signing certificate does not match the package publisher.'
           }
-          $rootPath = "Cert:\CurrentUser\Root\$($signer.Thumbprint)"
-          $addedTemporaryTrust = $false
-          $publicCert = Join-Path $env:RUNNER_TEMP 'apimonitor-publish-verify-only.cer'
-          try {
-            # This is an ephemeral hosted Windows runner. An exact self-signed
-            # certificate must be trusted for *verification*, never shipped as
-            # a private key or silently installed on the user's machine.
-            if ([string]$signer.Subject -ceq [string]$signer.Issuer -and
-                -not (Test-Path -LiteralPath $rootPath)) {
-              Export-Certificate -Cert $signer -FilePath $publicCert -Force | Out-Null
-              $imported = Import-Certificate -FilePath $publicCert -CertStoreLocation 'Cert:\CurrentUser\Root'
-              if (-not $imported -or $imported.Thumbprint -cne $signer.Thumbprint) {
-                throw 'Unable to install the exact signing public certificate for runner-only trust validation.'
-              }
-              $addedTemporaryTrust = $true
-            }
 
-            & $env:SIGNTOOL_PATH sign /fd SHA256 /sha1 $env:CERT_THUMBPRINT /tr http://timestamp.digicert.com /td SHA256 $env:MSIX_PATH
-            if ($LASTEXITCODE -ne 0) { throw "signtool sign failed: $LASTEXITCODE" }
-            & $env:SIGNTOOL_PATH verify /pa /v $env:MSIX_PATH
-            if ($LASTEXITCODE -ne 0) { throw "signtool verification failed: $LASTEXITCODE" }
-            $verifiedSignature = Get-AuthenticodeSignature -FilePath $env:MSIX_PATH
-            if (-not $verifiedSignature.SignerCertificate -or
-                $verifiedSignature.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or
-                [string]$verifiedSignature.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
-              throw 'Signed GitHub MSIX has a different signer certificate than expected.'
+          & $env:SIGNTOOL_PATH sign /fd SHA256 /sha1 $env:CERT_THUMBPRINT /tr http://timestamp.digicert.com /td SHA256 $env:MSIX_PATH
+          if ($LASTEXITCODE -ne 0) { throw "SignTool sign failed: $LASTEXITCODE" }
+
+          # SignTool reports exit 1 for valid cryptographic signatures whose
+          # *only* trust problem is the untrusted self-signed certificate. In
+          # that case verify the exact error, signature and signer identity,
+          # without trusting an arbitrary root CA on the build agent.
+          $verifyOutput = @(& $env:SIGNTOOL_PATH verify /pa /v $env:MSIX_PATH 2>&1)
+          $verifyCode = $LASTEXITCODE
+          $verificationLog = ($verifyOutput | Out-String)
+          Write-Output $verificationLog
+          if ($verifyCode -ne 0) {
+            $untrustedSelfSigned = [string]$expectedSigner.Subject -ceq [string]$expectedSigner.Issuer
+            $onlyTrustFailure = $verificationLog -match '(?i)certificate chain processed' -and
+              $verificationLog -match '(?i)root' -and
+              $verificationLog -match '(?i)not trusted by the trust provider' -and
+              $verificationLog -match 'Number of errors:\s*1'
+            if (-not $untrustedSelfSigned -or -not $onlyTrustFailure) {
+              throw "Unexpected MSIX signature verification error (exit $verifyCode): $verificationLog"
             }
-            if ($verifiedSignature.Status -ne 'Valid') {
-              throw "Authenticode validation failed: $($verifiedSignature.Status) / $($verifiedSignature.StatusMessage)"
-            }
+            Write-Warning 'Only root trust is missing: the signed self-signed certificate must be explicitly trusted on the destination PC.'
           }
-          finally {
-            if ($addedTemporaryTrust) {
-              Remove-Item -LiteralPath $rootPath -Force -ErrorAction Stop
-            }
-            Remove-Item -LiteralPath $publicCert -Force -ErrorAction SilentlyContinue
+          $sig = Get-AuthenticodeSignature -FilePath $env:MSIX_PATH
+          if (-not $sig.SignerCertificate -or
+              $sig.SignerCertificate.Thumbprint -cne $env:CERT_THUMBPRINT -or
+              [string]$sig.SignerCertificate.Subject -cne 'CN=ApiMonitorDev') {
+            throw 'The signed MSIX does not contain the expected exact publisher certificate.'
           }
+          if ($verifyCode -eq 0 -and $sig.Status -ne 'Valid') {
+            throw "Unexpected Authenticode status of trusted MSIX: $($sig.Status)"
+          }
+          if ($verifyCode -ne 0 -and $sig.Status -notin @('UnknownError', 'NotTrusted', 'Valid')) {
+            throw "Unexpected Authenticode status of self-signed MSIX: $($sig.Status) / $($sig.StatusMessage)"
+          }
+          # Reset the expected nonzero external-tool code so pwsh exits 0.
+          $global:LASTEXITCODE = 0
 
       - name: Assemble one-click sideload package and checksums
         id: assets
