@@ -116,9 +116,16 @@ public sealed class LanguageService : ILanguageService
             // process-global WinRT resource manager from that test context.
             if (_adapter is WindowsLanguageSystemAdapter)
             {
+                string effective = NormalizeCode(requested
+                    ?? Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault());
+                // Match UrbanPlanToolbox: culture and MRT language must change
+                // together before the localized pages are reconstructed.
+                System.Globalization.CultureInfo.CurrentUICulture =
+                    System.Globalization.CultureInfo.GetCultureInfo(effective);
+                System.Globalization.CultureInfo.CurrentCulture =
+                    System.Globalization.CultureInfo.GetCultureInfo(effective);
                 Windows.ApplicationModel.Resources.Core.ResourceContext.SetGlobalQualifierValue(
-                    "Language", NormalizeCode(requested
-                        ?? Windows.Globalization.ApplicationLanguages.Languages.FirstOrDefault()));
+                    "Language", effective);
             }
         }
         catch

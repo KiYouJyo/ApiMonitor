@@ -2,6 +2,8 @@ using ApiMonitor.ViewModels;
 using ApiMonitor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Media;
 
 namespace ApiMonitor.Views;
 
@@ -14,6 +16,69 @@ namespace ApiMonitor.Views;
 public sealed partial class MainPage : UserControl
 {
     private bool _insightsInitialized;
+    private SplitView? _navigationSplitView;
+    private Window? _parentWindow;
+    private bool _isWindowActive = true;
+
+    private void HookPaneBackground()
+    {
+        RootNavigation.PaneOpening += OnPaneOpening;
+        ActualThemeChanged += OnShellThemeChanged;
+        QueuePaneBackgroundUpdate();
+    }
+
+    private void OnPaneOpening(NavigationView sender, object args) => QueuePaneBackgroundUpdate();
+    private void OnShellThemeChanged(FrameworkElement sender, object args) => QueuePaneBackgroundUpdate();
+
+    private void OnParentWindowActivated(object sender, WindowActivatedEventArgs args)
+    {
+        _isWindowActive = args.WindowActivationState != WindowActivationState.Deactivated;
+        QueuePaneBackgroundUpdate();
+    }
+
+    private void QueuePaneBackgroundUpdate() => DispatcherQueue.TryEnqueue(ApplyPaneBackground);
+
+    private void ApplyPaneBackground()
+    {
+        _navigationSplitView ??= FindDescendant<SplitView>(RootNavigation);
+        string themeKey = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast
+            ? "HighContrast"
+            : RootNavigation.ActualTheme == ElementTheme.Dark ? "Dark" : "Light";
+        string brushKey = _isWindowActive
+            ? "ShellNavigationPaneBackgroundBrush"
+            : "ShellNavigationPaneInactiveBackgroundBrush";
+        if (_navigationSplitView is null) return;
+        if (Application.Current.Resources.ThemeDictionaries[themeKey] is ResourceDictionary resources
+            && resources.TryGetValue(brushKey, out var value) && value is Brush brush)
+        {
+            _navigationSplitView.PaneBackground = brush;
+        }
+    }
+
+    private static T? FindDescendant<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, index);
+            if (child is T match) return match;
+            if (FindDescendant<T>(child) is { } matchBelow) return matchBelow;
+        }
+        return null;
+    }
+
+    /// <summary>Unhook the previous page before a language-driven view rebuild.</summary>
+    public void DetachShellEvents()
+    {
+        if (DataContext is MainViewModel model)
+            model.PropertyChanged -= OnViewModelPropertyChanged;
+        // HomePage independently observes MainViewModel; detach before replacing
+        // the shell or each language change would retain another hidden page.
+        HomePageControl.ViewModel = null;
+        if (_parentWindow is not null)
+            _parentWindow.Activated -= OnParentWindowActivated;
+        RootNavigation.PaneOpening -= OnPaneOpening;
+        ActualThemeChanged -= OnShellThemeChanged;
+    }
 
     /// <summary>Update visible and cached navigation strings without recreating any page.</summary>
     public void RefreshLocalizedContent()
@@ -32,6 +97,7 @@ public sealed partial class MainPage : UserControl
     public MainPage()
     {
         InitializeComponent();
+        HookPaneBackground();
     }
 
     public MainViewModel ViewModel
@@ -88,6 +154,12 @@ public sealed partial class MainPage : UserControl
             _ => "Home",
         };
 
+        if (page == AppPageKind.Settings)
+        {
+            RootNavigation.SelectedItem = RootNavigation.SettingsItem;
+            return;
+        }
+
         foreach (var item in RootNavigation.MenuItems)
         {
             if (item is NavigationViewItem nvi
@@ -109,17 +181,33 @@ public sealed partial class MainPage : UserControl
         }
     }
 
-    private void OnRootNavigationLoaded(object sender, RoutedEventArgs e) =>
-        SyncNavigationSelection(ViewModel?.CurrentPage ?? AppPageKind.Home);
-
-    private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    private void OnRootNavigationLoaded(object sender, RoutedEventArgs e)
     {
-        if (args.SelectedItem is not NavigationViewItem item
-            || item.Tag is not string tag
-            || ViewModel is null)
+        if (_parentWindow is null && Application.Current is ApiMonitor.App app
+            && app.MainWindow is { } mainWindow)
         {
-            return;
+            _parentWindow = mainWindow;
+            _parentWindow.Activated += OnParentWindowActivated;
         }
+
+        if (RootNavigation.SettingsItem is NavigationViewItem settings)
+        {
+            var title = L10n.Get("Nav.Settings");
+            settings.Content = title;
+            AutomationProperties.SetName(settings, title);
+            ToolTipService.SetToolTip(settings, title);
+        }
+
+        SyncNavigationSelection(ViewModel?.CurrentPage ?? AppPageKind.Home);
+        QueuePaneBackgroundUpdate();
+    }
+
+    private void OnNavigationItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    {
+        if (ViewModel is null) return;
+        string tag = args.IsSettingsInvoked
+            ? "settings"
+            : (args.InvokedItemContainer as NavigationViewItem)?.Tag as string ?? "home";
 
         AppPageKind page = tag.ToLowerInvariant() switch
         {

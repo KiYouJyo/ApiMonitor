@@ -69,7 +69,7 @@
   <data name="Settings.LanguageZhCn" xml:space="preserve"><value>简体中文</value></data>
   <data name="Settings.LanguageEnUs" xml:space="preserve"><value>English</value></data>
   <data name="Settings.LanguageJaJp" xml:space="preserve"><value>日本語</value></data>
-  <data name="Settings.LanguageRestartRequired" xml:space="preserve"><value>语言更改将在重启应用后生效。是否立即重启？</value></data>
+  <data name="Settings.LanguageRestartRequired" xml:space="preserve"><value>语言已切换，页面已重新加载。</value></data>
   <data name="Settings.RestartNow" xml:space="preserve"><value>立即重启</value></data>
   <data name="Settings.Later" xml:space="preserve"><value>稍后</value></data>
   <data name="Settings.RestartFailed" xml:space="preserve"><value>无法自动重启，请手动退出后再启动应用。</value></data>
@@ -211,7 +211,7 @@
   <data name="Settings.AppearanceSection.Text" xml:space="preserve"><value>外观与语言</value></data>
   <data name="Settings.Theme.Text" xml:space="preserve"><value>主题</value></data>
   <data name="Settings.Language.Text" xml:space="preserve"><value>语言</value></data>
-  <data name="Settings.AppearanceDescription.Text" xml:space="preserve"><value>主题选择立即生效；语言更改需要重启应用。</value></data>
+  <data name="Settings.AppearanceDescription.Text" xml:space="preserve"><value>主题与语言切换立即生效，无需重启应用。</value></data>
   <data name="Settings.DataSection.Text" xml:space="preserve"><value>数据管理</value></data>
   <data name="Settings.ExportBackup.Content" xml:space="preserve"><value>导出便携备份</value></data>
   <data name="Settings.ImportBackup.Content" xml:space="preserve"><value>导入便携备份</value></data>
@@ -324,7 +324,7 @@
   <data name="Dialog.HideAndRun" xml:space="preserve"><value>隐藏并继续运行</value></data>
   <data name="Dialog.DontAskAgain" xml:space="preserve"><value>不再提示</value></data>
   <data name="Dialog.RestartTitle" xml:space="preserve"><value>重启应用</value></data>
-  <data name="Dialog.RestartMessage" xml:space="preserve"><value>语言更改将在重启应用后生效。是否立即重启？</value></data>
+  <data name="Dialog.RestartMessage" xml:space="preserve"><value>语言已切换，页面已重新加载。</value></data>
   <data name="Dialog.EditAccountTitle" xml:space="preserve"><value>编辑账户</value></data>
   <data name="Dialog.AddAccountTitle" xml:space="preserve"><value>添加账户</value></data>
   <data name="Dialog.TestSuccessTitle" xml:space="preserve"><value>连接成功</value></data>

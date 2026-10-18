@@ -98,17 +98,22 @@ public sealed class ThemeIntegrityTests
     }
 
     [Fact]
-    public void MainPage_OverridesNavigationPaneBackground_ToPaneBrush()
+    public void MainPage_UsesUrbanPlanToolboxSplitViewPaneBrushesAndTransparentMica()
     {
         string page = ReadText("Views/MainPage.xaml");
-        var overrides = Regex.Matches(
-            page,
-            @"StaticResource x:Key=""NavigationViewDefaultPaneBackground"" ResourceKey=""([^""]+)""");
-        Assert.True(overrides.Count >= 2, "MainPage 应覆盖 NavigationViewDefaultPaneBackground（Light/Dark）。");
-        foreach (Match m in overrides)
-        {
-            Assert.Equal("AppPaneBackgroundBrush", m.Groups[1].Value);
-        }
+        string code = ReadText("Views/MainPage.xaml.cs");
+        string app = ReadText("App.xaml");
+        string window = ReadText("MainWindow.xaml");
+
+        Assert.DoesNotContain("NavigationViewDefaultPaneBackground", page);
+        Assert.DoesNotContain("<NavigationView.PaneHeader>", page);
+        Assert.Contains("Background=\"Transparent\"", page);
+        Assert.Contains("FindDescendant<SplitView>", code);
+        Assert.Contains("_navigationSplitView.PaneBackground = brush", code);
+        Assert.Contains("ShellNavigationPaneBackgroundBrush", app);
+        Assert.Contains("ShellNavigationPaneInactiveBackgroundBrush", app);
+        Assert.Contains("<MicaBackdrop />", window);
+        Assert.Contains("<TitleBar ", window);
     }
 
     [Fact]

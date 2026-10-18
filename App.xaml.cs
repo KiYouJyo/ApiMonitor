@@ -7,6 +7,7 @@ namespace ApiMonitor;
 public partial class App : Application
 {
     private MainWindow? _window;
+    internal MainWindow? MainWindow => _window;
     private CompositionRoot? _compositionRoot;
     private readonly ISingleInstanceService _singleInstance;
     private readonly IAppNotificationService _notificationService;
@@ -97,7 +98,8 @@ public partial class App : Application
             _window = new MainWindow(_compositionRoot!);
             _window.RootPage.ViewModel = _compositionRoot!.MainViewModel;
             _compositionRoot.AttachMainWindow(_window);
-            _compositionRoot.LanguageChanged += () => _window?.RootPage.RefreshLocalizedContent();
+            _compositionRoot.LanguageChanged += () =>
+                _uiQueue?.TryEnqueue(() => _window?.RebuildLocalizedShell());
 
             if (activate)
             {

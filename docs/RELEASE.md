@@ -1,12 +1,12 @@
 # 发布指南
 
-本文档是今后发布 ApiMonitor 的可复用指南。本次准备发布版本为 `1.2.0`；GitHub 侧载包使用 `1.2.0.1`，Microsoft Store 包使用独立的 `1.2.0.0`，两者身份与更新流程相互独立。
+本文档是今后发布 ApiMonitor 的可复用指南。本次准备发布版本为 `1.3.0`；GitHub 侧载包使用 `1.3.0.1`，Microsoft Store 包使用独立的 `1.3.0.0`，两者身份与更新流程相互独立。
 
 ## 产品版本
 
-- 用户可见版本：`1.2.0`（由 `Directory.Build.props` 的 `ApiMonitorDisplayVersion` 集中维护）。
-- GitHub 侧载包版本：独立、单调递增的四段版本（`1.2.0.1`、`1.2.0.2` …），同一用户可见版本可有多份验收候选。
-- Store 包版本：独立、单调递增，第四段为 `0`（当前 `1.2.0.0`）。
+- 用户可见版本：`1.3.0`（由 `Directory.Build.props` 的 `ApiMonitorDisplayVersion` 集中维护）。
+- GitHub 侧载包版本：独立、单调递增的四段版本（`1.3.0.1`、`1.3.0.2` …），同一用户可见版本可有多份验收候选。
+- Store 包版本：独立、单调递增，第四段为 `0`（当前 `1.3.0.0`）。
 - 版本/渠道配置集中在 `Directory.Build.props`；渠道在构建时通过 `DistributionChannel` 属性确定，禁止运行时猜测。
 
 ## 通用准备
@@ -26,7 +26,7 @@
 ## Microsoft Store 渠道
 
 1. 使用 `Package.Store.appxmanifest`（Identity `JoKiy.ApiMonitor` / Publisher `CN=C4E4B33A-7B77-4121-897C-7D720A5471F8` / PFN `JoKiy.ApiMonitor_4wdwgytaw3v2m` / Product ID `9N6KR2XFMKQ2`）。
-2. `packaging/New-StorePackage.ps1 -SourceCommit <HEAD> -PackageVersion 1.2.0.0` 在隔离 worktree 中构建未签名 `.msixupload`，验证身份/版本/内容并生成报告。
+2. `packaging/New-StorePackage.ps1 -SourceCommit <HEAD> -PackageVersion 1.3.0.0` 在隔离 worktree 中构建未签名 `.msixupload`，验证身份/版本/内容并生成报告。
 3. 在最终冻结产物上运行 WACK（Store 候选）；保存 XML/HTML 报告。
 4. 上传 Partner Center 草稿并完成认证与发布（独立授权步骤）。
 

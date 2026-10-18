@@ -122,10 +122,10 @@ public sealed class WindowThemeCoordinator
             Color? hover = GetThemeColor("AppCardBackgroundBrush");
             Color? pressed = GetThemeColor("AppCardBorderBrush");
 
-            titleBar.BackgroundColor = shell;
-            titleBar.InactiveBackgroundColor = shell;
-            titleBar.ButtonBackgroundColor = shell;
-            titleBar.ButtonInactiveBackgroundColor = shell;
+            titleBar.BackgroundColor = Microsoft.UI.Colors.Transparent;
+            titleBar.InactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+            titleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
             titleBar.ButtonHoverBackgroundColor = hover;
             titleBar.ButtonPressedBackgroundColor = pressed;
             titleBar.ButtonForegroundColor = primary;

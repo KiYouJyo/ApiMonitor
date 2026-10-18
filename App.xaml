@@ -10,8 +10,10 @@
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#F4F7F9" />
-                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#DCEAF0F4" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#00F4F7F9" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneBackgroundBrush" Color="#E5F9F9" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneInactiveBackgroundBrush" Color="#F3F3F3" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#E5F9F9" />
                     <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#EEFFFFFF" />
                     <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#B8F5F9FC" />
                     <SolidColorBrush x:Key="AppCardBorderBrush" Color="#CCD8E2E9" />
@@ -21,8 +23,10 @@
                     <SolidColorBrush x:Key="FloatingSurfaceBackgroundBrush" Color="#FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#162027" />
-                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#DD202D35" />
+                    <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="#00162027" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneBackgroundBrush" Color="#1A2323" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneInactiveBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="#1A2323" />
                     <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#D12C3943" />
                     <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="#B532414B" />
                     <SolidColorBrush x:Key="AppCardBorderBrush" Color="#72556975" />
@@ -33,6 +37,8 @@
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="AppShellBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ShellNavigationPaneInactiveBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="AppPaneBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="AppSubtleSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
