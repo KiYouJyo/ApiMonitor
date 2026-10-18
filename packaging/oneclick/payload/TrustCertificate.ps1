@@ -26,8 +26,11 @@ if ($cert.HasPrivateKey -or
     throw 'Public certificate identity, fingerprint or validity was rejected.'
 }
 $eku = @($cert.Extensions | Where-Object { $_.Oid.Value -eq '2.5.29.37' } | Select-Object -First 1)
-if ($eku.Count -ne 1 -or
-    -not ($eku[0].Format($false) -match '1\.3\.6\.1\.5\.5\.7\.3\.3|Code Signing|代码签名')) {
+if ($eku.Count -ne 1) { throw 'Code signing EKU is missing.' }
+$ekuParsed = [Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new($eku[0], $false)
+$allowCodeSigning = @($ekuParsed.EnhancedKeyUsages |
+    Where-Object { $_.Value -ceq '1.3.6.1.5.5.7.3.3' })
+if ($allowCodeSigning.Count -ne 1) {
     throw 'The public certificate does not have the required code-signing usage.'
 }
 $alreadyTrusted = @(Get-ChildItem -LiteralPath 'Cert:\LocalMachine\TrustedPeople' -ErrorAction SilentlyContinue |
