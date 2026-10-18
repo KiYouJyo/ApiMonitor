@@ -2,8 +2,7 @@
 [CmdletBinding()]
 param(
     [ValidateSet('Install', 'Uninstall')][string]$Action = 'Install',
-    [switch]$NoLaunch,
-    [switch]$TestOnly
+    [switch]$NoLaunch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -204,9 +203,8 @@ if ($MyInvocation.InvocationName -ne '.') {
     New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
     $log = Join-Path $logDirectory ('OneClick-{0:yyyyMMdd-HHmmss}.log' -f (Get-Date))
     try {
-        $result = Invoke-OneClickBootstrap -Operation $Action -SuppressLaunch:$NoLaunch *>&1 |
-            Tee-Object -FilePath $log
-        if ($result -match '^\d+$') { exit [int]$result }
+        Invoke-OneClickBootstrap -Operation $Action -SuppressLaunch:$NoLaunch *>&1 |
+            Tee-Object -FilePath $log | Out-Host
         exit 0
     }
     catch {
