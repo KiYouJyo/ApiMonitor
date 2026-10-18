@@ -98,7 +98,7 @@ function Invoke-OfflineUninstall {
     }
     if ($matches.Count -ne 1) { throw 'Multiple matching ApiMonitor packages; aborting ambiguous removal.' }
     $pkg = $matches[0]
-    Write-Warning 'Uninstall removes this Windows user\'s ApiMonitor sideload package. Package-local accounts, settings and history may be lost. Microsoft Store installations will not be touched.'
+    Write-Warning "Uninstall removes this Windows user's ApiMonitor sideload package. Package-local accounts, settings and history may be lost. Microsoft Store installations will not be touched."
     $answer = Read-Host ('Uninstall ApiMonitor {0} for this user? Type YES to continue' -f $pkg.Version)
     if ($answer -cne 'YES') {
         Write-Output 'Uninstall cancelled without changing apps or certificates.'
@@ -195,9 +195,18 @@ function Install-VerifiedOfflinePackageForCurrentUser {
 
     $authenticode = Get-AuthenticodeSignature -FilePath $pre.MsixPath
     if (-not $authenticode.SignerCertificate -or
-        $authenticode.SignerCertificate.Thumbprint -cne $thumbprint -or
-        $authenticode.Status -ne 'Valid') {
+        $authenticode.SignerCertificate.Thumbprint -cne $thumbprint) {
+        throw 'The MSIX Authenticode signer does not match the verified published certificate.'
+    }
+    # A self-signed but otherwise intact MSIX can be reported as UnknownError
+    # by Authenticode on Windows, even when TrustedPeople contains the signer.
+    # Never allow hash/signature mismatch; Windows Add-AppxPackage still performs
+    # mandatory cryptographic package signature checks before installation.
+    if ($authenticode.Status -notin @('Valid', 'UnknownError')) {
         throw "Windows rejected the signed MSIX: $($authenticode.Status) ($($authenticode.StatusMessage))"
+    }
+    if ($authenticode.Status -eq 'UnknownError') {
+        Write-Warning 'Windows could not build a full trust chain for this self-signed MSIX; continuing only with the pinned SHA-256, exact signer and Windows package deployment verification.'
     }
     $plan = Resolve-DependencyPlan $OfflineRoot $ops
     if (-not $plan.Ok) { throw "Windows App Runtime dependency unavailable: $($plan.Reason)" }
