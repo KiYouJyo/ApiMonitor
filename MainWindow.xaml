@@ -10,10 +10,21 @@
     <Grid x:Name="RootLayout" Background="Transparent"
           Loaded="OnStartupRootLoaded"
           ActualThemeChanged="OnStartupThemeChanged">
-        <views:MainPage x:Name="RootPageControl"
-                        Opacity="0" IsHitTestVisible="False" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar x:Name="AppTitleBar" Title="ApiMonitor">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="ms-appx:///Assets/Square44x44Logo.scale-200.png" />
+            </TitleBar.IconSource>
+        </TitleBar>
+        <Grid x:Name="ShellHost" Grid.Row="1" Background="Transparent"
+              Opacity="0" IsHitTestVisible="False">
+            <views:MainPage x:Name="RootPageControl" />
+        </Grid>
         <!-- UrbanPlanToolbox-style logo-only splash, above a fully initialized shell. -->
-        <Grid x:Name="StartupOverlay"
+        <Grid x:Name="StartupOverlay" Grid.RowSpan="2"
               Background="Transparent"
               Canvas.ZIndex="100"
               AutomationProperties.Name="ApiMonitor startup">
