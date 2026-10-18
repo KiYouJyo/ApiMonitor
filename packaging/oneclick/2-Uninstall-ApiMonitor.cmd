@@ -11,7 +11,7 @@ set "RESULT=%ERRORLEVEL%"
 if not "%RESULT%"=="0" (
   echo.
   echo ApiMonitor uninstall did not finish, code %RESULT%.
-  echo See the log in %%LOCALAPPDATA%%\ApiMonitor\Logs.
+  echo See the log in %LOCALAPPDATA%\ApiMonitor\Logs.
   pause
   exit /b %RESULT%
 )
