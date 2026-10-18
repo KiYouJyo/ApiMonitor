@@ -33,6 +33,7 @@ public sealed partial class MainWindow : Window, IMainWindowController
 
     /// <summary>页面根元素（x:Name 字段为私有，通过此属性公开给 App）。</summary>
     public Views.MainPage RootPage => _liveRootPage ?? RootPageControl;
+    public FrameworkElement ThemeRoot => RootLayout;
 
     /// <summary>
     /// Like UrbanPlanToolbox: preserve the shared navigation ViewModel, but replace
