@@ -23,7 +23,7 @@
 
 **Microsoft Store**: [从商店下载](https://apps.microsoft.com/detail/9N6KR2XFMKQ2)，由商店管理安装与更新，实际可用版本以商品页为准。
 
-**GitHub 一键安装（推荐）**：从 [v1.3.0 Release](https://github.com/KiYouJyo/ApiMonitor/releases/tag/v1.3.0) 下载 `ApiMonitor-v1.3.0-x64-one-click.zip`，完整解压并双击 `1-Install-ApiMonitor.cmd`。安装器会联网下载原有签名离线包、验证固定 SHA-256、安装依赖和正确的公开证书，无须手动处理 CER。原有完整离线包仍供断网安装。
+**GitHub 一键安装（推荐）**：从 [v1.3.0 Release](https://github.com/KiYouJyo/ApiMonitor/releases/tag/v1.3.0) 下载 `ApiMonitor-v1.3.0-x64-one-click-r2.zip`，完整解压并双击 `1-Install-ApiMonitor.cmd`。安装器会联网下载原有签名离线包、验证固定 SHA-256、安装依赖和正确的公开证书，无须手动处理 CER。原有完整离线包仍供断网安装。
 
 
 两条渠道使用不同的 Package Family，**不能相互覆盖升级**；Store 版按全新安装处理，**不迁移** GitHub 侧载版的数据；不建议同时安装两个渠道版本。

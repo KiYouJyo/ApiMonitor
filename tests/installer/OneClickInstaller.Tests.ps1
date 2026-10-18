@@ -58,18 +58,56 @@ try {
     finally { $archive.Dispose() }
     Assert-Rejected { Assert-OneClickZipLayout -ZipPath $unsafe -PackageVersion $version } 'ZIP path traversal'
 
+    # Explicitly simulate a disconnected machine and ensure offline
+    # uninstall returns without ever calling GitHub or touching packages.
+    function Get-AppxPackage { param([string]$Name,[string]$ErrorAction) return }
+    function Invoke-RestMethod { throw 'Network must NOT be invoked during uninstall.' }
+    $offlineUninstall = @(Invoke-OneClickBootstrap -Operation Uninstall)
+    Assert-True ($offlineUninstall[-1] -eq 0) 'offline uninstall does not query Release API'
+
+    # Parser regression protects three Windows PowerShell 5.1 scripts.
+    foreach ($scriptFile in @(
+        (Join-Path $base 'payload\Bootstrap.ps1'),
+        (Join-Path $base 'payload\TrustCertificate.ps1'),
+        (Join-Path $base 'New-OneClickPackage.ps1')
+    )) {
+        $tokens = $null
+        $parseErrors = $null
+        [void][Management.Automation.Language.Parser]::ParseFile($scriptFile, [ref]$tokens, [ref]$parseErrors)
+        Assert-True (($null -eq $parseErrors) -or $parseErrors.Count -eq 0) "PowerShell syntax valid: $scriptFile"
+    }
+    # Even when a GitHub package is installed, refusing confirmation must
+    # never trigger Remove-AppxPackage.
+    function Get-AppxPackage {
+        param([string]$Name,[string]$ErrorAction)
+        [pscustomobject]@{
+            Name='ApiMonitor'; Publisher='CN=ApiMonitorDev';
+            Version=[version]'1.3.0.1'; PackageFullName='ApiMonitor_1.3.0.1_x64__fixture'
+        }
+    }
+    function Read-Host { param([string]$Prompt) return 'NO' }
+    function Remove-AppxPackage { throw 'Unexpected destructive removal' }
+    $cancelledUninstall = @(Invoke-OneClickBootstrap -Operation Uninstall)
+    Assert-True ($cancelledUninstall[-1] -eq 0) 'offline uninstall refusal keeps installed package'
+
     $output=Join-Path $work 'publish'
     New-Item -ItemType Directory -Path $output | Out-Null
     $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToUpperInvariant()
     $builder=Join-Path $base 'New-OneClickPackage.ps1'
     & $builder -DisplayVersion '1.3.0' -PackageVersion $version -PublishedOfflineZipPath $zip -PublishedOfflineZipSha256 $sha -OutputDirectory $output | Out-Null
-    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click'
-    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click.zip'
+    $root=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2'
+    $bootstrap=Join-Path $output 'ApiMonitor-v1.3.0-x64-one-click-r2.zip'
     Assert-True (Test-Path -LiteralPath $bootstrap) 'one-click package created'
     Assert-True ((Get-Item -LiteralPath $bootstrap).Length -lt 2MB) 'online ZIP remains lightweight'
     foreach ($name in @('1-Install-ApiMonitor.cmd','2-Uninstall-ApiMonitor.cmd','README.txt')) {
         Assert-True (Test-Path -LiteralPath (Join-Path $root $name)) "root has $name"
     }
+    Assert-True (Test-Path -LiteralPath (Join-Path $root 'payload\TrustCertificate.ps1')) 'certificate-only UAC helper included'
+    $bootstrapContent = Get-Content -LiteralPath (Join-Path $root 'payload\Bootstrap.ps1') -Raw
+    Assert-True ($bootstrapContent.Contains('if ($Operation -eq ''Uninstall'')')) 'offline uninstall branches before network'
+    Assert-True ($bootstrapContent.Contains('return Invoke-OfflineUninstall')) 'offline uninstall never delegates to downloaded scripts'
+    Assert-True ($bootstrapContent.Contains('Install-VerifiedOfflinePackageForCurrentUser')) 'MSIX installer executes for current user'
+    Assert-True (-not $bootstrapContent.Contains('Start-Process -FilePath ''powershell.exe'' -ArgumentList $arguments -Verb RunAs')) 'no hidden original elevated installer process'
     $generated=Get-Content -LiteralPath (Join-Path $root 'payload\InstallerMetadata.json') -Raw | ConvertFrom-Json
     Assert-True ([string]$generated.offlineZipSha256 -ceq $sha) 'generated manifest pins exact published offline SHA'
     Assert-True (@(Get-ChildItem $root -Recurse -File | Where-Object { $_.Extension -in @('.msix','.pfx','.p12','.cer') }).Count -eq 0) 'online ZIP carries no binary installers or private certificates'

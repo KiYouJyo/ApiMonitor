@@ -87,9 +87,151 @@ function Invoke-ReliableOneClickDownload {
     }
 }
 
+function Invoke-OfflineUninstall {
+    # Uninstall is deliberately local. It never asks for a Release,
+    # downloads an offline ZIP, or executes downloaded code.
+    $matches = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ceq 'ApiMonitor' -and $_.Publisher -ceq 'CN=ApiMonitorDev' })
+    if ($matches.Count -eq 0) {
+        Write-Output 'ApiMonitor GitHub sideload edition is not installed for this Windows user.'
+        return 0
+    }
+    if ($matches.Count -ne 1) { throw 'Multiple matching ApiMonitor packages; aborting ambiguous removal.' }
+    $pkg = $matches[0]
+    Write-Warning "Uninstall removes this Windows user's ApiMonitor sideload package. Package-local accounts, settings and history may be lost. Microsoft Store installations will not be touched."
+    $answer = Read-Host ('Uninstall ApiMonitor {0} for this user? Type YES to continue' -f $pkg.Version)
+    if ($answer -cne 'YES') {
+        Write-Output 'Uninstall cancelled without changing apps or certificates.'
+        return 0
+    }
+    Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction Stop
+    $remaining = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
+        Where-Object { $_.PackageFullName -ceq $pkg.PackageFullName })
+    if ($remaining.Count -gt 0) { throw 'Windows still reports this ApiMonitor package as installed.' }
+    Write-Output 'ApiMonitor GitHub package uninstalled for the current user.'
+    Write-Output 'Shared Windows App Runtime and certificate trust were not removed.'
+    return 0
+}
+
+function Install-VerifiedOfflinePackageForCurrentUser {
+    param([Parameter(Mandatory)][string]$OfflineRoot,
+          [Parameter(Mandatory)][string]$PackageVersion)
+
+    $installFile = Join-Path $OfflineRoot 'Install.ps1'
+    if (-not (Test-Path -LiteralPath $installFile -PathType Leaf)) {
+        throw 'The verified offline installer is missing its security validation functions.'
+    }
+    # Reuse the existing, tested manifest, checksum, CMS signing, certificate
+    # policy and dependency checks, but do not invoke its blanket UAC elevation.
+    # A standard Windows user can supply a different admin's credentials; a
+    # full elevated Add-AppxPackage would then install to the WRONG account.
+    . $installFile -PackageVersion $PackageVersion -NoLaunch -Quiet
+
+    $ops = Get-DefaultOps
+    $pre = Assert-Prerequisites $OfflineRoot $ops
+    if (-not $pre.Ok) { throw "Package prerequisites failed: $($pre.Reason)" }
+    $manifest = Get-MsixManifestInfo $pre.MsixPath
+    $identity = Assert-ManifestIdentity $manifest 'ApiMonitor' 'CN=ApiMonitorDev' $PackageVersion
+    if (-not $identity.Ok) { throw "Package identity mismatch: $($identity.Reason)" }
+    $certificatePath = Join-Path $OfflineRoot 'ApiMonitorDev.cer'
+    $publicCert = [Security.Cryptography.X509Certificates.X509Certificate2]::new($certificatePath)
+    $msixSigner = Get-MsixSignerCertificate $pre.MsixPath
+    if (-not (Test-ThumbprintMatch $msixSigner $publicCert)) {
+        throw 'MSIX signature certificate does not match the published certificate.'
+    }
+    foreach ($cert in @($msixSigner, $publicCert)) {
+        $policy = Assert-CertificatePolicy $cert
+        if (-not $policy.Ok) { throw "Signing certificate policy failure: $($policy.Reason)" }
+    }
+    $publisherCheck = Assert-ManifestPublisherMatchesCert $manifest $publicCert
+    if (-not $publisherCheck.Ok) { throw "Publisher mismatch: $($publisherCheck.Reason)" }
+    $checksums = Read-Checksums (Join-Path $OfflineRoot 'SHA256SUMS.txt')
+    $integrity = Assert-FileHashes $checksums @(
+        @{ Path = $pre.MsixPath; Name = $pre.MsixName },
+        @{ Path = $certificatePath; Name = 'ApiMonitorDev.cer' }
+    ) $ops
+    if (-not $integrity.Ok) { throw "Signed payload SHA-256 verification failed: $($integrity.Reason)" }
+    Write-Host "Validated offline MSIX and public signer: $($publicCert.Thumbprint)."
+
+    $existing = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ceq 'ApiMonitor' } | Select-Object -First 1)
+    $installed = if ($existing.Count -eq 0) { $null } else { $existing[0] }
+    $action = Resolve-PackageAction $installed $manifest.Version $manifest.Publisher
+    switch ($action) {
+        'Conflict' { throw 'An ApiMonitor package with another publisher already exists.' }
+        'HigherVersionInstalled' { throw 'A newer ApiMonitor sideload version is already installed.' }
+        'SameVersion' {
+            Write-Host "ApiMonitor $PackageVersion is already installed. Nothing to change."
+            return $installed
+        }
+        'Install' { }
+        'Upgrade' { }
+        default { throw "Unexpected package installation action: $action" }
+    }
+
+    $thumbprint = $publicCert.Thumbprint.ToUpperInvariant()
+    $trusted = @(Get-ChildItem -LiteralPath 'Cert:\LocalMachine\TrustedPeople' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Thumbprint -ceq $thumbprint })
+    if ($trusted.Count -eq 0) {
+        $elevationScript = Join-Path $PSScriptRoot 'TrustCertificate.ps1'
+        if (-not (Test-Path -LiteralPath $elevationScript -PathType Leaf)) {
+            throw 'The certificate trust helper is missing from this one-click ZIP.'
+        }
+        Write-Host 'Requesting Windows UAC only to trust the verified public publisher certificate...'
+        $args = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}" -PublicCertificatePath "{1}" -ExpectedThumbprint {2}' -f $elevationScript, $certificatePath, $thumbprint
+        try {
+            $child = Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs -Wait -PassThru -ErrorAction Stop
+        }
+        catch {
+            throw "Certificate trust approval cancelled or failed: $($_.Exception.Message)"
+        }
+        if ($child.ExitCode -ne 0) {
+            throw "Certificate trust helper exited with $($child.ExitCode). Installation has not started. Check the UAC window output."
+        }
+        $trusted = @(Get-ChildItem -LiteralPath 'Cert:\LocalMachine\TrustedPeople' -ErrorAction SilentlyContinue |
+            Where-Object { $_.Thumbprint -ceq $thumbprint })
+        if ($trusted.Count -ne 1) { throw 'Expected certificate trust was not installed successfully.' }
+    }
+
+    $authenticode = Get-AuthenticodeSignature -FilePath $pre.MsixPath
+    if (-not $authenticode.SignerCertificate -or
+        $authenticode.SignerCertificate.Thumbprint -cne $thumbprint) {
+        throw 'The MSIX Authenticode signer does not match the verified published certificate.'
+    }
+    # A self-signed but otherwise intact MSIX can be reported as UnknownError
+    # by Authenticode on Windows, even when TrustedPeople contains the signer.
+    # Never allow hash/signature mismatch; Windows Add-AppxPackage still performs
+    # mandatory cryptographic package signature checks before installation.
+    if ($authenticode.Status -notin @('Valid', 'UnknownError')) {
+        throw "Windows rejected the signed MSIX: $($authenticode.Status) ($($authenticode.StatusMessage))"
+    }
+    if ($authenticode.Status -eq 'UnknownError') {
+        Write-Warning 'Windows could not build a full trust chain for this self-signed MSIX; continuing only with the pinned SHA-256, exact signer and Windows package deployment verification.'
+    }
+    $plan = Resolve-DependencyPlan $OfflineRoot $ops
+    if (-not $plan.Ok) { throw "Windows App Runtime dependency unavailable: $($plan.Reason)" }
+
+    # Crucially this Add-AppxPackage runs in the original logged-in user
+    # session, not in the elevated admin's potentially different account.
+    Write-Host "Installing ApiMonitor $PackageVersion for the current Windows account..."
+    $result = Install-ApiMonitorPackage $pre.MsixPath $plan.Needed $ops
+    if (-not $result.Ok) { throw "MSIX installation failed: $($result.Reason)" }
+    $after = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ceq 'ApiMonitor' -and $_.Publisher -ceq 'CN=ApiMonitorDev' })
+    if ($after.Count -ne 1 -or [string]$after[0].Version -cne $PackageVersion -or
+        [string]$after[0].Status -cne 'Ok') {
+        throw 'Installed MSIX identity, version or state differs from the verified offline package.'
+    }
+    return $after[0]
+}
+
 function Invoke-OneClickBootstrap {
     param([ValidateSet('Install','Uninstall')][string]$Operation,
           [switch]$SuppressLaunch)
+    if ($Operation -eq 'Uninstall') {
+        return Invoke-OfflineUninstall
+    }
+
     $metaPath = Join-Path $PSScriptRoot 'InstallerMetadata.json'
     if (-not (Test-Path -LiteralPath $metaPath -PathType Leaf)) { throw 'The installer metadata is missing.' }
     $meta = Get-Content -LiteralPath $metaPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -149,47 +291,15 @@ function Invoke-OneClickBootstrap {
         $extracted = Join-Path $work 'expanded'
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, $extracted)
         $root = Join-Path $extracted ('ApiMonitor_' + [string]$meta.packageVersion + '_x64_Test')
-        $scriptName = if ($Operation -eq 'Install') { 'Install.ps1' } else { 'Uninstall.ps1' }
-        $scriptPath = Join-Path $root $scriptName
-        if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
-            throw 'Verified offline installer script was not found.'
-        }
-
-        if ($Operation -eq 'Install') {
-            # UAC elevation is requested once, after downloading and checking
-            # the exact pinned ZIP. The installed certificate comes only from
-            # that authenticated archive and only enters TrustedPeople.
-            $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}" -PackageVersion "{1}" -NoLaunch -Quiet' -f $scriptPath, $meta.packageVersion
+        $installed = Install-VerifiedOfflinePackageForCurrentUser -OfflineRoot $root -PackageVersion ([string]$meta.packageVersion)
+        Write-Output "ApiMonitor $($meta.displayVersion) installation verified."
+        if (-not $SuppressLaunch) {
             try {
-                $elevated = Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -Verb RunAs -Wait -PassThru -ErrorAction Stop
+                Start-Process -FilePath ('shell:AppsFolder\' + $installed.PackageFamilyName + '!App')
             }
             catch {
-                throw "Windows UAC approval was cancelled or could not be completed: $($_.Exception.Message)"
+                Write-Warning 'App installed successfully, but automatic launch failed. Use the Windows Start menu.'
             }
-            if ($elevated.ExitCode -ne 0) {
-                throw "The official installer returned exit code $($elevated.ExitCode)."
-            }
-            $installed = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -ceq 'ApiMonitor' -and $_.Publisher -ceq 'CN=ApiMonitorDev' }) | Select-Object -First 1
-            if (-not $installed -or [string]$installed.Version -cne [string]$meta.packageVersion -or
-                [string]$installed.Status -cne 'Ok') {
-                throw 'Installed package identity, status or version verification failed.'
-            }
-            Write-Output "ApiMonitor $($meta.displayVersion) was installed successfully."
-            if (-not $SuppressLaunch) {
-                try {
-                    Start-Process -FilePath ('shell:AppsFolder\' + $installed.PackageFamilyName + '!App')
-                }
-                catch {
-                    Write-Warning 'The app is installed. Open ApiMonitor from Start if automatic launch is unavailable.'
-                }
-            }
-        }
-        else {
-            Write-Warning 'Uninstalling the package may remove application-local data. Follow the offline uninstall prompts.'
-            $arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $scriptPath
-            $child = Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -Wait -PassThru
-            if ($child.ExitCode -ne 0) { throw "Uninstaller returned exit code $($child.ExitCode)." }
         }
         return 0
     }
@@ -209,8 +319,10 @@ if ($MyInvocation.InvocationName -ne '.') {
     }
     catch {
         $message = "One-click $Action failed: $($_.Exception.Message)"
+        $trace = $_ | Out-String
         Write-Host $message -ForegroundColor Red
-        Add-Content -LiteralPath $log -Value $message -Encoding UTF8
+        Write-Host "Detailed log: $log" -ForegroundColor Yellow
+        Add-Content -LiteralPath $log -Value @($message, $trace, $_.ScriptStackTrace) -Encoding UTF8
         exit 1
     }
 }
