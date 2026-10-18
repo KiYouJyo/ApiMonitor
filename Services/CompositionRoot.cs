@@ -318,7 +318,7 @@ public sealed class CompositionRoot
             },
             Log);
 
-        FluentTrayMenuWindow? fluentTrayMenu = null;
+        TrayMenuWindow? fluentTrayMenu = null;
         trayRef = new TrayIconService(
             trayHost,
             statusProvider,
@@ -335,12 +335,12 @@ public sealed class CompositionRoot
             {
                 if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
                     return false;
-                fluentTrayMenu ??= new FluentTrayMenuWindow();
+                fluentTrayMenu ??= new TrayMenuWindow();
                 return fluentTrayMenu.ShowMenu(items, request, trayHost, dispatch, theme);
             },
             closeFluentMenu: () =>
             {
-                fluentTrayMenu?.Close();
+                fluentTrayMenu?.CloseForExit();
                 fluentTrayMenu = null;
             });
 
