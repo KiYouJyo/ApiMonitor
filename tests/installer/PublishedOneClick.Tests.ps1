@@ -18,6 +18,7 @@ try {
     [IO.Compression.ZipFile]::ExtractToDirectory($PublishedOfflineZipPath, $unpacked)
     $offline = Join-Path $unpacked ("ApiMonitor_${PackageVersion}_x64_Test")
     $required = @('Install.ps1', 'Uninstall.ps1', 'SafeLocalStateBackup.ps1')
+    $expectedChinese = [string]::Concat(([char[]]@(0x4EC5,0x652F,0x6301,0x20,0x36,0x34,0x20,0x4F4D)))
 
     # This assertion explicitly examines the *published ZIP* rather than
     # merely the current Git repository source files. The original v1.3.0.1
@@ -43,7 +44,7 @@ try {
         }
         $text = [IO.File]::ReadAllText($file)
         if ($name -eq 'Install.ps1' -and
-            -not $text.Contains('仅支持 64 位')) {
+            -not $text.Contains($expectedChinese)) {
             throw 'Windows PowerShell decoded the published Chinese installer text incorrectly.'
         }
         Write-Output "PASS: Windows PowerShell 5.1 parsed actual v$PackageVersion published script $name."
