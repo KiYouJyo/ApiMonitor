@@ -31,7 +31,7 @@ if ($destination.StartsWith($sourcePrefix, [StringComparison]::OrdinalIgnoreCase
     $destination -ceq $builderRoot) {
     throw 'Generated installers cannot overwrite their own source templates.'
 }
-$rootName = "ApiMonitor-v$DisplayVersion-x64-one-click"
+$rootName = "ApiMonitor-v$DisplayVersion-x64-one-click-r2"
 $root = Join-Path $destination $rootName
 $payload = Join-Path $root 'payload'
 $archivePath = Join-Path $destination ($rootName + '.zip')
@@ -58,6 +58,14 @@ try {
     # UTF-8 BOM ensures compatibility with Windows PowerShell 5.1 and Japanese paths.
     $sourceScript = Get-Content -LiteralPath $scriptPath -Raw -Encoding UTF8
     [IO.File]::WriteAllText((Join-Path $payload 'Bootstrap.ps1'),$sourceScript,[Text.UTF8Encoding]::new($true))
+    # The certificate helper is included locally and runs only for UAC trust.
+    # Uninstall requires no network, MSIX downloads or separate helper.
+    $trustHelper = Join-Path $templates 'payload\TrustCertificate.ps1'
+    if (-not (Test-Path -LiteralPath $trustHelper -PathType Leaf)) {
+        throw 'The offline certificate-trust helper is missing.'
+    }
+    $trustCode = Get-Content -LiteralPath $trustHelper -Raw -Encoding UTF8
+    [IO.File]::WriteAllText((Join-Path $payload 'TrustCertificate.ps1'),$trustCode,[Text.UTF8Encoding]::new($true))
     $metadata = [ordered]@{
         schemaVersion=1
         repository='KiYouJyo/ApiMonitor'
