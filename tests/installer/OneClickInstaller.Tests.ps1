@@ -33,6 +33,27 @@ try {
     $bad.offlineZipName=$zipName; $bad.offlineZipSha256=('X'*64)
     Assert-Rejected { Test-SafeOneClickMetadata $bad } 'invalid SHA256'
 
+    # Regression: the old signed Release ZIP carries UTF-8 Chinese scripts
+    # without a BOM. Windows PowerShell 5.1 interprets them as legacy ANSI,
+    # so verify normalization to UTF-8 BOM *before* dot-source/parse.
+    $encodedFixture = Join-Path $work 'Chinese script encoding regression'
+    New-Item -ItemType Directory -Path $encodedFixture -Force | Out-Null
+    $cnScript = "#requires -Version 5.1`r`nfunction Test-InstallerChinese { return @{ Ok = \$false; Reason = '仅支持 64 位（x64）Windows 系统。' } }`r`n"
+    foreach ($name in @('Install.ps1','Uninstall.ps1','SafeLocalStateBackup.ps1')) {
+        [IO.File]::WriteAllText((Join-Path $encodedFixture $name), $cnScript, [Text.UTF8Encoding]::new($false))
+    }
+    Repair-ExtractedPowerShellEncoding -OfflineRoot $encodedFixture
+    foreach ($name in @('Install.ps1','Uninstall.ps1','SafeLocalStateBackup.ps1')) {
+        $path = Join-Path $encodedFixture $name
+        $bytes = [IO.File]::ReadAllBytes($path)
+        Assert-True ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) "$name is UTF-8 BOM"
+        $tokens = $null
+        $parseErrors = $null
+        [void][Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors)
+        Assert-True (($null -eq $parseErrors) -or $parseErrors.Count -eq 0) "$name can be parsed under Windows PowerShell"
+        Assert-True (([IO.File]::ReadAllText($path)).Contains('仅支持 64 位')) "$name Chinese string is preserved"
+    }
+
     $stage=Join-Path $work ('ApiMonitor_' + $version + '_x64_Test')
     $dep=Join-Path $stage 'Dependencies\x64'
     New-Item -ItemType Directory -Path $dep -Force | Out-Null
