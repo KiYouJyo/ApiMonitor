@@ -97,7 +97,7 @@ public partial class App : Application
             _window = new MainWindow(_compositionRoot!);
             _window.RootPage.ViewModel = _compositionRoot!.MainViewModel;
             _compositionRoot.AttachMainWindow(_window);
-            _compositionRoot.LanguageChanged += () => _window?.RootPage.RefreshLocalizedContent();
+            _compositionRoot.LanguageChanged += () => _window?.RebuildLocalizedShell();
 
             if (activate)
             {
