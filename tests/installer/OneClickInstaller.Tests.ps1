@@ -62,7 +62,8 @@ try {
     # uninstall returns without ever calling GitHub or touching packages.
     function Get-AppxPackage { param([string]$Name,[string]$ErrorAction) return }
     function Invoke-RestMethod { throw 'Network must NOT be invoked during uninstall.' }
-    Assert-True ((Invoke-OneClickBootstrap -Operation Uninstall) -eq 0) 'offline uninstall does not query Release API'
+    $offlineUninstall = @(Invoke-OneClickBootstrap -Operation Uninstall)
+    Assert-True ($offlineUninstall[-1] -eq 0) 'offline uninstall does not query Release API'
 
     # Parser regression protects three Windows PowerShell 5.1 scripts.
     foreach ($scriptFile in @(
@@ -86,7 +87,8 @@ try {
     }
     function Read-Host { param([string]$Prompt) return 'NO' }
     function Remove-AppxPackage { throw 'Unexpected destructive removal' }
-    Assert-True ((Invoke-OneClickBootstrap -Operation Uninstall) -eq 0) 'offline uninstall refusal keeps installed package'
+    $cancelledUninstall = @(Invoke-OneClickBootstrap -Operation Uninstall)
+    Assert-True ($cancelledUninstall[-1] -eq 0) 'offline uninstall refusal keeps installed package'
 
     $output=Join-Path $work 'publish'
     New-Item -ItemType Directory -Path $output | Out-Null
