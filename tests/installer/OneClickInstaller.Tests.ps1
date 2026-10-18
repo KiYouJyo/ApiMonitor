@@ -73,7 +73,7 @@ try {
         $tokens = $null
         $parseErrors = $null
         [void][Management.Automation.Language.Parser]::ParseFile($scriptFile, [ref]$tokens, [ref]$parseErrors)
-        Assert-True (@($parseErrors).Count -eq 0) "PowerShell syntax valid: $scriptFile"
+        Assert-True (($null -eq $parseErrors) -or $parseErrors.Count -eq 0) "PowerShell syntax valid: $scriptFile"
     }
     # Even when a GitHub package is installed, refusing confirmation must
     # never trigger Remove-AppxPackage.
