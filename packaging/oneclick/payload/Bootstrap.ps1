@@ -151,7 +151,7 @@ function Install-VerifiedOfflinePackageForCurrentUser {
         @{ Path = $certificatePath; Name = 'ApiMonitorDev.cer' }
     ) $ops
     if (-not $integrity.Ok) { throw "Signed payload SHA-256 verification failed: $($integrity.Reason)" }
-    Write-Output "Validated offline MSIX and public signer: $($publicCert.Thumbprint)."
+    Write-Host "Validated offline MSIX and public signer: $($publicCert.Thumbprint)."
 
     $existing = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -ceq 'ApiMonitor' } | Select-Object -First 1)
@@ -161,7 +161,7 @@ function Install-VerifiedOfflinePackageForCurrentUser {
         'Conflict' { throw 'An ApiMonitor package with another publisher already exists.' }
         'HigherVersionInstalled' { throw 'A newer ApiMonitor sideload version is already installed.' }
         'SameVersion' {
-            Write-Output "ApiMonitor $PackageVersion is already installed. Nothing to change."
+            Write-Host "ApiMonitor $PackageVersion is already installed. Nothing to change."
             return $installed
         }
         'Install' { }
@@ -177,7 +177,7 @@ function Install-VerifiedOfflinePackageForCurrentUser {
         if (-not (Test-Path -LiteralPath $elevationScript -PathType Leaf)) {
             throw 'The certificate trust helper is missing from this one-click ZIP.'
         }
-        Write-Output 'Requesting Windows UAC only to trust the verified public publisher certificate...'
+        Write-Host 'Requesting Windows UAC only to trust the verified public publisher certificate...'
         $args = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}" -PublicCertificatePath "{1}" -ExpectedThumbprint {2}' -f $elevationScript, $certificatePath, $thumbprint
         try {
             $child = Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs -Wait -PassThru -ErrorAction Stop
@@ -213,7 +213,7 @@ function Install-VerifiedOfflinePackageForCurrentUser {
 
     # Crucially this Add-AppxPackage runs in the original logged-in user
     # session, not in the elevated admin's potentially different account.
-    Write-Output "Installing ApiMonitor $PackageVersion for the current Windows account..."
+    Write-Host "Installing ApiMonitor $PackageVersion for the current Windows account..."
     $result = Install-ApiMonitorPackage $pre.MsixPath $plan.Needed $ops
     if (-not $result.Ok) { throw "MSIX installation failed: $($result.Reason)" }
     $after = @(Get-AppxPackage -Name 'ApiMonitor' -ErrorAction SilentlyContinue |
