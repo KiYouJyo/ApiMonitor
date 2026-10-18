@@ -116,6 +116,8 @@ public sealed class CompositionRoot
     }
 
     /// <summary>主题服务（v0.6.0；主窗口/悬浮窗根元素注册处）。</summary>
+    private FloatingWindowViewModel? _activeFloatingViewModel;
+
     private readonly AppearanceService _appearanceService;
 
     /// <summary>v0.6.0 主题统一协调器：窗口根元素主题 + 原生标题栏颜色同步。</summary>
@@ -235,6 +237,7 @@ public sealed class CompositionRoot
                 floatingWindowSettingsStore,
                 Log,
                 uiThreadInvoker);
+            _activeFloatingViewModel = viewModel;
             var window = new FloatingBalanceWindow(
                 viewModel,
                 floatingWindowSettingsStore,
@@ -242,7 +245,12 @@ public sealed class CompositionRoot
                 Log);
             // 悬浮窗根元素注册到主题协调器：切换主题立即同步（含标题栏）。
             _themeCoordinator.RegisterWindow(window.AppWindow, window.RootGridElement, isMainWindow: false);
-            window.Closed += (_, _) => _themeCoordinator.UnregisterWindow(window.RootGridElement);
+            window.Closed += (_, _) =>
+            {
+                _themeCoordinator.UnregisterWindow(window.RootGridElement);
+                if (ReferenceEquals(_activeFloatingViewModel, viewModel))
+                    _activeFloatingViewModel = null;
+            };
             WindowManager.RegisterFloatingWindow(window);
             return new WinUIFloatingWindowHost(window);
         });
@@ -373,6 +381,7 @@ public sealed class CompositionRoot
             MainViewModel.RefreshLocalization();
             AboutViewModel?.RefreshLocalization(languageService.CurrentLanguageCode, _appearanceService.Theme.ToString());
             TrayIconService.UpdateTooltip();
+            if (_activeFloatingViewModel is { } floating) _ = floating.RefreshLocalizationAsync();
             LanguageChanged?.Invoke();
         };
 
