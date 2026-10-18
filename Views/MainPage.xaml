@@ -15,20 +15,10 @@
         IsBackButtonVisible="Collapsed"
         IsSettingsVisible="True"
         IsPaneToggleButtonVisible="True"
-        PaneDisplayMode="Auto"
-        OpenPaneLength="252"
-        CompactPaneLength="52"
-        CompactModeThresholdWidth="760"
-        ExpandedModeThresholdWidth="1120"
         AlwaysShowHeader="False"
         ItemInvoked="OnNavigationItemInvoked"
         Loaded="OnRootNavigationLoaded"
         Background="Transparent">
-        <NavigationView.Resources>
-            <Thickness x:Key="NavigationViewBorderThickness">0</Thickness>
-            <Thickness x:Key="NavigationViewContentGridBorderThickness">0</Thickness>
-            <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0</Thickness>
-        </NavigationView.Resources>
         <NavigationView.MenuItems>
             <NavigationViewItem loc:Loc.Key="Nav.Home" Tag="Home">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>
