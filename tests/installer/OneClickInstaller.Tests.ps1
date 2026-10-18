@@ -38,10 +38,13 @@ try {
     # so verify normalization to UTF-8 BOM *before* dot-source/parse.
     $encodedFixture = Join-Path $work 'Chinese script encoding regression'
     New-Item -ItemType Directory -Path $encodedFixture -Force | Out-Null
-    $cnScript = @'
-#requires -Version 5.1
-function Test-InstallerChinese { return @{ Ok = $false; Reason = '仅支持 64 位（x64）Windows 系统。' } }
-'@
+    # Keep this test file 7-bit ASCII: the test runner itself is Windows
+    # PowerShell 5.1, so any literal non-ASCII source would be misdecoded
+    # before our encoding-repair test has a chance to run.
+    $phrase = [string]::Concat(([char[]]@(0x4EC5,0x652F,0x6301,0x20,0x36,0x34,0x20,0x4F4D,0xFF08,0x78,0x36,0x34,0xFF09,0x57,0x69,0x6E,0x64,0x6F,0x77,0x73,0x20,0x7CFB,0x7EDF,0x3002)))
+    $cnScript = "#requires -Version 5.1`r`n" +
+        ('function Test-InstallerChinese { return @{ Ok = $false; Reason = ''{0}'' } }' -f $phrase) +
+        "`r`n"
     foreach ($name in @('Install.ps1','Uninstall.ps1','SafeLocalStateBackup.ps1')) {
         [IO.File]::WriteAllText((Join-Path $encodedFixture $name), $cnScript, [Text.UTF8Encoding]::new($false))
     }
@@ -54,7 +57,7 @@ function Test-InstallerChinese { return @{ Ok = $false; Reason = '仅支持 64 �
         $parseErrors = $null
         [void][Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors)
         Assert-True (($null -eq $parseErrors) -or $parseErrors.Count -eq 0) "$name can be parsed under Windows PowerShell"
-        Assert-True (([IO.File]::ReadAllText($path)).Contains('仅支持 64 位')) "$name Chinese string is preserved"
+        Assert-True (([IO.File]::ReadAllText($path)).Contains($phrase)) "$name Chinese string is preserved"
     }
 
     $stage=Join-Path $work ('ApiMonitor_' + $version + '_x64_Test')
