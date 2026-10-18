@@ -52,7 +52,7 @@ try {
     $archive=[IO.Compression.ZipFile]::Open($unsafe,[IO.Compression.ZipArchiveMode]::Update)
     try {
         $entry=$archive.CreateEntry('ApiMonitor_'+$version+'_x64_Test/../../malicious.ps1')
-        $writer=New-Object IO.StreamWriter($entry.Open())
+        $writer=[IO.StreamWriter]::new($entry.Open())
         try { $writer.Write('not safe') } finally { $writer.Dispose() }
     }
     finally { $archive.Dispose() }
